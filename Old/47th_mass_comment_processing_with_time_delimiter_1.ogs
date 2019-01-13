@@ -1,0 +1,14 @@
+// This script reads the value of the 9th string of each workbook (which shows the elapsed time) and uses it to fill in the comment field. The comment field is used as the graph legend.
+// It was used in the TGBC_IDTBT_6.7gl_10pF4TCNQ_83pDCB_Cytop_Al2O3_FRFT_Al2O3_2nd_BSA_pH=7_20B sample.
+
+doc -ef LB { // loop over all workbooks in folder
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	wks.colwidth = 8;// set all col width to 9
+	string sheetname$=wks.longname$; //get the long name of worksheet
+	string trimmedsheetname$=sheetname.GetToken(9,"_")$; // get the 9th string, which shows the elapsed time
+	trimmedsheetname$=Substitute(trimmedsheetname$,,min,0)$; // remove "min" from workbook name
+	trimmedsheetname$=Substitute(trimmedsheetname$,,(newdroplet),0)$; // remove "(newdroplet)" from workbook name
+	%A=trimmedsheetname$; // get the string that shows the time
+	col(E)[C]$ = "Ultrapure water %A minutes";
+	col(F)[C]$ = col(E)[C]$;
+}

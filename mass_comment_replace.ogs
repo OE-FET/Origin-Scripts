@@ -1,0 +1,18 @@
+// This script is loops all the columns of all the workbooks and replaces a substring in the comment field.
+// Author: Dimitrios Simatos
+// Version: 0.1
+// Current status: Works well
+// Changes: First version.
+
+[Main]
+	
+	doc -ef LB { // loop over all workbooks in folder		
+		
+		loop (i, 1, wks.ncols)
+		{
+		string comment$ = wcol(i)[C]$;
+		comment.Replace("=", "-"); // replace "=" with "-"
+		wcol(i)[C]$ = comment$;
+		};
+	}
+}

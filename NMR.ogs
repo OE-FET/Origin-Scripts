@@ -1,0 +1,25 @@
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+doc -ef LB { // loop over all workbooks in folder
+	wks.colwidth = 9;// set all col width to 9
+	//sheetname$=wks.longname$; //get the name of worksheet
+	//%A=sheetname.GetToken(9,"_")$; // get the string "T" or "O", which shows if the curve is a transfer or output curve
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	
+	col(B) = col(A); // Copy Vg data to column A
+	
+	double dX1 = 15.976940155029297;
+	double dX2 = -4.021059603838925;
+	double dNumPts = 65536;
+	double dInt = (dX2 - dX1)/(dNumPts - 1);
+	col(A) = data(dX1, dX2, dInt);
+	colreverse col(A);
+
+	col(A)[L]$ = "Concentration"; // Long name
+	col(A)[U]$ = [ppm]; // Units
+	
+	col(B)[L]$ = "Intensity"; // Long name
+	col(B)[U]$ = [rel]; // Units
+}
+}

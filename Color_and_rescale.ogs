@@ -1,0 +1,19 @@
+// This script is used to plot curves incrementally, assuming that the first curve is black (must do this manually). It also rescales the graph.
+// Author: Dimitrios Simatos
+// Version: 0.1
+// Current status: Works well.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+
+    // Skip over any embedded graphs or Layout windows
+    if(page.IsEmbedded==0&&exist(%H)!=11)
+		{
+			layer -g; // Group the datasets in the layer to auto-color increment
+			layer -gu; // Ungroup the datasets in the layer
+			layer -a;  // rescale the layer
+			legend; // Update the legend
+		}
+}

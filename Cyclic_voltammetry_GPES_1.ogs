@@ -1,0 +1,98 @@
+// This script is used to perform all the cyclic voltammetry plotting. It loops over all the workbooks in the folder and plots all the columns. An individual graph is created
+// for each workbook, and there is also a graph containing all the curves together.
+// Author: Dimitrios Simatos
+// Version: 0.5
+// Current status: Works well.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+	del -al *;// Delete all the local and session variables
+	
+	// Create the global graph
+	%R=%H; // Get the name of the previous window
+	win -t p Cyclic_voltammetry_1x_PBS_Pt_Pt_AgCl.otpu Cyclic_voltammetry;  // create a graph window using template
+	win -a %R;  // activate the previous window (workbook)
+	
+	// Loop over all workbooks
+doc -ef LB { // loop over all workbooks in folder
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	page.active = 1; // Switch to the first worksheet.
+
+	int i=2; // Column number
+	int j=1; // Scan number
+	
+	col(A)[L]$ = "V vs Ag/AgCl"; // Long name
+	col(A)[U]$ = V; // Units
+
+	string sheetname$=page.longname$; //get the name of worksheet
+	sheetname$ = sheetname.Substitute(".", ",", 0)$; // Substitute comma with dot
+	%A=sheetname.GetToken(1,"_")$; // Get the string that shows the material
+	%B=sheetname.GetToken(2,"_")$; // Get the string that shows the additive
+	%J=sheetname.GetToken(10,"_")$; // Get the string that shows the start voltage
+	%K=sheetname.GetToken(12,"_")$; // Get the string that shows V1
+	%L=sheetname.GetToken(14,"_")$; // Get the string that shows V2
+	%M=sheetname.GetToken(16,"_")$; // Get the string that shows the step
+	%N=sheetname.GetToken(18,"_")$; // Get the string that shows the rate
+	%O=sheetname.GetToken(19,"_")$; // Get the string that shows the index number
+	
+	// Remove ".txt" from index
+	
+	string index$=%O;
+	%O=index.GetToken(1,".")$;
+
+	// Create the individual graph
+	%R=%H; // Get the name of the previous window
+	win -t p Cyclic_voltammetry_1x_PBS_Pt_Pt_AgCl.otpu CV_single;  // create a graph window using template
+	win -a %R;  // activate the previous window (workbook)
+
+	// Loop over all columns
+	loop (i, 2, wks.ncols)	 
+		{
+		
+		%T = $(j); // Convert scan number to string
+		
+		wcol(i)[L]$="Current";
+		wcol(i)[U]$="A";
+		wcol(i)[C]$="Start: %J, V1: %K, V2: %L, Step: %M, Rate: %N, Scan No %T";
+		
+		%R=%H; // Get the name of the previous window
+		
+		// Plot column
+		range r1 = [%R]1!wcol(i);  // data range of column
+
+		// Global graph
+		win -a Cyclic_voltammetry;  // activate the graph window
+		//page.active = nActive;  // activate the layer for plot
+		layer.include(r1);  // plot in the active layer
+		
+		layer -a;  // rescale the layer
+		layer -g; // Group the datasets in the layer to auto-color increment
+
+		// Single graph
+		win -a CV_single;  // activate the graph window
+		//page.active = nActive;  // activate the layer for plot
+		layer.include(r1);  // plot in the active layer
+		
+		layer -a;  // rescale the layer
+		layer -g; // Group the datasets in the layer to auto-color increment
+		
+		
+		j++;
+		
+		win -a %R;  // activate the previous window (workbook)
+
+		};
+		
+		win -a CV_single;  // activate the graph window
+		page.longname$= "131st_Film_%A_10gl_%B_75pDCB_1x_PBS_Pt_Pt_AgCl_Start_%J_V1_%K_V2_%L_step_%M_rate_%N_%O_cyclic_voltammetry"; //this renames the active window (long name)
+		win -r CV_single %A_%L_%M_%N_%O; //this renames the active window (short name)
+		layer -gu; // Ungroup the datasets in the layer
+	
+	}
+	win -a Cyclic_voltammetry;  // activate the graph window
+	page.longname$= "131st_Film_%A_10gl_%B_75pDCB_1x_PBS_Pt_Pt_AgCl_cyclic_voltammetry"; //this renames the active window (long name)
+	win -r Cyclic_voltammetry %A_%B; //this renames the active window (short name); //this renames the active window (short name)
+	layer -gu; // Ungroup the datasets in the layer
+
+}

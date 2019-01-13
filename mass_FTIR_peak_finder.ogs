@@ -1,0 +1,20 @@
+// This script is used to find negative peaks in the leakage currents of the transfer curves. It loops over all the workbooks in the folder and 
+[Main]
+
+string bkn$=%H;
+
+doc -ef LB { // loop over all workbooks in folder
+	wks.colwidth = 8;// set all col width to 8
+
+
+if(exist(%H,2)==0) //not a workbook, must be a matrix
+		continue;
+	else 
+		smooth iy:=[%H]1!D polyorder:=5 npts:=100 oy:=col(5);
+		pkfind iy:=[%H]1!E method:=max dir:=p npts:=4 filter:=none ocenter:=col(6) ocenter_x:=col(7) ocenter_y:=col(8);
+		//plotxy iy:=col(5) plot:=200; // Plot the smoothened spectrum
+		//plotxy iy:=[bkn$]1!(7,8) plot:=201  legend:=1 color:=2 ogl:=1!; //Plot peak centers as red scatters
+		set %c -q 1; // Turn the data label on
+		set %c -qm 524397; //  Set label form as col(A);
+}
+}
