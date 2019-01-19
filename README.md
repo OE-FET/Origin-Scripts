@@ -1,2 +1,2 @@
 # Origin-Scripts
-LabTalk Scripts for OFET and WG-OFET analysis
+LabTalk Scripts for OFET and WG-OFET analysis. Compatible with Origin 2018 Pro or newer.
