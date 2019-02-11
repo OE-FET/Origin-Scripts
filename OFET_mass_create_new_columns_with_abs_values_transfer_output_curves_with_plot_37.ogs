@@ -2,9 +2,9 @@
 // It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, and reliability factor.
 // NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
 // Author: Dimitrios Simatos
-// Version: 3.6
+// Version: 3.7
 // Current status: Untested.
-// Changes: Corrected an error in the template checking condition.
+// Changes: Changed the max power density in the channel to a decimal format (instead of scientific).
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -72,7 +72,7 @@
 		double d=3; // Thickness of accumulation layer [nm]
 		double er=2.1; // Dielectric constant (CYTOP: 2.1, PMMA: 3.6, SiO2: 3.9)
 		double e0=8.854E-12; // Vacuum permittivity [F/m]
-		double dielectricthickness=240; // Dielectric thickness [nm]
+		double dielectricthickness=550; // Dielectric thickness [nm]
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
 		//double beta=1.28; // Parameter for power law dependence of the mobility
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
@@ -650,7 +650,7 @@
 							page.active = 1; // activate Layer 1
 							layer.include(r5);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							page.longname$= graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -659,7 +659,7 @@
 							
 							if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 							if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, S.1) W/cm\+(2); // If the label exists, update it
+							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 							
 							plot -c; // refresh the graph to update the labels
 							
@@ -671,14 +671,14 @@
 							page.active = 1; // activate Layer 1
 							layer.include(r5);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
 							if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 							if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, S.1) W/cm\+(2); // If the label exists, update it
+							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 							
 							plot -c; // refresh the graph to update the labels				
 							
@@ -702,7 +702,7 @@
 							page.active = 1; // activate Layer 1
 							layer -i201 r6;  // plot in the active layer as scatter plot
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							page.longname$= graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -711,7 +711,7 @@
 							
 							if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 							if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, S.1) W/cm\+(2); // If the label exists, update it
+							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 							
 							plot -c; // refresh the graph to update the labels
 							
@@ -723,14 +723,14 @@
 							page.active = 1; // activate Layer 1
 							layer -i201 r6;  // plot in the active layer as scatter plot
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
 							if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 							if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, S.1) W/cm\+(2); // If the label exists, update it
+							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 							
 							plot -c; // refresh the graph to update the labels
 							
@@ -755,7 +755,7 @@
 							page.active = 1; // activate Layer 1
 							layer.include(r8);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							page.longname$= graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -776,7 +776,7 @@
 							page.active = 1; // activate Layer 1
 							layer.include(r8);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
@@ -806,7 +806,7 @@
 							page.active = 1; // activate Layer 1
 							layer -i201 r9;  // plot in the active layer as scatter plot
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							page.longname$= graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -827,7 +827,7 @@
 							page.active = 1; // activate Layer 1
 							layer -i201 r9;  // plot in the active layer as scatter plot
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
@@ -910,7 +910,7 @@
 							page.active = 1; // activate Layer 1
 							layer.include(r17);  // plot in the active layer
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							
 							
 							//layer -g; // Group the datasets in the layer to auto-color increment
@@ -928,7 +928,7 @@
 							page.active = 1; // activate Layer 1
 							layer.include(r17);  // plot in the active layer
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
@@ -1039,7 +1039,7 @@
 									layer.include(rId);  // plot in the active layer
 									layer.include(rIg);  // plot in the active layer
 									
-									layer -a;  // rescale the layer
+									//layer -a;  // rescale the layer
 									//layer -g; // Group the datasets in the layer to auto-color increment
 									page.longname$= graphname$; //this renames the active window (long name)
 									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -1055,7 +1055,7 @@
 									page.active = 1; // activate Layer 1
 									layer.include(rId);  // plot in the active layer
 									layer.include(rIg);  // plot in the active layer
-									layer -a;  // rescale the layer
+									//layer -a;  // rescale the layer
 									//layer -g; // Group the datasets in the layer to auto-color increment
 									//layer -gu; // Ungroup the datasets in the layer
 									legend; // Update the legend						
