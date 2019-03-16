@@ -43,8 +43,9 @@
 
 		string stepNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the step number in the cycling process
 		string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
-		string daysNo$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
-
+		string dayslength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
+		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
+		
 		string Vd$="-1";
 		string VgStart$="0";
 		string VgStop$="-1";

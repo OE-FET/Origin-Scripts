@@ -1,10 +1,17 @@
 // This script is used in transfer curves taken with the low noise rig in two drain voltages. It loops over all the workbooks in the folder and plots the transfer and output curves.
 // It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, and reliability factor.
 // NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
+
+// How to use:
+// 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
+// 2. Run the script.
+// 3. Check that the Vt linear fitting is correct. Otherwise adjust the "int firstrow=lastrow-round(lastrow/6)" row. Reduce the denominator (e.g. to 3) to get a linear fit with more points if needed. Then re-run the script.
+// NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
+
 // Author: Dimitrios Simatos
-// Version: 3.3
+// Version: 3.7
 // Current status: Works well.
-// Changes: Added Ci value for Cytop, measured via impedance spectroscopy.
+// Changes: Changed the max power density in the channel to a decimal format (instead of scientific).
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -16,6 +23,8 @@
 	del -al *;// Delete all the local and session variables
 	
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
 
 	doc -ef LB { // loop over all workbooks in folder
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -36,6 +45,7 @@
 		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
 
 		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
 		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
 		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
 		
@@ -62,7 +72,7 @@
 		intime$=intime.GetToken(1,".")$; // Remove ".txt" from the integration time
 		
 		
-		//// Transfer curve parameters
+		// Transfer curve parameters
 		double W=1000; // Width [um]
 		//double L=20; // Length [um]
 		double L=%(lengthnumber$); // Length [um] (extracted from the file name)
@@ -72,7 +82,7 @@
 		double dielectricthickness=550; // Dielectric thickness [nm]
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
 		//double beta=1.28; // Parameter for power law dependence of the mobility
-		//double Ci=5.2E-5; // Ci for Cytop
+		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
 
 		// Thickness
 		// CYTOP-M 3-1: 550 nm
@@ -122,7 +132,7 @@
 							break;
 					}
 					
-				switch (%(additive$)) // Case study
+				switch (%(additivetype$)) // Case study
 					{
 						case "Pristine": // If the string is "TCNQ", write "TCNQ" in the comment field
 							additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
@@ -265,7 +275,7 @@
 					string legend$ = "%(condgraphlegend$), %(daysgraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string previousworkbook$=%H; // Get the name of the previous window
+				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
 				
 				if (workbooktype$ == "T") // if this is an transfer curve then
 				{
@@ -328,7 +338,7 @@
 						
 						
 						col(N)[L]$ = "SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
-						col(N)[U]$ = A; // Units
+						col(N)[U]$ = A^(1/2); // Units
 						col(N)[O]$ = "sqrt(col(I))";
 						
 						col(O)[L]$ = "gm (Saturation)"; // Long name
@@ -344,7 +354,7 @@
 						
 						
 						col(Q)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
-						col(Q)[U]$ = A; // Units
+						col(Q)[U]$ = A^(1/2); // Units
 						int lastrow=wks.maxrows/2; // The upper limit of the integration will be equal to the half of the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
 						int firstrow=lastrow-round(lastrow/6); // The lower limit of the integration will extend at a certain number of points from the last row.
 						fitLR iy:=[%H]1!(1,14)[firstrow:lastrow] oy:=col(Q); // Linear fit
@@ -529,24 +539,24 @@
 						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 						// Plot graphs
 						// Set range variables
-						range r1 = [%H]1!col(H);  // data range of abs(Id) (Vd=Vdlin) column)
-						range r2 = [%H]1!col(I);  // data range of abs(Id) (Vd=Vdsat) column)
-						range r3 = [%H]1!col(J);  // data range of abs(Ig) (Vd=Vdlin) column)
-						range r4 = [%H]1!col(K);  // data range of abs(Ig) (Vd=Vdsat) column)
+						range r1 = [%H]1!col(H);  // data range of abs(Id) (Vd=Vdlin) column
+						range r2 = [%H]1!col(I);  // data range of abs(Id) (Vd=Vdsat) column
+						range r3 = [%H]1!col(J);  // data range of abs(Ig) (Vd=Vdlin) column
+						range r4 = [%H]1!col(K);  // data range of abs(Ig) (Vd=Vdsat) column
 						
-						range r5 = [%H]1!col(L);  // data range of gm (Linear) column)
-						range r6 = [%H]1!col(M);  // data range of Mobility (Linear) column)
-						range r7 = [%H]1!col(N);  // data range of SQRT(Id (Vd=Vdsat) /A) column)
-						range r8 = [%H]1!col(O);  // data range of gm (Saturation) column)
-						range r9 = [%H]1!col(P);  // data range of Mobility (Saturation) column)
-						range r10 = [%H]1!col(Q);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column)
-						range r11 = [%H]1!col(R);  // data range of Threshold voltage column)
-						range r12 = [%H]1!col(S);  // data range of Row number for Vg=0 column)
-						range r13 = [%H]1!col(T);  // data range of Id,lin (Vg=0V) /A column)
-						range r14 = [%H]1!col(U);  // data range of Id,sat (Vg=0V) /A column)
-						range r15 = [%H]1!col(V);  // data range of Reliability factor (Linear) column)
-						range r16 = [%H]1!col(W);  // data range of Reliability factor (Saturation) column)
-						range r17 = [%H]1!col(AH);  // data range of Contact resistance column)
+						range r5 = [%H]1!col(L);  // data range of gm (Linear) column
+						range r6 = [%H]1!col(M);  // data range of Mobility (Linear) column
+						range r7 = [%H]1!col(N);  // data range of SQRT(Id (Vd=Vdsat) /A) column
+						range r8 = [%H]1!col(O);  // data range of gm (Saturation) column
+						range r9 = [%H]1!col(P);  // data range of Mobility (Saturation) column
+						range r10 = [%H]1!col(Q);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column
+						range r11 = [%H]1!col(R);  // data range of Threshold voltage column
+						range r12 = [%H]1!col(S);  // data range of Row number for Vg=0 column
+						range r13 = [%H]1!col(T);  // data range of Id,lin (Vg=0V) /A column
+						range r14 = [%H]1!col(U);  // data range of Id,sat (Vg=0V) /A column
+						range r15 = [%H]1!col(V);  // data range of Reliability factor (Linear) column
+						range r16 = [%H]1!col(W);  // data range of Reliability factor (Saturation) column
+						range r17 = [%H]1!col(AH);  // data range of Contact resistance column
 						
 						
 						// Plot linear transfer curve
@@ -555,12 +565,12 @@
 						{
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
+								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
 							else
 							{
-								win -t p "Generic_Transfer_single.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
 							};
 							
 							page.active = 1; // activate Layer 1
@@ -594,12 +604,12 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
+								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
 							else
 							{
-								win -t p "Generic_Transfer_single.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
 							};
 							
 							page.active = 1; // activate Layer 1
@@ -636,18 +646,18 @@
 						{
 						
 							// Check if the template exists, otherwise, use a generic one
-							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
+								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
 							else
 							{
-								win -t p "Generic_gm-lin.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_gm-lin.otpu"; // create a graph window using a generic template
 							};							
 							
 							page.active = 1; // activate Layer 1
 							layer.include(r5);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							page.longname$= graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -656,7 +666,7 @@
 							
 							if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 							if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, S.1) W/cm\+(2); // If the label exists, update it
+							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 							
 							plot -c; // refresh the graph to update the labels
 							
@@ -668,14 +678,14 @@
 							page.active = 1; // activate Layer 1
 							layer.include(r5);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
 							if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 							if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, S.1) W/cm\+(2); // If the label exists, update it
+							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 							
 							plot -c; // refresh the graph to update the labels				
 							
@@ -688,18 +698,18 @@
 						{
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
+								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
 							else
 							{
-								win -t p "Generic_u-lin.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_u-lin.otpu"; // create a graph window using a generic template
 							};
 							
 							page.active = 1; // activate Layer 1
 							layer -i201 r6;  // plot in the active layer as scatter plot
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							page.longname$= graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -708,7 +718,7 @@
 							
 							if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 							if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, S.1) W/cm\+(2); // If the label exists, update it
+							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 							
 							plot -c; // refresh the graph to update the labels
 							
@@ -720,14 +730,14 @@
 							page.active = 1; // activate Layer 1
 							layer -i201 r6;  // plot in the active layer as scatter plot
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
 							if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 							if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, S.1) W/cm\+(2); // If the label exists, update it
+							if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 							
 							plot -c; // refresh the graph to update the labels
 							
@@ -741,18 +751,18 @@
 						{
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
+								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
 							else
 							{
-								win -t p "Generic_gm-sat.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_gm-sat.otpu"; // create a graph window using a generic template
 							};
 							
 							page.active = 1; // activate Layer 1
 							layer.include(r8);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							page.longname$= graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -773,7 +783,7 @@
 							page.active = 1; // activate Layer 1
 							layer.include(r8);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
@@ -792,18 +802,18 @@
 						{
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
+								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
 							else
 							{
-								win -t p "Generic_u-sat.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_u-sat.otpu"; // create a graph window using a generic template
 							};
 							
 							page.active = 1; // activate Layer 1
 							layer -i201 r9;  // plot in the active layer as scatter plot
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							page.longname$= graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -824,7 +834,7 @@
 							page.active = 1; // activate Layer 1
 							layer -i201 r9;  // plot in the active layer as scatter plot
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
@@ -844,19 +854,19 @@
 						{
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
+								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
 							else
 							{
-								win -t p "Generic_Vt-sat.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_Vt-sat.otpu"; // create a graph window using a generic template
 							};
 							
 							page.active = 1; // activate Layer 1
 							layer.include(r7);  // plot in the active layer
 							layer.include(r10);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							
 							layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 							
@@ -878,7 +888,7 @@
 							layer.include(r7);  // plot in the active layer
 							layer.include(r10);  // plot in the active layer							
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 							//layer -g; // Group the datasets in the layer to auto-color increment
 							//layer -gu; // Ungroup the datasets in the layer
@@ -896,18 +906,18 @@
 						{
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // create a graph window using template
+								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // create a graph window using template
 							else
 							{
-								win -t p "Generic_Rc-lin.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_Rc-lin.otpu"; // create a graph window using a generic template
 							};
 							
 							page.active = 1; // activate Layer 1
 							layer.include(r17);  // plot in the active layer
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							
 							
 							//layer -g; // Group the datasets in the layer to auto-color increment
@@ -925,7 +935,7 @@
 							page.active = 1; // activate Layer 1
 							layer.include(r17);  // plot in the active layer
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
@@ -985,12 +995,12 @@
 								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 								{
 									// Check if the template exists, otherwise, use a generic one
-									string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
+									string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
 									if (exist(Template$)!=-1)// if the template exists
-										win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // create a graph window using template
+										win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // create a graph window using template
 									else
 									{
-										win -t p "Generic_Output.otpu"; // create a graph window using a generic template
+										win -t p "%(templatepath$)Generic_Output.otpu"; // create a graph window using a generic template
 									};
 									
 									page.active = 1; // activate Layer 1
@@ -1024,19 +1034,19 @@
 								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 								{
 									// Check if the template exists, otherwise, use a generic one
-									string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // This is the template path
+									string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // This is the template path
 									if (exist(Template$)!=-1)// if the template exists
-										win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // create a graph window using template
+										win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // create a graph window using template
 									else
 									{
-										win -t p "Generic_Output_single.otpu"; // create a graph window using a generic template
+										win -t p "%(templatepath$)Generic_Output_single.otpu"; // create a graph window using a generic template
 									};
 									
 									page.active = 1; // activate Layer 1
 									layer.include(rId);  // plot in the active layer
 									layer.include(rIg);  // plot in the active layer
 									
-									layer -a;  // rescale the layer
+									//layer -a;  // rescale the layer
 									//layer -g; // Group the datasets in the layer to auto-color increment
 									page.longname$= graphname$; //this renames the active window (long name)
 									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -1052,7 +1062,7 @@
 									page.active = 1; // activate Layer 1
 									layer.include(rId);  // plot in the active layer
 									layer.include(rIg);  // plot in the active layer
-									layer -a;  // rescale the layer
+									//layer -a;  // rescale the layer
 									//layer -g; // Group the datasets in the layer to auto-color increment
 									//layer -gu; // Ungroup the datasets in the layer
 									legend; // Update the legend						

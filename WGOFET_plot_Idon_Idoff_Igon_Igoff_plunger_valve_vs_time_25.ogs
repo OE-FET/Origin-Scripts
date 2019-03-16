@@ -1,7 +1,7 @@
 // This script is used on WG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
 // Version: 2.5
-// Current status: Origin crashes due to the intrinsic line limit.
+// Current status: Works well.
 // Changes: Added Volume of solution in syringe vs time graph.
 
 [Main]

@@ -9,7 +9,7 @@
 	doc -ef L { // loop over all layers in folder
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		string sheetname$=page.longname$; //get the long name of worksheet
-		sheetname.Replace("=", "-"); // replace "=" with "-"
+		sheetname.Replace(",", "."); // replace "," with "."
 		page.longname$ = sheetname$;
 		}
 }

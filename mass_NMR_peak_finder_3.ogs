@@ -1,0 +1,30 @@
+// This script is used to find positive peaks in the NMR spectra. It loops over all the workbooks in the folder and finds the peaks of each spectrum.
+[Main]
+
+doc -ef LB { // loop over all workbooks in folder
+
+
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+
+if(exist(%H,2)==0) //not a workbook, must be a matrix
+		continue;
+	else 
+		
+		//Find peak centers
+		//pkfind iy:=[%H]1!wcol(2) method:=max dir:=p npts:=4 filter:=none ocenter:=col(3) ocenter_x:=col(4) ocenter_y:=col(5);
+		pkFind iy:=[%H]1!col(D) method:=max dir:=p npts:=1000 filter:=h value:=2E4 ocenter_x:=col(5) ocenter_y:=col(6);
+		
+		range r1 = [%H]1!col(4);  // data range of Normalized Intensity column
+		range r2 = [%H]1!col(5);  // data range of Xs of Peak Centers column
+		r2.type = 4; // Set col(6) as X.
+		range r3 = [%H]1!col(5,6);  // Define XYrange
+
+		win -t p "%(templatepath$)Generic_NMR_with_labels.otpu"; // create a graph window using a generic template
+
+		layer.include(r1);  // plot in the active layer
+		layer -i201 r3;  // plot in the active layer as scatter plot
+//
+		//set %c -q 1; // Turn the data label on
+		//set %c -qm 524397; //  Set label form as col(A);
+}
+}

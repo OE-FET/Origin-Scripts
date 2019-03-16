@@ -162,16 +162,16 @@
 					break;
 			}
 			
-		switch (%(minutesNo$)) // Case study
-			{
-				case "1": // If the number is 1, use single form
-					minutesgraphlegend$ = "%(minutesNo$) minute"; // Comment field (graph legend)
-					break;
-				
-				default: // For all other numbers, use plural form
-					minutesgraphlegend$ = "%(minutesNo$) minutes"; // Comment field (graph legend)
-					break;
-			}
+		//switch (%(minutesNo$)) // Case study
+			//{
+				//case "1": // If the number is 1, use single form
+					//minutesgraphlegend$ = "%(minutesNo$) minute"; // Comment field (graph legend)
+					//break;
+				//
+				//default: // For all other numbers, use plural form
+					//minutesgraphlegend$ = "%(minutesNo$) minutes"; // Comment field (graph legend)
+					//break;
+			//}
 
 		string legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(daysgraphlegend$)"; // Legend
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------

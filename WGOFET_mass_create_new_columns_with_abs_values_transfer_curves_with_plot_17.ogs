@@ -2,7 +2,7 @@
 // NOTE: If the curves are not plotted in the right order, open the workbook to be plotted first before running the script.
 // Author: Dimitrios Simatos
 // Version: 1.7
-// Current status: Untested.
+// Current status: Works well.
 // Changes: Changed win -t p command to look for templates in a specified folder.
 
 [Main]
@@ -31,16 +31,16 @@
 	string TransferIg400$;
 	
 	// Define time points to plot
-	string t1$="20";
+	string t1$="21";
 	string t2$="30";
-	string t3$="41";
+	string t3$="40";
 	string t4$="50";
 	string t5$="60";
 	string t6$="100";
-	string t7$="120";
-	string t8$="141";
+	string t7$="121";
+	string t8$="140";
 	string t9$="160";
-	string t10$="180";
+	string t10$="181";
 	string t11$="200";
 	string t12$="250";
 	string t13$="300";
@@ -502,24 +502,24 @@
 						range r1 = [%H]1!col(E);  // data range of abs(Id) column (col(E))
 						range r2 = [%H]1!col(F);  // data range of abs(Ig) column (col(F))
 						
-						//range r1 = [%H]1!col(H);  // data range of abs(Id) (Vd=Vdlin) column)
-						//range r2 = [%H]1!col(I);  // data range of abs(Id) (Vd=Vdsat) column)
-						//range r3 = [%H]1!col(J);  // data range of abs(Ig) (Vd=Vdlin) column)
-						//range r4 = [%H]1!col(K);  // data range of abs(Ig) (Vd=Vdsat) column)
+						//range r1 = [%H]1!col(H);  // data range of abs(Id) (Vd=Vdlin) column
+						//range r2 = [%H]1!col(I);  // data range of abs(Id) (Vd=Vdsat) column
+						//range r3 = [%H]1!col(J);  // data range of abs(Ig) (Vd=Vdlin) column
+						//range r4 = [%H]1!col(K);  // data range of abs(Ig) (Vd=Vdsat) column
 						//
-						//range r5 = [%H]1!col(L);  // data range of gm (Linear) column)
-						//range r6 = [%H]1!col(M);  // data range of Mobility (Linear) column)
-						//range r7 = [%H]1!col(N);  // data range of SQRT(Id (Vd=Vdsat) /A) column)
-						//range r8 = [%H]1!col(O);  // data range of gm (Saturation) column)
-						//range r9 = [%H]1!col(P);  // data range of Mobility (Saturation) column)
-						//range r10 = [%H]1!col(Q);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column)
-						//range r11 = [%H]1!col(R);  // data range of Threshold voltage column)
-						//range r12 = [%H]1!col(S);  // data range of Row number for Vg=0 column)
-						//range r13 = [%H]1!col(T);  // data range of Id,lin (Vg=0V) /A column)
-						//range r14 = [%H]1!col(U);  // data range of Id,sat (Vg=0V) /A column)
-						//range r15 = [%H]1!col(V);  // data range of Reliability factor (Linear) column)
-						//range r16 = [%H]1!col(W);  // data range of Reliability factor (Saturation) column)
-						//range r17 = [%H]1!col(AH);  // data range of Contact resistance column)
+						//range r5 = [%H]1!col(L);  // data range of gm (Linear) column
+						//range r6 = [%H]1!col(M);  // data range of Mobility (Linear) column
+						//range r7 = [%H]1!col(N);  // data range of SQRT(Id (Vd=Vdsat) /A) column
+						//range r8 = [%H]1!col(O);  // data range of gm (Saturation) column
+						//range r9 = [%H]1!col(P);  // data range of Mobility (Saturation) column
+						//range r10 = [%H]1!col(Q);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column
+						//range r11 = [%H]1!col(R);  // data range of Threshold voltage column
+						//range r12 = [%H]1!col(S);  // data range of Row number for Vg=0 column
+						//range r13 = [%H]1!col(T);  // data range of Id,lin (Vg=0V) /A column
+						//range r14 = [%H]1!col(U);  // data range of Id,sat (Vg=0V) /A column
+						//range r15 = [%H]1!col(V);  // data range of Reliability factor (Linear) column
+						//range r16 = [%H]1!col(W);  // data range of Reliability factor (Saturation) column
+						//range r17 = [%H]1!col(AH);  // data range of Contact resistance column
 						
 						if (firstloop == 1) // if this is the first loop (i.e. if the "Transfer" graph exists)
 						{

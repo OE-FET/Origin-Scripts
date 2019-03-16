@@ -31,9 +31,9 @@
 	string TransferIg400$;
 	
 	// Define time points to plot
-	string t1$="21";
+	string t1$="20";
 	string t2$="30";
-	string t3$="40";
+	string t3$="41";
 	string t4$="50";
 	string t5$="60";
 	string t6$="100";
@@ -41,9 +41,9 @@
 	string t8$="140";
 	string t9$="160";
 	string t10$="180";
-	string t11$="201";
-	string t12$="251";
-	string t13$="301";
+	string t11$="200";
+	string t12$="250";
+	string t13$="300";
 	string t14$="400";
 	string t15$="500";
 	string t16$="600";
@@ -521,7 +521,7 @@
 						if (firstloop == 1) // if this is the first loop (i.e. if the "Transfer" graph exists)
 						{
 							// create a graph window using template
-							win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_(annealing$)_%(additive$)_Transfer_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu";
+							win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_Transfer_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu";
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(daysNo$)_Transfer_Vd=%(Vd$)V"; //this renames the active window (long name)
 							Transfer$=page.longname$;
 							

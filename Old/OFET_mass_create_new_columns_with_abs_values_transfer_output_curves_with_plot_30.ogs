@@ -457,25 +457,25 @@
 						col(AG)[U]$ = S; // Units
 						differentiate iy:=Col(I) oy:=Col(AG) order:=1;
 						
+						col(AH)[L]$ = "Rc"; // Long name
+						col(AH)[U]$ = Ohm; // Units
+						col(AH)[O]$ = "abs(%(Vdlin$)/col(AC) - 1/col(AG))";
+						
 						//col(AH)[L]$ = "Contact resistance"; // Long name
 						//col(AH)[U]$ = Ohm; // Units
-						//col(AH)[O]$ = "abs(%(Vdlin$))/col(AC) - 1/col(AG)";
-						
-						col(AH)[L]$ = "Contact resistance (Linear)"; // Long name
-						col(AH)[U]$ = Ohm; // Units
-						col(AH)[O]$ = "abs(%(Vdlin$)/col(H) - 1/col(AG))";
+						//col(AH)[O]$ = "abs(%(Vdlin$)/col(H) - 1/col(AG))";
 						
 						col(AI)[L]$ = "Error"; // Long name
 						col(AI)[U]$ = A; // Units
 						col(AI)[O]$ = "col(AH)*2*sqrt((col(AF)/col(AE))^2+(col(AD)/col(AC))^2)";
 						
-						//col(AJ)[L]$ = "Channel voltage"; // Long name
-						//col(AJ)[U]$ = V; // Units
-						//col(AJ)[O]$ = "col(AC)/col(AG)";
-						
 						col(AJ)[L]$ = "Channel voltage"; // Long name
 						col(AJ)[U]$ = V; // Units
-						col(AJ)[O]$ = "col(H)/col(AG)";
+						col(AJ)[O]$ = "col(AC)/col(AG)";
+						
+						//col(AJ)[L]$ = "Channel voltage"; // Long name
+						//col(AJ)[U]$ = V; // Units
+						//col(AJ)[O]$ = "col(H)/col(AG)";
 						
 						col(AK)[L]$ = "Error"; // Long name
 						col(AK)[U]$ = A; // Units
@@ -885,9 +885,9 @@
 						{
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$=system.path.Template$ + "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
+								win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // create a graph window using template
 							else
 							{
 								win -t p "Generic_Rc-lin.otpu"; // create a graph window using a generic template
@@ -915,8 +915,8 @@
 							layer.include(r17);  // plot in the active layer
 							
 							layer -a;  // rescale the layer
-							//layer -g; // Group the datasets in the layer to auto-color increment
-							//layer -gu; // Ungroup the datasets in the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
 							
@@ -1025,7 +1025,7 @@
 									layer.include(rId);  // plot in the active layer
 									layer.include(rIg);  // plot in the active layer
 									
-									//layer -a;  // rescale the layer
+									layer -a;  // rescale the layer
 									//layer -g; // Group the datasets in the layer to auto-color increment
 									page.longname$= graphname$; //this renames the active window (long name)
 									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -1041,7 +1041,7 @@
 									page.active = 1; // activate Layer 1
 									layer.include(rId);  // plot in the active layer
 									layer.include(rIg);  // plot in the active layer
-									//layer -a;  // rescale the layer
+									layer -a;  // rescale the layer
 									//layer -g; // Group the datasets in the layer to auto-color increment
 									//layer -gu; // Ungroup the datasets in the layer
 									legend; // Update the legend						

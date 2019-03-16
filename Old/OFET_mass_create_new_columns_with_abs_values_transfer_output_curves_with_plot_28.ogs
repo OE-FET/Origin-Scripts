@@ -65,10 +65,10 @@
 		//double L=20; // Length [um]
 		double L=%(lengthnumber$); // Length [um] (extracted from the file name)
 		double d=3; // Thickness of accumulation layer [nm]
-		double er=2.1; // Dielectric constant (CYTOP: 2.1, PMMA: 3.6)
+		double er=2.1; // Dielectric constant (CYTOP: 2.1, PMMA: 3.6, SiO2: 3.9)
 		double e0=8.854E-12; // Vacuum permittivity [F/m]
 		double dielectricthickness=500; // Dielectric thickness [nm] (CYTOP: 500, PMMA: 300)
-		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance
+		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
 		//double beta=1.28; // Parameter for power law dependence of the mobility
 
 		
