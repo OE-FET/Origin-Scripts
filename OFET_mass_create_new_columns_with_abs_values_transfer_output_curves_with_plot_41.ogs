@@ -9,19 +9,13 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 3.9
+// Version: 4.1
 // Current status: Works well.
-// Changes: Added a joint graph with the transfer curves and SQRT(Id).
+// Changes: Fixed a small bug of the legends of the joint graph with the transfer curves and SQRT(Id).
 
 [Main]
 //uncomment following line to define functions using outside of this scope
 //@global=1;
-	
-	string Vdlin$;
-	string Vdsat$;
-	double Vt; // Threshold voltage
-	double rlin; // Reliability factor (Linear)
-	double rsat; // Reliability factor (Saturation)
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -93,7 +87,7 @@
 		// CYTOP-M 3-1: 550 nm
 		// CYTOP-M 1-5: 25 nm
 		// CYTOP-S 3-1: 860 nm
-		// CYTOP-S 1-1: 240 nm
+		// CYTOP-S 1-1: 240 nm (380 nm with Mingfei's recipe)
 		// CYTOP-S 1-2: 140 nm
 		// CYTOP-S 1-3: 100 nm
 		// PMMA: 300 nm
@@ -102,6 +96,12 @@
 		double jmaxsat; // Max channel current density (Saturation)
 		double Pmaxlin; // Max channel power density (Linear)
 		double Pmaxsat; // Max channel power density (Saturation)
+		
+		string Vdlin$; // Vd in the linear regime
+		string Vdsat$; // Vd in the saturation regime
+		double Vt; // Threshold voltage
+		double rlin; // Reliability factor (Linear)
+		double rsat; // Reliability factor (Saturation)
 		
 		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
 		string daysgraphlegend$; // This string will depend on "daysNo" and it will display the type of liquid for the graph legend
@@ -562,116 +562,6 @@
 						
 						
 						
-						// Plot joint transfer curve - SQRT(Idsat) graph
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V";
-						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-						{
-							
-							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
-							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
-							else
-							{
-								win -t p "%(templatepath$)Generic_Transfer_Vt-sat.otpu"; // create a graph window using a generic template
-							};
-							
-							page.active = 1; // activate Layer 1
-							layer.include(r1);  // plot in the active layer
-							layer.include(r2);  // plot in the active layer
-							
-							//layer -a;  // rescale the layer
-							//layer -g; // Group the datasets in the layer to auto-color increment
-							//page.longname$= graphname$; //this renames the active window (long name)
-							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-							//layer -gu; // Ungroup the datasets in the layer
-							//legend; // Update the legend
-							
-							page.active = 2; // activate Layer 2
-							layer.include(r7);  // plot in the active layer
-							layer.include(r10);  // plot in the active layer							
-							
-							//layer -a;  // rescale the layer
-							
-							layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
-							
-							//layer -g; // Group the datasets in the layer to auto-color increment
-							page.longname$= graphname$; //this renames the active window (long name)
-							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-							//layer -gu; // Ungroup the datasets in the layer
-							//legend; // Update the legend
-							
-							//if (exist(Text2,16)==16) Text2.text$ = V\-(t) = $(Vt)V;
-							plot -c; // refresh the graph to update the labels
-							
-							
-						};
-						//else
-						//{
-							//// create a graph window using template	
-							//win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-							//layer.include(r1);  // plot in the active layer
-							//layer.include(r2);  // plot in the active layer
-							////layer -a;  // rescale the layer
-							////layer -g; // Group the datasets in the layer to auto-color increment
-							////layer -gu; // Ungroup the datasets in the layer
-							////legend; // Update the legend
-							//
-							//page.active = 2; // activate Layer 2
-							//layer.include(r7);  // plot in the active layer
-							//layer.include(r10);  // plot in the active layer							
-							//
-							////layer -a;  // rescale the layer
-							//layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
-							////layer -g; // Group the datasets in the layer to auto-color increment
-							////layer -gu; // Ungroup the datasets in the layer
-							//legend; // Update the legend
-							//
-							////if (exist(Text2,16)==16) Text2.text$ = V\-(t)= $(Vt)V;
-							//plot -c; // refresh the graph to update the labels
-							//
-						//};
-						
-						// Plot saturation transfer curve
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V";
-						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-						{
-							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
-							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
-							else
-							{
-								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
-							};
-							
-							page.active = 1; // activate Layer 1
-							layer.include(r2);  // plot in the active layer
-							layer.include(r4);  // plot in the active layer
-						
-							//layer -a;  // rescale the layer
-							//layer -g; // Group the datasets in the layer to auto-color increment
-							page.longname$= graphname$; //this renames the active window (long name)
-							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-							//layer -gu; // Ungroup the datasets in the layer
-							legend; // Update the legend
-							
-						};
-						else
-						{
-							// create a graph window using template	
-							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window							
-							page.active = 1; // activate Layer 1
-							layer.include(r2);  // plot in the active layer
-							layer.include(r4);  // plot in the active layer
-							//layer -a;  // rescale the layer
-							//layer -g; // Group the datasets in the layer to auto-color increment
-							//layer -gu; // Ungroup the datasets in the layer
-							legend; // Update the legend
-						};
-						
-						
-						
 						// Plot linear transfer curve
 						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdlin$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
@@ -961,58 +851,6 @@
 						};
 						
 						
-						// Plot mobility (Combined Linear and Saturation)
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_u-lin-sat_Vd=%(Vdlin$),%(Vdsat$)V";
-						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-						{
-							
-							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin-sat_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
-							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin-sat_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
-							else
-							{
-								win -t p "%(templatepath$)Generic_u-lin-sat.otpu"; // create a graph window using a generic template
-							};
-							
-							page.active = 1; // activate Layer 1
-							layer -i201 r6;  // plot in the active layer as scatter plot
-							layer -i201 r9;  // plot in the active layer as scatter plot
-							
-							//layer -a;  // rescale the layer
-							layer -g; // Group the datasets in the layer to auto-color increment
-							page.longname$= graphname$; //this renames the active window (long name)
-							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-							layer -gu; // Ungroup the datasets in the layer
-							//legend; // Update the legend
-							
-							//if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
-							//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
-							//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
-							
-							plot -c; // refresh the graph to update the labels
-							
-						};
-						//else
-						//{
-							//// create a graph window using template
-							//win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-							//page.active = 1; // activate Layer 1
-							//layer -i201 r9;  // plot in the active layer as scatter plot
-							//
-							////layer -a;  // rescale the layer
-							//layer -g; // Group the datasets in the layer to auto-color increment
-							//layer -gu; // Ungroup the datasets in the layer
-							//legend; // Update the legend
-							//
-							//if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
-							//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
-							//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
-							//
-							//plot -c; // refresh the graph to update the labels
-							//
-						//};
-						
 						
 						// Plot linear fit of SQRT(Idsat) and linear extrapolation (for Vt)
 						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Vt-sat_Vd=%(Vdsat$)V";
@@ -1063,6 +901,79 @@
 							if (exist(Text2,16)==16) Text2.text$ = V\-(t)= $(Vt)V;
 							plot -c; // refresh the graph to update the labels
 							
+						};
+						
+						
+						// Plot joint transfer curve - SQRT(Idsat) graph
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // create a graph window using template
+							else
+							{
+								win -t p "%(templatepath$)Generic_Transfer_Vt-sat.otpu"; // create a graph window using a generic template
+							};
+							
+							page.active = 1; // activate Layer 1
+							layer.include(r1);  // plot in the active layer
+							layer.include(r2);  // plot in the active layer
+							
+							
+							page.active = 2; // activate Layer 2
+							layer.include(r7);  // plot in the active layer
+							layer.include(r10);  // plot in the active layer							
+							
+							//layer -a;  // rescale the layer
+							
+							layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+							
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							
+							page.active = 1; // activate Layer 1
+							if (exist(Text3,16)==16) Text3.text$ = (V\-(d) = %(Vdlin$)V);
+							if (exist(Text4,16)==16) Text4.text$ = (V\-(d) = %(Vdsat$)V);
+							if (exist(Text5,16)==16) Text5.text$ = at V\-(d) = %(Vdsat$)V;
+							if (exist(Text,16)==16) Text.text$ = V\-(t) = $(Vt)V; //(NOTE: The "Vt" label of the template is assumed to be on Layer 1.)
+							plot -c; // refresh the graph to update the labels
+							
+							
+						};
+						else
+						{
+							// create a graph window using template	
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							//layer.include(r1);  // plot in the active layer
+							//layer.include(r2);  // plot in the active layer
+							////layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							////layer -gu; // Ungroup the datasets in the layer
+							////legend; // Update the legend
+							//
+							//page.active = 2; // activate Layer 2
+							//layer.include(r7);  // plot in the active layer
+							//layer.include(r10);  // plot in the active layer							
+							//
+							////layer -a;  // rescale the layer
+							//layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							////layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							//
+							page.active = 1; // activate Layer 1
+							if (exist(Text3,16)==16) Text3.text$ = (V\-(d) = %(Vdlin$)V);
+							if (exist(Text4,16)==16) Text4.text$ = (V\-(d) = %(Vdsat$)V);
+							if (exist(Text5,16)==16) Text5.text$ = at V\-(d) = %(Vdsat$)V;
+							if (exist(Text,16)==16) Text.text$ = V\-(t) = $(Vt)V; //(NOTE: The "Vt" label of the template is assumed to be on Layer 1.)
+							plot -c; // refresh the graph to update the labels
+							//
 						};
 						
 						
