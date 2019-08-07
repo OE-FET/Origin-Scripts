@@ -1,0 +1,150 @@
+// This script is used on CAS data directly out of the ADL Shell. It processes them so that they end up having the transmission data at column C, the energy at column B, and also fixes the longnames.
+// Author: Dimitrios Simatos
+// Version: 0.4
+// Current status: Untested.
+// Changes: Changed file names.
+
+[Main]
+
+	string measNo$ = "2"; // The string, which shows the number of the measurement
+	
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+
+doc -ef LB { // loop over all workbooks in folder
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	wks.colwidth = 9;// set all col width to 9
+	string sheetname$=wks.longname$; //get the long name of worksheet
+	string trimmedsheetname$ = sheetname.Substitute("_", " ", 0)$;
+	trimmedsheetname.Remove("("); // remove ( from workbook name
+	trimmedsheetname.Remove(")"); // remove ) from workbook name
+	trimmedsheetname.Remove("["); // remove [ from workbook name
+	trimmedsheetname.Remove("]"); // remove ] from workbook name
+	trimmedsheetname.Replace("__", "_"); // replace "__" with "_"
+	// now the workbook name should be "condition_voltage" (e.g. "grounded_10" or "CMS_50")
+	workbooktype$=trimmedsheetname.GetToken(1,"_")$; // get the string that shows the nature of the workbook (e.g. "biased", "CMS")
+	
+	if (wks.ncols != 3) 
+		{
+			wks.ncols=3; // set total column number to 3
+		}
+	// Write long name, units, comments, and parameters of column B
+	col(C) = col(B);
+	col(C)[L]$ = col(A)[L]$; // Copy long name of col(A) to column C.
+	col(B)[L]$ = "Energy";
+	col(B)[U]$ = "eV";
+	col(B)[O]$ = "1240/col(A)";
+	col(A)[L]$ = "Wavelength";
+	col(A)[U]$ = "nm";
+			
+	
+	if (%A == "TGBC") continue;
+		else 
+		if (workbooktype$ == "grounded")
+			{Vg$=trimmedsheetname.GetToken(2,"_")$; // get the string that shows the voltage (in "biased", "CMS" workbooks) or the step (in "grounded" workbooks)
+			// win -r %h "TGBC"%(workbooktype$)%(Vg$); // Change workbook short name
+			page.longname$ = "146th_CAS-UVVIS_TGBC-OFET_IDTBT_10-gl_75pDCB-25pCF_100C-1h_Pristine_PMMA-Al-paryleneC_2nd_up-H2O_13-days_1-bar_300-K_meas_%(measNo$)_ground_0V_step%(Vg$).csv"; // Change workbook long name
+			col(C)[C]$ = "0V, Ultrapure water, 13 days, 1 bar, 300K, meas %(measNo$)";
+			continue;
+			}
+			else // if workbook is either "biased" or "CMS" then the fields are 3, with 2 showing the voltage and 3 showing the step
+				{Vg$=trimmedsheetname.GetToken(2,"_")$; // get the string that shows the voltage (in "biased", "CMS" workbooks) or the step (in "grounded" workbooks)
+				stepNo$=trimmedsheetname.GetToken(3,"_")$; // get the string that shows the step (in "biased", "CMS" workbooks)
+				// win -r %h "TGBC"%(workbooktype$)%(Vg$)%(stepNo$); // Change workbook short name
+				page.longname$ = "146th_CAS-UVVIS_TGBC-OFET_IDTBT_10-gl_75pDCB-25pCF_100C-1h_Pristine_PMMA-Al-paryleneC_2nd_up-H2O_13-days_1-bar_300-K_meas_%(measNo$)_%(workbooktype$)_%(Vg$)V_step%(stepNo$).csv"; // Change workbook long name
+				col(C)[C]$ = "%(Vg$)V, Ultrapure water, 13 days, 1 bar, 300K, meas %(measNo$)";
+				continue;
+				}
+			}
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Plotting the curves
+
+	string sheetname$=page.longname$; // Get the name of worksheet
+	
+	string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+	string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+	string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+	
+	string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+
+	string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+
+	string additive$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+	string dielectric$ = sheetname.GetToken(7,"_")$; // Get the string that shows the dielectric
+
+	//string additiveinfo$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive information
+	//string addthickness$ = additiveinfo.GetToken(1,"-")$; // Get the string that shows the additive thickness
+	//string addthicknessunits$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness units
+
+	string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
+
+	string condtype$ = sheetname.GetToken(9,"_")$; // Get the string that shows the conditions (air/type of liquid)
+	string condinfo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the conditions (air/type of liquid) (if necessary)
+	string daysNo$ = sheetname.GetToken(11,"_")$; // get the string, which shows the number of days
+	string dayUnits$ = sheetname.GetToken(12,"_")$; // get the string, which shows the units (in days)
+	string pressure$ = sheetname.GetToken(13,"_")$; // get the string, which shows the pressure
+	string presUnits$ = sheetname.GetToken(14,"_")$; // get the string, which shows the pressure units
+	string temperature$ = sheetname.GetToken(15,"_")$; // get the string, which shows the temperature
+	string tempUnits$ = sheetname.GetToken(16,"_")$; // get the string, which shows the temperature units
+
+		
+	//// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	//win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_DeltaTransmission_energy_Vg=-60V.otpu" DT_E_%(material$)_%(additive$)_%(dielectric$)_%(sampleNo$)_%(condtype$)_%(daysNo$)_-60;
+
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_DeltaTransmission_energy.otpu" DT_E_%(condtype$)_%(daysNo$)_%(measNo$);
+
+	
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		wks.colwidth = 8;// set all col width to 8
+		wks.col1.type=1;	// set col(A) as Y
+		wks.col2.type=4;	// set col(B) as X
+
+		string sheetname$=page.longname$; // Get the name of worksheet
+		string graphlegend$; // This string will show the graph legend
+
+		string workbooktype$ = sheetname.GetToken(19,"_")$; // get the string, which shows the type of workbook
+		string voltage$ = sheetname.GetToken(20,"_")$; // get the string, which shows the gate voltage
+
+		
+		string previousworkbook$=%H; // Get the name of the previous window
+
+		if(exist(%H,2)==0) continue; //not a workbook, must be a matrix
+			else
+				if (workbooktype$=="CMS")
+					{
+								// Set range variables
+								range r1 = [%H]1!wcol(3);  // data range of DT column
+								
+								// CAS graph (for a single measurement)
+								//page.active = nActive;  // activate the layer for plot
+								win -a DT_E_%(condtype$)_%(daysNo$)_%(measNo$);  // activate the graph window
+								layer.include(r1);  // plot in the active layer
+									
+								//layer -a;  // rescale the layer
+								////layer -g; // Group the datasets in the layer to auto-color increment
+								//page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(additiveinfo$)_step_%(nostep$)_%(liquid1$)_%(liquid2$)_%(daysNo$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+								//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+								//win -r Transfer T_%(material$)_%(additive$)_%(nostep)_%(daysNo$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+								////layer -gu; // Ungroup the datasets in the layer
+								
+								win -a %(previousworkbook$);  // activate the previous window (workbook)
+
+					};
+						else continue;
+	}
+	
+	// Rename the graphs
+	
+	win -a DT_E_%(condtype$)_%(daysNo$)_%(measNo$);  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(sampleNo$)_%(condtype$)_%(condinfo$)_%(daysNo$)_%(dayUnits$)_%(pressure$)_%(presUnits$)_%(temperature$)_%(tempUnits$)_meas_%(measNo$)_DeltaTransmission_energy"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+}

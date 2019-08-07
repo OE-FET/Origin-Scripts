@@ -1,4 +1,4 @@
-// This script is used to perform all the PLQE calculations. It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
+// This script is used to plot UV-VIS spectra. It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
 // Author: Dimitrios Simatos
 // Version: 0.5
 // Current status: Untested.
