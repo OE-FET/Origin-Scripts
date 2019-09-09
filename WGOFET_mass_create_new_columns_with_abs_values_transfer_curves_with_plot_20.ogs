@@ -34,20 +34,20 @@
 	string t1$="20";
 	string t2$="30";
 	string t3$="40";
-	string t4$="51";
+	string t4$="50";
 	string t5$="60";
 	string t6$="100";
 	string t7$="120";
 	string t8$="140";
 	string t9$="160";
 	string t10$="180";
-	string t11$="201";
+	string t11$="200";
 	string t12$="250";
 	string t13$="300";
 	string t14$="400";
 	string t15$="500";
-	string t16$="601";
-	string t17$="701";
+	string t16$="600";
+	string t17$="700";
 	string t18$="750";
 	
 	

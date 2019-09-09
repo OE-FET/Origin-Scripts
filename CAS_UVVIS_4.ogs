@@ -42,7 +42,7 @@ doc -ef LB { // loop over all workbooks in folder
 		if (workbooktype$ == "grounded")
 			{Vg$=trimmedsheetname.GetToken(2,"_")$; // get the string that shows the voltage (in "biased", "CMS" workbooks) or the step (in "grounded" workbooks)
 			// win -r %h "TGBC"%(workbooktype$)%(Vg$); // Change workbook short name
-			page.longname$ = "146th_CAS-UVVIS_TGBC-OFET_IDTBT_10-gl_75pDCB-25pCF_100C-1h_Pristine_PMMA-Al-paryleneC_2nd_up-H2O_13-days_1-bar_300-K_meas_%(measNo$)_ground_0V_step%(Vg$).csv"; // Change workbook long name
+			page.longname$ = "146th_CAS-UVVIS_TGBC-OFET_IDTBT_10-gl_75pDCB-25pCF_100C-1h_Pristine_PMMA-Al-parC_2nd_step_1_up-H2O_13-days_1-bar_300K_meas_%(measNo$)_ground_0V_step%(Vg$).csv"; // Change workbook long name
 			col(C)[C]$ = "0V, Ultrapure water, 13 days, 1 bar, 300K, meas %(measNo$)";
 			continue;
 			}
@@ -50,7 +50,7 @@ doc -ef LB { // loop over all workbooks in folder
 				{Vg$=trimmedsheetname.GetToken(2,"_")$; // get the string that shows the voltage (in "biased", "CMS" workbooks) or the step (in "grounded" workbooks)
 				stepNo$=trimmedsheetname.GetToken(3,"_")$; // get the string that shows the step (in "biased", "CMS" workbooks)
 				// win -r %h "TGBC"%(workbooktype$)%(Vg$)%(stepNo$); // Change workbook short name
-				page.longname$ = "146th_CAS-UVVIS_TGBC-OFET_IDTBT_10-gl_75pDCB-25pCF_100C-1h_Pristine_PMMA-Al-paryleneC_2nd_up-H2O_13-days_1-bar_300-K_meas_%(measNo$)_%(workbooktype$)_%(Vg$)V_step%(stepNo$).csv"; // Change workbook long name
+				page.longname$ = "146th_CAS-UVVIS_TGBC-OFET_IDTBT_10-gl_75pDCB-25pCF_100C-1h_Pristine_PMMA-Al-parC_2nd_step_1_up-H2O_13-days_1-bar_300K_meas_%(measNo$)_%(workbooktype$)_%(Vg$)V_step%(stepNo$).csv"; // Change workbook long name
 				col(C)[C]$ = "%(Vg$)V, Ultrapure water, 13 days, 1 bar, 300K, meas %(measNo$)";
 				continue;
 				}

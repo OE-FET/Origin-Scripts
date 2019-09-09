@@ -2,9 +2,9 @@
 // NOTE: First process the files in TopSpin, then save the scale in the filename (with comma instead of point for the precision digits e.g. 2,3 not 2.3), then import it in Origin and scale the spectra accordingly.
 
 // Author: Dimitrios Simatos
-// Version: 0.6
-// Current status: Untested.
-// Changes: Changed workbooktype to meastype and workbookNo to measNo.
+// Version: 0.8
+// Current status: Works well.
+// Changes: Added parameter extraction for films.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -36,47 +36,102 @@
 		
 			switch (%(architecture$)) // Case study
 		{
-			case "Solvent": // If the string is "gl", write "g/l" in the comment field
-				string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+			case "Solvent": // If the string is "Solvent"
+				string solventD$ = sheetname.GetToken(5,"_")$; // Get the string that shows the deuterated solvent
 				string condition$ = sheetname.GetToken(6,"_")$; // Get the string that shows the conditions (air/type of liquid)
 				string timelength$ = sheetname.GetToken(7,"_")$; // get the string, which shows the time
-				string measNo$=sheetname.GetToken(8,"_")$; // Get the string that shows the measurement number
+				string measNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the measurement number
 				string frequency$ = sheetname.GetToken(9,"_")$; // Get the string that shows the frequency
 				string frequencyNo$ = frequency.GetToken(1,"-")$; // Get the string that shows the frequency value
 				string frequencyUnits$ = frequency.GetToken(2,"-")$; // Get the string that shows the frequency units
 				string scale$ = sheetname.GetToken(10,"_")$; // get the scale, which I saved from the TopSpin processing
+				
+				GraphNameSingle$="%(batch$)_%(sampleNo$)_%(method$)_%(architecture$)_%(solventD$)_%(condition$)_%(timelength$)_%(measNo$)_%(frequency$)";
+				TemplateNameSingle$="%(templatepath$)%(method$)_%(solventD$)_%(frequency$)";
+				
 				break;
 			
-			default: // For all other cases
-				//string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
-				//string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
-				//string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+			case "Film": // If the string is "Film"
+				string material$ = sheetname.GetToken(5,"_")$; // Get the string that shows the material
+				string concentration$ = sheetname.GetToken(6,"_")$; // Get the string that shows the concentration
+				string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+				string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
 				
-				//string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+				string solvent$ = sheetname.GetToken(7,"_")$; // Get the string that shows the solvent content (of the material, NOT the deuterated solvent used to dissolve the film)
 				
-				//string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+				string annealing$ = sheetname.GetToken(8,"_")$; // Get the string that shows the additive
 				
-				//string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
-				//string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+				string additive$ = sheetname.GetToken(9,"_")$; // Get the string that shows the additive
+				string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
 				//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
 				//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
 				
-				//string dielectric$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric
-				//string dielectricconc$ = sheetname.GetToken(9,"_")$; // Get the string that shows the dielectric concentration or ratio
+				string solventD$ = sheetname.GetToken(10,"_")$; // Get the string that shows the deuterated solvent
+				
+				string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
+				string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the time
+				string measNo$ = sheetname.GetToken(13,"_")$; // Get the string that shows the measurement number
+				string frequency$ = sheetname.GetToken(14,"_")$; // Get the string that shows the frequency
+				string frequencyNo$ = frequency.GetToken(1,"-")$; // Get the string that shows the frequency value
+				string frequencyUnits$ = frequency.GetToken(2,"-")$; // Get the string that shows the frequency units
+				string scale$ = sheetname.GetToken(15,"_")$; // get the scale, which I saved from the TopSpin processing
 
-				//string deviceNo$ = sheetname.GetToken(11,"_")$; // Get the string that shows the device number
-
-				//string length$ = sheetname.GetToken(12,"_")$; // Get the string that shows the channel length
-				//string lengthnumber$ = length.GetToken(1,"-")$; // Get the string that shows the length number
-				//string lengthunits$ = length.GetToken(2,"-")$; // Get the string that shows the length units
-
-				//string stepNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the step number in the cycling process
-				//string minutesNo$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of minutes
-				//string meastype$=sheetname.GetToken(15,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
-				//string measNo$=sheetname.GetToken(16,"_")$; // Get the string that shows the measurement number
-				//string mode$=sheetname.GetToken(17,"_")$; // Get the string that shows the measurement mode
-				//string intime$=sheetname.GetToken(18,"_")$; // Get the string that shows the integration time
+				
+				switch (%(concunits$)) // Case study
+					{
+						case "gl": // If the string is "gl", write "g/l" in the comment field
+							conunitslegend$ = "g/l"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							conunitslegend$ = "mg/ml"; // Comment field (graph legend)
+							break;
+					}
+					
+				switch (%(additivetype$)) // Case study
+					{
+						case "Pristine": // If the string is "TCNQ", write "TCNQ" in the comment field
+							additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+							break;
+						
+						case "TCNQ": // If the string is "TCNQ", write "TCNQ" in the comment field
+							additivegraphlegend$ = "+ TCNQ"; // Comment field (graph legend)
+							break;
+						
+						case "F2TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
+							//string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
+							additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-1OCT-v": // If the string is "SAM-1OCT-v", write "1-Octanethiol (vapor)" in the comment field
+							additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-1OCT-i": // If the string is "SAM-1OCT-i", write "1-Octanethiol (immersion)" in the comment field
+							additivegraphlegend$ = "+ 1-Octanethiol (immersion)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-TDF1OCT-v": // If the string is "SAM-TDF1OCT-v", write "3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)" in the comment field
+							additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-TDF1OCT-i": // If the string is "SAM-TDF1OCT-i", write "3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)" in the comment field
+							additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other strings, write "Pristine" in the comment field
+							additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+							break;
+					}
+					
+				GraphNameSingle$="%(batch$)_%(sampleNo$)_%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(solventD$)_%(condition$)_%(timelength$)_%(measNo$)_%(frequency$)";
+				TemplateNameSingle$="%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(solventD$)_%(frequency$)";
+				
 				break;
+				
+				default: // For all other cases
+					break;
+					
 		}
 			
 			scale$=scale.GetToken(1,".")$; // Remove ".txt" from the scale
@@ -94,52 +149,6 @@
 
 				// Case structures from filenames (used for legends).
 				
-				//switch (%(concunits$)) // Case study
-					//{
-						//case "gl": // If the string is "gl", write "g/l" in the comment field
-							//conunitslegend$ = "g/l"; // Comment field (graph legend)
-							//break;
-						//
-						//default: // For all other numbers, use plural form
-							//conunitslegend$ = "mg/ml"; // Comment field (graph legend)
-							//break;
-					//}
-					
-				//switch (%(additivetype$)) // Case study
-					//{
-						//case "Pristine": // If the string is "TCNQ", write "TCNQ" in the comment field
-							//additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
-							//break;
-						//
-						//case "TCNQ": // If the string is "TCNQ", write "TCNQ" in the comment field
-							//additivegraphlegend$ = "+ TCNQ"; // Comment field (graph legend)
-							//break;
-						//
-						//case "F2TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
-							////string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
-							//additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
-							//break;
-						//
-						//case "SAM-1OCT-v": // If the string is "SAM-1OCT-v", write "1-Octanethiol (vapor)" in the comment field
-							//additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
-							//break;
-						//
-						//case "SAM-1OCT-i": // If the string is "SAM-1OCT-i", write "1-Octanethiol (immersion)" in the comment field
-							//additivegraphlegend$ = "+ 1-Octanethiol (immersion)"; // Comment field (graph legend)
-							//break;
-						//
-						//case "SAM-TDF1OCT-v": // If the string is "SAM-TDF1OCT-v", write "3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)" in the comment field
-							//additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)"; // Comment field (graph legend)
-							//break;
-						//
-						//case "SAM-TDF1OCT-i": // If the string is "SAM-TDF1OCT-i", write "3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)" in the comment field
-							//additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)"; // Comment field (graph legend)
-							//break;
-						//
-						//default: // For all other strings, write "Pristine" in the comment field
-							//additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
-							//break;
-					//}
 							
 				switch (%(condition$)) // Case study
 					{
@@ -185,6 +194,14 @@
 							
 						case "bottle-air": // If the string is "N2", write "N2" in the comment field
 							condgraphlegend$ = "Bottle reference in air"; // Comment field (graph legend)
+							break;
+						
+						case "vial-N2": // If the string is "N2", write "N2" in the comment field
+							condgraphlegend$ = "Vial reference in N2"; // Comment field (graph legend)
+							break;
+						
+						case "vial-air": // If the string is "N2", write "N2" in the comment field
+							condgraphlegend$ = "Vial reference in air"; // Comment field (graph legend)
 							break;
 						
 						case "glovebox-bubble-N2": // If the string is "N2", write "N2" in the comment field
@@ -293,14 +310,14 @@
 						
 						
 						// Plot NMR spectrum (global)
-						string graphname$="%(batch$)_comparison_%(method$)_%(architecture$)_%(solvent$)_%(frequency$)_all";
+						string graphname$="%(batch$)_comparison_%(method$)_%(solventD$)_%(frequency$)_all";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(method$)_%(solvent$)_%(frequency$).otpu"; // This is the template path
+							string Template$="%(templatepath$)%(method$)_%(solventD$)_%(frequency$)"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(templatepath$)%(method$)_%(solvent$)_%(frequency$).otpu"; // create a graph window using template
+								win -t p "%(templatepath$)%(method$)_%(solventD$)_%(frequency$)"; // create a graph window using template
 							else
 							{
 								win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
@@ -332,14 +349,14 @@
 						
 						
 						// Plot NMR spectrum (single)
-						string graphname$="%(batch$)_%(sampleNo$)_%(method$)_%(architecture$)_%(solvent$)_%(condition$)_%(timelength$)_%(measNo$)_%(frequency$)";
+						string graphname$=GraphNameSingle$;
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(method$)_%(solvent$)_%(frequency$).otpu"; // This is the template path
+							string Template$="%(TemplateNameSingle$).otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(templatepath$)%(method$)_%(solvent$)_%(frequency$).otpu"; // create a graph window using template
+								win -t p "%(TemplateNameSingle$).otpu"; // create a graph window using template
 							else
 							{
 								win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template

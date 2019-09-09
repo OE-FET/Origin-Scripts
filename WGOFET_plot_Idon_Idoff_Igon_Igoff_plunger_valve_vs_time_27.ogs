@@ -271,8 +271,8 @@
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Idoff_vs_time_Vd=%(Vd$)V.otpu";  // create a graph window using template
 							layer.include(r2);  // plot in the active layer
 								
-							layer.x.from = -75; // place the "From" scale of the X axis from -75
-							layer.x.to = 875; // place the "To" scale of the X axis from 875
+							//layer.x.from = -75; // place the "From" scale of the X axis from -75
+							//layer.x.to = 875; // place the "To" scale of the X axis from 875
 							
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Idoff_vs_time_Vd=%(Vd$)V"; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -291,8 +291,8 @@
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Igoff_vs_time_Vd=%(Vd$)V.otpu";  // create a graph window using template
 							layer.include(r4);  // plot in the active layer
 								
-							layer.x.from = -75; // place the "From" scale of the X axis from -75
-							layer.x.to = 875; // place the "To" scale of the X axis from 875
+							//layer.x.from = -75; // place the "From" scale of the X axis from -75
+							//layer.x.to = 875; // place the "To" scale of the X axis from 875
 							
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Igoff_vs_time_Vd=%(Vd$)V"; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -329,28 +329,28 @@
 							
 							
 							// Volume vs time graph
-							win -t p "%(templatepath$)Plunger_vs_time.otpu";  // create a graph window using template
+							win -t p "%(templatepath$)Volume_vs_time.otpu";  // create a graph window using template
 							//page.active = nActive;  // activate the layer for plot
 							layer.include(r2);  // plot in the active layer
 							
-							layer -a;  // rescale the layer
+							//layer -a;  // rescale the layer
 							//layer -g; // Group the datasets in the layer to auto-color increment
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Volume_vs_time"; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 							//layer -gu; // Ungroup the datasets in the layer
 							
 							
-							//// Plunger vs time (0-10 minutes) graph
-							//win -t p "%(templatepath$)Plunger_vs_time_static_mode_0_10_min.otpu";  // create a graph window using template
-							////page.active = nActive;  // activate the layer for plot
-							//layer.include(r1);  // plot in the active layer
-							//
-							////layer -a;  // rescale the layer
-							////layer -g; // Group the datasets in the layer to auto-color increment
-							//page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Plunger_vs_time_0-10_min"; //this renames the active window (long name)
-							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-							////layer -gu; // Ungroup the datasets in the layer
-							//break;
+							// Volume vs time (0-30 minutes) graph
+							win -t p "%(templatepath$)Plunger_vs_time_static_mode_0-30_min.otpu";  // create a graph window using template
+							//page.active = nActive;  // activate the layer for plot
+							layer.include(r1);  // plot in the active layer
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Volume_vs_time_0-30_min"; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//layer -gu; // Ungroup the datasets in the layer
+							break;
 							
 							
 						case "valve": // If the string is "plunger", process and plot the plunger position vs time data
