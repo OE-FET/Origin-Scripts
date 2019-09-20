@@ -19,7 +19,6 @@ Col(C)[C]$ = Col(B)[C]$;
 Col(D)[L]$ = "Id (Vg=1.0V, Vd=-1.0V)";
 Col(D)[U]$ = "A";
 Col(D)[C]$ = Col(B)[C]$;
-int i = 1;
 int t0 = 0; // time constant to be added to time variable, just in case my experiment is a continuation of a previous one that needs to be taken into account in the elapsed time
 
 doc -ef LB { // loop over all workbooks in folder
@@ -42,12 +41,11 @@ range dest3=[Book1]1!wcol(3); // destination range for Ion values
 range dest4=[Book1]1!wcol(4); // destination range for Ioff values
 // int nr = 294;
 // dest1[1]=sd[nr];
-dest1[i]=t;
-dest2[i]=max(r);
-dest3[i]=r[21];
-dest4[i]=r[1];
+dest1[wks.maxrows+1]=t; // Increase No of rows by 1.
+dest2[wks.maxrows]=max(r); // Rows have already increased, so there's no need to add 1.
+dest3[wks.maxrows]=r[21]; // Rows have already increased, so there's no need to add 1.
+dest4[wks.maxrows]=r[1]; // Rows have already increased, so there's no need to add 1.
 // dest1[2]=se[nr];
 
 // wrcopy iw:=%(rap)! r1:=31 r2:=31 c1:=5 c2:=5 ow:=[Ionvstime]! dc1:=2;  dr1:=$(i);
-i=i+1;
 }
