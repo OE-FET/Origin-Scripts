@@ -23,7 +23,6 @@
 		string sheetname$=page.longname$; // Get the name of worksheet
 		
 		int i = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
-		
 		if (i!=0) continue; // If the filename contains "script", then just continue to the next workbook.
 		
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
