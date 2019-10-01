@@ -106,7 +106,7 @@
 				else
 					win -t p "%(templatepath$)Generic_sample_vs_time.otpu"; // create a graph window using a generic template
 				
-				page.longname$= graphname$; //this renames the active window (long name)
+				page.longname$ = graphname$; //this renames the active window (long name)
 				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 			};
 			else
@@ -550,7 +550,7 @@
 							else
 								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -559,6 +559,7 @@
 						page.active = 1; // activate Layer 1
 						layer.include(rIdlin);  // plot in the active layer
 						layer.include(rIglin);  // plot in the active layer
+						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -576,7 +577,7 @@
 							else
 								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -585,6 +586,7 @@
 						page.active = 1; // activate Layer 1
 						layer.include(rIdsat);  // plot in the active layer
 						layer.include(rIgsat);  // plot in the active layer
+						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -592,7 +594,7 @@
 						
 						
 						
-						// Check if the measurement is the last measurement at this specific time point
+						// Check if the measurement is the last measurement at a specific time point
 						string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_%(time$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
 						if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0)
 							continue; // if this is not the last measurement of its kind, then continue to the next iteration
@@ -609,7 +611,7 @@
 							else
 								win -t p "%(templatepath$)Generic_Transfer_Vt-sat.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -647,7 +649,7 @@
 							else
 								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -656,6 +658,7 @@
 						page.active = 1; // activate Layer 1
 						layer.include(rIdlin);  // plot in the active layer
 						layer.include(rIglin);  // plot in the active layer
+						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -673,7 +676,7 @@
 							else
 								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -682,6 +685,7 @@
 						page.active = 1; // activate Layer 1
 						layer.include(rIdsat);  // plot in the active layer
 						layer.include(rIgsat);  // plot in the active layer
+						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -700,7 +704,7 @@
 							else
 								win -t p "%(templatepath$)Generic_gm-lin.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -708,11 +712,12 @@
 							
 						page.active = 1; // activate Layer 1
 						layer.include(rgmlin);  // plot in the active layer
-						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
-						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 						
-						plot -c; // refresh the graph to update the labels
+						//if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
+						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
+						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
+						//plot -c; // refresh the graph to update the labels
+						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -730,7 +735,7 @@
 							else
 								win -t p "%(templatepath$)Generic_u-lin.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -738,11 +743,12 @@
 							
 						page.active = 1; // activate Layer 1
 						layer -i201 rulin;  // plot in the active layer as scatter plot
-						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
-						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
 						
-						plot -c; // refresh the graph to update the labels
+						//if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
+						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
+						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
+						//plot -c; // refresh the graph to update the labels
+						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -760,7 +766,7 @@
 							else
 								win -t p "%(templatepath$)Generic_Vt-lin.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -771,13 +777,13 @@
 						layer.include(rIdlinLF);  // plot in the active layer
 						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 						
-						if (exist(Text2,16)==16) Text2.text$ = V\-(t,lin) = $(Vtlin)V;
-						plot -c; // refresh the graph to update the labels
+						//if (exist(Text2,16)==16) Text2.text$ = V\-(t,lin) = $(Vtlin)V;
+						//plot -c; // refresh the graph to update the labels
 						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
-						legend; // Update the legend
+						//legend; // Update the legend
 						
 						
 						// Plot gm (Saturation) for all time points
@@ -791,7 +797,7 @@
 							else
 								win -t p "%(templatepath$)Generic_gm-sat.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -799,11 +805,12 @@
 							
 						page.active = 1; // activate Layer 1
 						layer.include(rgmsat);  // plot in the active layer
-						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
-						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
-						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
 						
-						plot -c; // refresh the graph to update the labels
+						//if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						//plot -c; // refresh the graph to update the labels
+						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -821,7 +828,7 @@
 							else
 								win -t p "%(templatepath$)Generic_u-sat.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -829,11 +836,12 @@
 							
 						page.active = 1; // activate Layer 1
 						layer -i201 rusat;  // plot in the active layer as scatter plot
-						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
-						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
-						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
 						
-						plot -c; // refresh the graph to update the labels
+						//if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						//plot -c; // refresh the graph to update the labels
+						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -851,7 +859,7 @@
 							else
 								win -t p "%(templatepath$)Generic_Vt-sat.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -862,8 +870,8 @@
 						layer.include(rSqrtIdsatLF);  // plot in the active layer
 						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 						
-						if (exist(Text2,16)==16) Text2.text$ = V\-(t,sat)= $(Vtsat)V;
-						plot -c; // refresh the graph to update the labels
+						//if (exist(Text2,16)==16) Text2.text$ = V\-(t,sat)= $(Vtsat)V;
+						//plot -c; // refresh the graph to update the labels
 						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
@@ -883,7 +891,7 @@
 							else
 								win -t p "%(templatepath$)Generic_Rc-lin.otpu"; // create a graph window using a generic template
 							
-							page.longname$= graphname$; //this renames the active window (long name)
+							page.longname$ = graphname$; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						};
 						else
@@ -891,6 +899,7 @@
 							
 						page.active = 1; // activate Layer 1
 						layer.include(rRc);  // plot in the active layer
+						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -1036,13 +1045,13 @@
 								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 								{
 									// Check if the template exists, otherwise, use a generic one
-									string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
+									string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_%(time$).otpu"; // This is the template path
 									if (exist(Template$)!=-1)// if the template exists
 										win -t p "%(Template$)"; // create a graph window using template
 									else
 										win -t p "%(templatepath$)Generic_Output.otpu"; // create a graph window using a generic template
 									
-									page.longname$= graphname$; //this renames the active window (long name)
+									page.longname$ = graphname$; //this renames the active window (long name)
 									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 								};
 								else
@@ -1053,11 +1062,11 @@
 								//layer -a;  // rescale the layer
 								//layer -g; // Group the datasets in the layer to auto-color increment
 								//layer -gu; // Ungroup the datasets in the layer
-								legend; // Update the legend
+								//legend; // Update the legend
 								
 								
 								// Individual output plot with a single Id and Ig for all time points
-								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Output_leakage_Vg=%(Vg$)V";
+								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Output_Vg=%(Vg$)V";
 								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 								{
 									// Check if the template exists, otherwise, use a generic one
@@ -1067,7 +1076,7 @@
 									else
 										win -t p "%(templatepath$)Generic_Output_single.otpu"; // create a graph window using a generic template
 									
-									page.longname$= graphname$; //this renames the active window (long name)
+									page.longname$ = graphname$; //this renames the active window (long name)
 									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 								};
 								else
@@ -1079,7 +1088,7 @@
 								//layer -a;  // rescale the layer
 								//layer -g; // Group the datasets in the layer to auto-color increment
 								//layer -gu; // Ungroup the datasets in the layer
-								legend; // Update the legend
+								//legend; // Update the legend
 								
 								win -a %(previousworkbook$);  // activate the previous window (workbook)
 							};
@@ -1093,7 +1102,7 @@
 	win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
 	range rulinavgT = [%H]1!col(B);  // data range of average Mobility (Linear)
 	range rusatavgT = [%H]1!col(C);  // data range of average Mobility (Saturation)
-	range rVtlinT = [%H]1!col(D);  // data range of Threshold voltage (Saturation) column
+	range rVtlinT = [%H]1!col(D);  // data range of Threshold voltage (Linear) column
 	range rVtsatT = [%H]1!col(E);  // data range of Threshold voltage (Saturation) column
 	
 	col(A)[O]$ = col(A)*60; // Temporarily here, as col(A) is really minutes

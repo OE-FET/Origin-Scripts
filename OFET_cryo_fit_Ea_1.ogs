@@ -1,0 +1,57 @@
+// This script is used in to re-fit the activation energy.
+// // How to use:
+// 1. Move the uavg-invT workbook and the ln(mu)-invT graph into a different folder.
+// 2. Activate the workbook.
+// 3. Run the script.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	double kb = 8.617333262145E-5; // Boltzmann constant [eV/K]
+	string UavgInvTWorkbook$; // The long name of the uavg-invT workbook
+	string UavgInvTGraph$; // The long name of the uavg-invT graph
+	string VtTGraph$; // The long name of the Vt-T graph
+	double Ealin; // Activation energy (Linear)
+	double Easat; // Activation energy (Saturation)
+	
+	if (wks.maxrows >> 2){
+		col(B) = 1000/col(A);
+		col(G) = -ln(col(C));
+		col(H) = -ln(col(D));
+		
+		wks.col2.type=4;	// set col(B) as X
+		
+		fitLR iy:=[%H]1!(2,7)[3:7] oy:=col(I); // Linear fit of col(G) with respect to col(B)
+		Ealin = fitLR.b*kb*1000*1000; // The activation energy is equal to the slope multiplied by the Boltzmann constant, by 1000 (as the horizontal axis is 1000/T), and then again by 1000 (to convert it to meV).
+		Ealin=round(Ealin,1);
+		//fitLR.b=;
+		
+		fitLR iy:=[%H]1!(2,8)[2:5] oy:=col(J); // Linear fit of col(H) with respect to col(B)	
+		Easat = fitLR.b*kb*1000*1000; // The activation energy is equal to the slope multiplied by the Boltzmann constant, by 1000 (as the horizontal axis is 1000/T), and then again by 1000 (to convert it to meV).
+		Easat=round(Easat,1);
+		//fitLR.b=;
+		
+		col(I)[L]$ = "Linear fit on ln (average mobility (Linear))"; // Long name
+		col(J)[L]$ = "Linear fit on ln (average mobility (Saturation))"; // Long name	
+		col(K)[1] = Ealin; // Activation energy (Linear)
+		col(K)[L]$ = "Activation energy (Linear)"; // Long name
+		col(K)[U]$ = meV; // Units
+		col(L)[1] = Easat; // Activation energy (Saturation)
+		col(L)[L]$ = "Activation energy (Saturation)"; // Long name
+		col(L)[U]$ = meV; // Units
+		
+		col(M)[L]$ = "Linear fit on average mobility (Linear)"; // Long name
+		col(M) = exp(-col(I)); // Conversion of the linear fit to linear
+		col(M)[C]$ = "Linear fit"; // Long name
+		col(N)[L]$ = "Linear fit on average mobility (Saturation)"; // Long name	
+		col(N) = exp(-col(J)); // Conversion of the linear fit to linear
+		col(N)[C]$ = "Linear fit"; // Long name
+	};
+	
+	window -ch 1; // hide the "uavg-Vtsat-vs-invT" window
+	if (exist(Text2,16)==16) Text2.text$ = E\-(a,lin)= $(Ealin) meV;
+	if (exist(Text3,16)==16) Text3.text$ = E\-(a,sat)= $(Easat) meV;
+	plot -c; // refresh the graph to update the labels
+
