@@ -9,9 +9,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 0.8
+// Version: 1.5
 // Current status: Workbooks with different device numbers need to be processed separately.
-// Changes: Separated the Uavg and Vt graphs.
+// Changes: Code tidy up.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -69,7 +69,6 @@
 		string lengthnumber$ = length.GetToken(1,"-")$; // Get the string that shows the length number
 		string lengthunits$ = length.GetToken(2,"-")$; // Get the string that shows the length units
 
-		//string stepNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the step number in the cycling process
 		string condition$ = sheetname.GetToken(13,"_")$; // Get the string that shows the conditions (air/type of liquid)
 		string dayslength$ = sheetname.GetToken(14,"_")$; // get the string, which shows the number of days
 		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
@@ -90,6 +89,12 @@
 			
 			col(D)[L]$ = "Ig"; // Long name
 			col(D)[U]$ = "A"; // Units
+			
+			col(E)[L]$ = "Id ratio"; // Long name
+			col(E)[U]$ = %; // Units
+			double Idratio = min(col(C))/max(col(C))*100; // Id ratio
+			Idratio=round(Idratio,0); // Round the Id ratio
+			col(E)[1] = Idratio; // Id ratio
 			
 			
 			// Plot Sample vs Time
@@ -120,6 +125,9 @@
 			//layer -gu; // Ungroup the datasets in the layer
 			//legend; // Update the legend
 			
+			if (exist(Text,16)==16) Text.text$ = I\-(d,fin)/I\-(d,init)=$(Idratio) %; // If the label exists, update it
+			plot -c; // refresh the graph to update the labels
+			
 			win -a %(previousworkbook$);  // activate the previous window (workbook)
 			window -ch 1; // hide the workbook that was processed
 			continue;
@@ -147,16 +155,7 @@
 		//double beta=1.28; // Parameter for power law dependence of the mobility
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
 
-		// Thickness
-		// CYTOP-M 3-1: 550 nm
-		// CYTOP-M 1-5: 25 nm
-		// CYTOP-S 3-1: 860 nm
-		// CYTOP-S 1.5-1: 490 nm
-		// CYTOP-S 1-1: 370 nm
-		// CYTOP-S 1-2: 140 nm
-		// CYTOP-S 1-3: 100 nm
-		// PMMA: 300 nm
-		
+
 		double jmaxlin; // Max channel current density (Linear)
 		double jmaxsat; // Max channel current density (Saturation)
 		double Pmaxlin; // Max channel power density (Linear)
@@ -187,29 +186,6 @@
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				// Case structures from filenames (used for legends).
 					
-					switch (%(condition$)) // Case study
-					{
-						case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
-							condgraphlegend$ = "DI water"; // Comment field (graph legend)
-							break;
-						
-						case "up-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
-							condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
-							break;
-						
-						case "N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "N2"; // Comment field (graph legend)
-							break;
-						
-						case "air": // If the string is "air", write "air" in the comment field
-							condgraphlegend$ = "air"; // Comment field (graph legend)
-							break;
-							
-						default: // For all other strings, write "air" in the comment field
-							condgraphlegend$ = "air"; // Comment field (graph legend)
-							break;
-					}
-					
 					switch (%(daysNo$)) // Case study
 					{
 						case "initial": // If the string is "initial", write "initial" in the comment field
@@ -226,20 +202,54 @@
 					}
 					
 						
-				switch (%(timeNo$)) // Case study
-						{
-							case "initial": // If the string is "initial", write "initial" in the comment field
-								timegraphlegend$ = "Initial"; // Comment field (graph legend)
-								break;
-							
-							case "1": // If the number is 1, use single form
-								timegraphlegend$ = "%(timeNo$) second"; // Comment field (graph legend)
-								break;
-							
-							default: // For all other numbers, use plural form
-								timegraphlegend$ = "%(timeNo$) seconds"; // Comment field (graph legend)
-								break;
-						}
+				if (time$ != "initial")
+					{
+						string timeNo$ = time.GetToken(1,"-")$; // get the string, which shows the time (number)
+						string timeunits$ = time.GetToken(2,"-")$; // get the string, which shows the time units
+						
+						switch (%(timeunits$)) // Case study
+							{
+								case "sec": // If the units are "sec", then
+									if (%(timeNo$) > 60 && %(timeNo$) < 3600)
+									{
+										timegraphlegend$ = "$(round(%(timeNo$)/60,1)) m";
+										break;
+									}
+									if (%(timeNo$) > 3600)
+									{
+										timegraphlegend$ = "$(round(%(timeNo$)/3600,1)) h";
+										break;
+									}
+									else
+										timegraphlegend$ = "%(timeNo$) s"; // Comment field (graph legend)
+										break;
+									
+								case "min": // If the units are "min", then
+									if (%(timeNo$) > 60)
+									{
+										timegraphlegend$ = "$(round(%(timeNo$)/60,1)) h";
+										break;
+									}
+									else
+										timegraphlegend$ = "%(timeNo$) m"; // Comment field (graph legend)
+										break;
+									
+								case "h": // If the units are "h", then
+									timegraphlegend$ = "%(timeNo$) h"; // Comment field (graph legend)
+									break;
+									
+								default: // For all other strings, write the extracted field in the comment field
+									timegraphlegend$ = timeNo$ + timeunits$; // Comment field (graph legend)
+									break;
+							}
+						
+						//if (timeNo$ == "1")
+							//timegraphlegend.TrimRight("s"); // If the number is 1, use single form
+						
+					};
+					else
+						//timegraphlegend$ = time$; // Legend
+						timegraphlegend$ = "Initial"; // Legend
 				
 					string legend$ = "%(timegraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -258,18 +268,14 @@
 						Vdlin$=Vdlin.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 						Vdlin$=Vdlin.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
 						if (Vdlin.Find('.')!=0)
-						{
 							Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
-						};
 						
 						
 						Vdsat$=col(E)[L]$;
 						Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 						Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
 						if (Vdsat.Find('.')!=0)
-						{
 							Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
-						};
 						
 						
 						// Extract VgStart and VgStop
@@ -544,7 +550,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -571,7 +577,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -643,7 +649,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -670,7 +676,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -698,7 +704,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -729,7 +735,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -760,7 +766,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -791,7 +797,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -822,7 +828,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -853,7 +859,7 @@
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -943,7 +949,7 @@
 							// Create plot u vs Time
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -957,7 +963,7 @@
 							// Create plot Vt vs Time
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -1045,7 +1051,7 @@
 								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 								{
 									// Check if the template exists, otherwise, use a generic one
-									string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_%(time$).otpu"; // This is the template path
+									string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // This is the template path
 									if (exist(Template$)!=-1)// if the template exists
 										win -t p "%(Template$)"; // create a graph window using template
 									else
@@ -1066,11 +1072,11 @@
 								
 								
 								// Individual output plot with a single Id and Ig for all time points
-								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Output_Vg=%(Vg$)V";
+								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Output_Vg=%(Vg$)V";
 								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 								{
 									// Check if the template exists, otherwise, use a generic one
-									string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // This is the template path
+									string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
 									if (exist(Template$)!=-1)// if the template exists
 										win -t p "%(Template$)"; // create a graph window using template
 									else
