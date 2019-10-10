@@ -9,9 +9,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 1.6
+// Version: 1.7
 // Current status: Workbooks with different device numbers need to be processed separately.
-// Changes: Converted the time case into a function.
+// Changes: Changed the Id ratio calculation.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -145,7 +145,7 @@ function string findTime (string timelength)
 			
 			col(E)[L]$ = "Id ratio"; // Long name
 			col(E)[U]$ = %; // Units
-			double Idratio = min(col(C))/max(col(C))*100; // Id ratio
+			double Idratio = col(C)[wks.maxrows]/col(C)[1]*100; // Id ratio
 			Idratio=round(Idratio,0); // Round the Id ratio
 			col(E)[1] = Idratio; // Id ratio
 			
