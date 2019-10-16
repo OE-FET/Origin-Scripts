@@ -188,7 +188,7 @@ function string findTime (string timelength)
 		};
 		
 		string timelength$ = sheetname.GetToken(16,"_")$; // get the string, which shows the elapsed time
-		string timeNo$; // the string, which shows the time (number)
+		string timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
 		string timeunits$; // the string, which shows the time units
 		string meastype$=sheetname.GetToken(17,"_")$; // Get the string "T", "O", or "S", which shows if the curve is a transfer or output curve
 			
@@ -1112,8 +1112,6 @@ function string findTime (string timelength)
 	range rVtlinT = [%H]1!col(D);  // data range of Threshold voltage (Linear) column
 	range rVtsatT = [%H]1!col(E);  // data range of Threshold voltage (Saturation) column
 	
-	col(A)[O]$ = col(A)*60; // Temporarily here, as col(A) is really minutes
-		
 	window -ch 1; // hide the workbook that was processed
 	
 	win -a %(uid2name(range2uid(["%(UavgTimeGraph$)"]))$); // activate the workbook
