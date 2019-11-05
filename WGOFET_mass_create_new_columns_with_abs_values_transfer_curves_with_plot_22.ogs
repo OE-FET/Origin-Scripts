@@ -1,9 +1,9 @@
 // This script is used in transfer curves taken with the low noise rig in two drain voltages. It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
 // NOTE: If the curves are not plotted in the right order, open the workbook to be plotted first before running the script.
 // Author: Dimitrios Simatos
-// Version: 2.1
+// Version: 2.2
 // Current status: Works well.
-// Changes: Replaced "_min" with "-min" convention.
+// Changes: Replaced range variable names.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -18,7 +18,6 @@
 	// Set variables for all loops
 	
 	int firstloop=1;
-	string Vd$;
 	
 	string Transfer$;
 	string Ig$;
@@ -32,8 +31,8 @@
 	
 	// Define time points to plot
 	string t1$="20";
-	string t2$="30";
-	string t3$="40";
+	string t2$="31";
+	string t3$="41";
 	string t4$="50";
 	string t5$="60";
 	string t6$="100";
@@ -41,11 +40,11 @@
 	string t8$="140";
 	string t9$="160";
 	string t10$="180";
-	string t11$="200";
+	string t11$="201";
 	string t12$="250";
 	string t13$="300";
 	string t14$="400";
-	string t15$="500";
+	string t15$="501";
 	string t16$="600";
 	string t17$="700";
 	string t18$="750";
@@ -113,18 +112,23 @@
 		//double d=3; // Thickness of accumulation layer [nm]
 		//double er=2.1; // Dielectric constant (CYTOP: 2.1, PMMA: 3.6, SiO2: 3.9)
 		//double e0=8.854E-12; // Vacuum permittivity [F/m]
-		//double dielectricthickness=500; // Dielectric thickness [nm] (CYTOP: 500, PMMA: 300)
+		//double dielectricthickness=550; // Dielectric thickness [nm]
 		//double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
-		//double beta=1.28; // Parameter for power law dependence of the mobility
+		////double beta=1.28; // Parameter for power law dependence of the mobility
+		////double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
 		
 		
-		//double Vt; // Threshold voltage
-		//double rlin; // Reliability factor (Linear)
-		//double rsat; // Reliability factor (Saturation)
 		//double jmaxlin; // Max channel current density (Linear)
 		//double jmaxsat; // Max channel current density (Saturation)
 		//double Pmaxlin; // Max channel power density (Linear)
 		//double Pmaxsat; // Max channel power density (Saturation)
+		
+		//string Vdlin$; // Vd in the linear regime
+		string Vdsat$; // Vd in the saturation regime
+		//double Vtlin; // Threshold voltage (Linear)
+		//double Vtsat; // Threshold voltage (Saturation)
+		//double rlin; // Reliability factor (Linear)
+		//double rsat; // Reliability factor (Saturation)
 		
 		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
 		string daysgraphlegend$; // This string will depend on "daysNo" and it will display the type of liquid for the graph legend
@@ -307,34 +311,19 @@
 						wks.ncols=6; // set total column number to 6
 						wks.colwidth = 10;// set all col width to 10
 						
-						
-						
-						// Extract Vd
-						Vd$=col(C)[L]$;
-						Vd$=Vd.GetToken(2,"=")$; // Take the string on the right of the "=" sign
-						Vd$=Vd.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-						if (Vdlin.Find('.')!=0)
-						{
-							Vd$=Vd.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
-						};						
-						
-						//// Extract Vdlin and Vdsat
+						// Extract Vdlin and Vdsat
 						//string Vdlin$=col(D)[L]$;
 						//Vdlin$=Vdlin.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 						//Vdlin$=Vdlin.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
 						//if (Vdlin.Find('.')!=0)
-						//{
 							//Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
-						//};
-						//
-						//
-						//string Vdsat$=col(E)[L]$;
-						//Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
-						//Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-						//if (Vdsat.Find('.')!=0)
-						//{
-							//Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
-						};				
+						
+						
+						Vdsat$=col(C)[L]$;
+						Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+						Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+						if (Vdsat.Find('.')!=0)
+							Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
 						
 						
 						// Extract VgStart and VgStop
@@ -505,73 +494,68 @@
 						// Plot graphs
 						// Set range variables
 						
-						range r1 = [%H]1!col(E);  // data range of abs(Id) column (col(E))
-						range r2 = [%H]1!col(F);  // data range of abs(Ig) column (col(F))
+						range rIdsat = [%H]1!col(E);  // data range of abs(Id) column (col(E))
+						range rIgsat = [%H]1!col(F);  // data range of abs(Ig) column (col(F))
 						
-						//range r1 = [%H]1!col(H);  // data range of abs(Id) (Vd=Vdlin) column
-						//range r2 = [%H]1!col(I);  // data range of abs(Id) (Vd=Vdsat) column
-						//range r3 = [%H]1!col(J);  // data range of abs(Ig) (Vd=Vdlin) column
-						//range r4 = [%H]1!col(K);  // data range of abs(Ig) (Vd=Vdsat) column
+						//range rIdlin = [%H]1!col(H);  // data range of abs(Id) (Vd=Vdlin) column
+						//range rIdsat = [%H]1!col(I);  // data range of abs(Id) (Vd=Vdsat) column
+						//range rIglin = [%H]1!col(J);  // data range of abs(Ig) (Vd=Vdlin) column
+						//range rIgsat = [%H]1!col(K);  // data range of abs(Ig) (Vd=Vdsat) column
 						//
-						//range r5 = [%H]1!col(L);  // data range of gm (Linear) column
-						//range r6 = [%H]1!col(M);  // data range of Mobility (Linear) column
-						//range r7 = [%H]1!col(N);  // data range of SQRT(Id (Vd=Vdsat) /A) column
-						//range r8 = [%H]1!col(O);  // data range of gm (Saturation) column
-						//range r9 = [%H]1!col(P);  // data range of Mobility (Saturation) column
-						//range r10 = [%H]1!col(Q);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column
-						//range r11 = [%H]1!col(R);  // data range of Threshold voltage column
-						//range r12 = [%H]1!col(S);  // data range of Row number for Vg=0 column
-						//range r13 = [%H]1!col(T);  // data range of Id,lin (Vg=0V) /A column
-						//range r14 = [%H]1!col(U);  // data range of Id,sat (Vg=0V) /A column
-						//range r15 = [%H]1!col(V);  // data range of Reliability factor (Linear) column
-						//range r16 = [%H]1!col(W);  // data range of Reliability factor (Saturation) column
-						//range r17 = [%H]1!col(AH);  // data range of Contact resistance column
+						//range rgmlin = [%H]1!col(L);  // data range of gm (Linear) column
+						//range rulin = [%H]1!col(M);  // data range of Mobility (Linear) column
+						//range rIdlinLF = [%H]1!col(N);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column
+						//range rSqrtIdsat = [%H]1!col(Q);  // data range of SQRT(Id (Vd=Vdsat) /A) column
+						//range rgmsat = [%H]1!col(R);  // data range of gm (Saturation) column
+						//range rusat = [%H]1!col(S);  // data range of Mobility (Saturation) column
+						//range rSqrtIdsatLF = [%H]1!col(T);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column
+						//range rRc = [%H]1!col(AL);  // data range of Contact resistance (Linear) column
 						
 						if (firstloop == 1) // if this is the first loop (i.e. if the "Transfer" graph exists)
 						{
 							// create a graph window using template
-							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu";
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vd$)V"; //this renames the active window (long name)
+							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu";
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V"; //this renames the active window (long name)
 							Transfer$=page.longname$;
 							
 							// create a graph window using template
-							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu";
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vd$)V"; //this renames the active window (long name)
+							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu";
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V"; //this renames the active window (long name)
 							Ig$=page.longname$;
 
 							// create a graph window using template
-							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu";
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vd$)V_10-200_min"; //this renames the active window (long name)
+							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu";
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V_10-200_min"; //this renames the active window (long name)
 							Transfer10200$=page.longname$;
 
 							// create a graph window using template
-							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu";
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vd$)V_10-200_min"; //this renames the active window (long name)
+							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu";
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V_10-200_min"; //this renames the active window (long name)
 							Ig10200$=page.longname$;							
 
 							// create a graph window using template
-							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-750_min.otpu";
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vd$)V_200-750_min"; //this renames the active window (long name)
+							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-750_min.otpu";
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V_200-750_min"; //this renames the active window (long name)
 							Transfer200750$=page.longname$;
 
 							// create a graph window using template
-							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-750_min.otpu";
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vd$)V_200-750_min"; //this renames the active window (long name)
+							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-750_min.otpu";
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V_200-750_min"; //this renames the active window (long name)
 							Ig200750$=page.longname$;
 							
 							// create a graph window using template
-							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V_100-600_min.otpu";
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vd$)V_100-600_min"; //this renames the active window (long name)
+							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_100-600_min.otpu";
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_100-600_min"; //this renames the active window (long name)
 							TransferIg100600$=page.longname$;
 							
 							// create a graph window using template	
-							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vd$)V_100_min"; //this renames the active window (long name)
+							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_100_min"; //this renames the active window (long name)
 							TransferIg100$=page.longname$;
 
 							// create a graph window using template
-							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vd$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vd$)V_400_min"; //this renames the active window (long name)
+							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_400_min"; //this renames the active window (long name)
 							TransferIg400$=page.longname$;
 							
 							firstloop = 0;
@@ -585,7 +569,7 @@
 							//page.active = nActive;  // activate the layer for plot
 							win -a %(uid2name(range2uid(["%(Transfer$)"]))$); // activate the graph window
 							page.active = 1; // activate Layer 1
-							layer.include(r1);  // plot in the active layer
+							layer.include(rIdsat);  // plot in the active layer
 								
 							//layer -a;  // rescale the layer
 							layer -g; // Group the datasets in the layer to auto-color increment
@@ -599,7 +583,7 @@
 							//page.active = nActive;  // activate the layer for plot
 							win -a %(uid2name(range2uid(["%(Ig$)"]))$); // activate the graph window
 							page.active = 1; // activate Layer 1
-							layer.include(r2);  // plot in the active layer
+							layer.include(rIgsat);  // plot in the active layer
 								
 							//layer -a;  // rescale the layer
 							////layer -g; // Group the datasets in the layer to auto-color increment
@@ -617,7 +601,7 @@
 								//page.active = nActive;  // activate the layer for plot
 								win -a %(uid2name(range2uid(["%(Transfer10200$)"]))$); // activate the graph window
 								page.active = 1; // activate Layer 1
-								layer.include(r1);  // plot in the active layer
+								layer.include(rIdsat);  // plot in the active layer
 									
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
@@ -631,7 +615,7 @@
 								//page.active = nActive;  // activate the layer for plot
 								win -a %(uid2name(range2uid(["%(Ig10200$)"]))$); // activate the graph window
 								page.active = 1; // activate Layer 1
-								layer.include(r2);  // plot in the active layer
+								layer.include(rIgsat);  // plot in the active layer
 									
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
@@ -650,7 +634,7 @@
 								//page.active = nActive;  // activate the layer for plot
 								win -a %(uid2name(range2uid(["%(Transfer200750$)"]))$); // activate the graph window
 								page.active = 1; // activate Layer 1
-								layer.include(r1);  // plot in the active layer
+								layer.include(rIdsat);  // plot in the active layer
 									
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
@@ -664,7 +648,7 @@
 								//page.active = nActive;  // activate the layer for plot
 								win -a %(uid2name(range2uid(["%(Ig200750$)"]))$); // activate the graph window
 								page.active = 1; // activate Layer 1
-								layer.include(r2);  // plot in the active layer
+								layer.include(rIgsat);  // plot in the active layer
 									
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
@@ -683,8 +667,8 @@
 								//page.active = nActive;  // activate the layer for plot
 								win -a %(uid2name(range2uid(["%(TransferIg100600$)"]))$); // activate the graph window
 								page.active = 1; // activate Layer 1
-								layer.include(r1);  // plot in the active layer
-								layer.include(r2);  // plot in the active layer
+								layer.include(rIdsat);  // plot in the active layer
+								layer.include(rIgsat);  // plot in the active layer
 
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
@@ -702,8 +686,8 @@
 								//page.active = nActive;  // activate the layer for plot
 								win -a %(uid2name(range2uid(["%(TransferIg100$)"]))$); // activate the graph window
 								page.active = 1; // activate Layer 1
-								layer.include(r1);  // plot in the active layer
-								layer.include(r2);  // plot in the active layer
+								layer.include(rIdsat);  // plot in the active layer
+								layer.include(rIgsat);  // plot in the active layer
 
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
@@ -721,8 +705,8 @@
 								//page.active = nActive;  // activate the layer for plot
 								win -a %(uid2name(range2uid(["%(TransferIg400$)"]))$); // activate the graph window
 								page.active = 1; // activate Layer 1
-								layer.include(r1);  // plot in the active layer
-								layer.include(r2);  // plot in the active layer
+								layer.include(rIdsat);  // plot in the active layer
+								layer.include(rIgsat);  // plot in the active layer
 
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
@@ -1000,133 +984,132 @@
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				else // if this is an output curve
-					continue;
-				//{						
-						//wks.name$=Output; // Change the sheet name to "Output"
-						//int NoofVgs = (wks.ncols-1)/3; // The number of different Vg voltages is going to be equal to the total No of columns, minus the gate voltage column, divided by 3 (as there are three currents for each Vg: Is, Id, Ig).
-						//wks.ncols = wks.ncols + NoofVgs*2;  // The number of columns will be equal to the old one plus two new columns for each Vg (one for abs(Id) and one for abs(Ig)).						
-						//wks.colwidth = 8;// set all col width to 8
-						//
-						//
-						//// Extract VdStart and VdStop
-						//string VdStart$= $(col(A)[1]); // VdStart is the value of the first cell of col(A)						
-						//string VdStop$=$(col(A)[wks.maxrows/2]); // VdStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
-						//
-						//
-						//loop(i,1,NoofVgs)
-							//{
-								//string previousworkbook$=%H; // Get the name of the previous window
-								//
-								//// Extract Vg
-								//int colNo=i+1; // Start from column 2
-								//
-								//string Vg$=wcol(colNo)[L]$;
-								//Vg$=Vg.GetToken(2,"=")$; // Take the string on the right of the "=" sign
-								//Vg$=Vg.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-								//int Vgint = %(Vg$); // Convert string to integer
-								//Vg$= $(Vgint); // Convert integer to string (these two lines get rid of the decimal points)
-								//
-							//
-								//// Create a new column for abs(Id)
-								//wcol(i+NoofVgs+1+2*NoofVgs)[L]$ = col(%(i+NoofVgs+1))[L]$; // First Id column is i+NoofVgs+1. First empty column on the right is i+NoofVgs+1+2*NoofVgs. abs(Id(Vg)) and Id(Vg) will have a distance of 2*NoofVgs (e.g. col(N) will be ans(col(F)) if NoofVgs is 4)
-								//wcol(i+NoofVgs+1+2*NoofVgs)[U]$ = A; // Units
-								//wcol(i+NoofVgs+1+2*NoofVgs)[O]$ = "abs(col(%(i+NoofVgs+1)))";
-								//wcol(i+NoofVgs+1+2*NoofVgs)[C]$ =  "Vg=%(Vg$)V, %(condgraphlegend$), %(daysgraphlegend$)";
-								//
-								//
-								//// Create a new column for abs(Ig)
-								//wcol(i+NoofVgs+1+3*NoofVgs)[L]$ = col(%(i+2*NoofVgs+1))[L]$; // abs(Ig) column will be NoofVgs further away from abs(Id)
-								//wcol(i+NoofVgs+1+3*NoofVgs)[U]$ = A; // Units
-								//wcol(i+NoofVgs+1+3*NoofVgs)[O]$ = "abs(col(%(i+2*NoofVgs+1)))";
-								//wcol(i+NoofVgs+1+3*NoofVgs)[C]$ =  "Vg=%(Vg$)V, %(condgraphlegend$), %(daysgraphlegend$), Leakage";
-								//
-								//
-								//// Plot output curve
-								//range rId = [%H]1!wcol(i+NoofVgs+1+2*NoofVgs);  // data range of abs(Id) column
-								//range rIg = [%H]1!wcol(i+NoofVgs+1+3*NoofVgs);  // data range of abs(Ig) column
-								//
-								//// Output plot with all the Id
-								//string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Output";
-								//if (exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-								//{
-									//// Check if the template exists, otherwise, use a generic one
-									//Template$=str$=system.path.Template$+graphname$; // This is the template path
-									//if (exist(Template$)!=0)// if the template exists
-										//win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // create a graph window using template
-									//else
-									//{
-										//win -t p "%(templatepath$)Generic_Output.otpu"; // create a graph window using a generic template
-									//};
-									//
-									//page.active = 1; // activate Layer 1
-									//layer.include(rId);  // plot in the active layer
-									//
+					{						
+						wks.name$=Output; // Change the sheet name to "Output"
+						int NoofVgs = (wks.ncols-1)/3; // The number of different Vg voltages is going to be equal to the total No of columns, minus the gate voltage column, divided by 3 (as there are three currents for each Vg: Is, Id, Ig).
+						wks.ncols = wks.ncols + NoofVgs*2;  // The number of columns will be equal to the old one plus two new columns for each Vg (one for abs(Id) and one for abs(Ig)).						
+						wks.colwidth = 8;// set all col width to 8
+						
+						
+						// Extract VdStart and VdStop
+						string VdStart$= $(col(A)[1]); // VdStart is the value of the first cell of col(A)						
+						string VdStop$=$(col(A)[wks.maxrows/2]); // VdStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+						
+						
+						loop(i,1,NoofVgs)
+							{
+								string previousworkbook$=%H; // Get the name of the previous window
+								
+								// Extract Vg
+								int colNo=i+1; // Start from column 2
+								
+								string Vg$=wcol(colNo)[L]$;
+								Vg$=Vg.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+								Vg$=Vg.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+								int Vgint = %(Vg$); // Convert string to integer
+								Vg$= $(Vgint); // Convert integer to string (these two lines get rid of the decimal points)
+								
+							
+								// Create a new column for abs(Id)
+								wcol(i+NoofVgs+1+2*NoofVgs)[L]$ = col(%(i+NoofVgs+1))[L]$; // First Id column is i+NoofVgs+1. First empty column on the right is i+NoofVgs+1+2*NoofVgs. abs(Id(Vg)) and Id(Vg) will have a distance of 2*NoofVgs (e.g. col(N) will be ans(col(F)) if NoofVgs is 4)
+								wcol(i+NoofVgs+1+2*NoofVgs)[U]$ = A; // Units
+								wcol(i+NoofVgs+1+2*NoofVgs)[O]$ = "abs(col(%(i+NoofVgs+1)))";
+								wcol(i+NoofVgs+1+2*NoofVgs)[C]$ =  "Vg=%(Vg$)V, %(condgraphlegend$), %(daysgraphlegend$)";
+								
+								
+								// Create a new column for abs(Ig)
+								wcol(i+NoofVgs+1+3*NoofVgs)[L]$ = col(%(i+2*NoofVgs+1))[L]$; // abs(Ig) column will be NoofVgs further away from abs(Id)
+								wcol(i+NoofVgs+1+3*NoofVgs)[U]$ = A; // Units
+								wcol(i+NoofVgs+1+3*NoofVgs)[O]$ = "abs(col(%(i+2*NoofVgs+1)))";
+								wcol(i+NoofVgs+1+3*NoofVgs)[C]$ =  "Vg=%(Vg$)V, %(condgraphlegend$), %(daysgraphlegend$), Leakage";
+								
+								
+								// Plot output curve
+								range rId = [%H]1!wcol(i+NoofVgs+1+2*NoofVgs);  // data range of abs(Id) column
+								range rIg = [%H]1!wcol(i+NoofVgs+1+3*NoofVgs);  // data range of abs(Ig) column
+								
+								// Output plot with all the Id
+								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Output";
+								if (exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+								{
+									// Check if the template exists, otherwise, use a generic one
+									Template$=str$=system.path.Template$+graphname$; // This is the template path
+									if (exist(Template$)!=0)// if the template exists
+										win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // create a graph window using template
+									else
+									{
+										win -t p "%(templatepath$)Generic_Output.otpu"; // create a graph window using a generic template
+									};
+									
+									page.active = 1; // activate Layer 1
+									layer.include(rId);  // plot in the active layer
+									
+									layer -a;  // rescale the layer
+									layer -g; // Group the datasets in the layer to auto-color increment
+									page.longname$= graphname$; //this renames the active window (long name)
+									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+									layer -gu; // Ungroup the datasets in the layer
+									legend; // Update the legend
+									
+								};
+								
+								else
+								{
+									// create a graph window using template	
+									win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+									page.active = 1; // activate Layer 1
+									layer.include(rId);  // plot in the active layer
+									layer -a;  // rescale the layer
+									layer -g; // Group the datasets in the layer to auto-color increment
+									layer -gu; // Ungroup the datasets in the layer
+									legend; // Update the legend						
+									
+								};
+								
+								
+								// Individual output plot with a single Id and Ig
+								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Output_leakage_Vg=%(Vg$)V";
+								if (exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+								{
+									// Check if the template exists, otherwise, use a generic one
+									Template$=str$=system.path.Template$+graphname$; // This is the template path
+									if (exist(Template$)!=0)// if the template exists
+										win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // create a graph window using template
+									else
+									{
+										win -t p "%(templatepath$)Generic_Output_single.otpu"; // create a graph window using a generic template
+									};
+									
+									page.active = 1; // activate Layer 1
+									layer.include(rId);  // plot in the active layer
+									layer.include(rIg);  // plot in the active layer
+									
 									//layer -a;  // rescale the layer
 									//layer -g; // Group the datasets in the layer to auto-color increment
-									//page.longname$= graphname$; //this renames the active window (long name)
-									//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+									page.longname$= graphname$; //this renames the active window (long name)
+									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 									//layer -gu; // Ungroup the datasets in the layer
-									//legend; // Update the legend
-									//
-								//};
-								//
-								//else
-								//{
-									//// create a graph window using template	
-									//win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-									//page.active = 1; // activate Layer 1
-									//layer.include(rId);  // plot in the active layer
+									legend; // Update the legend
+									
+								};
+								
+								else
+								{
+									// create a graph window using template	
+									win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+									page.active = 1; // activate Layer 1
+									layer.include(rId);  // plot in the active layer
+									layer.include(rIg);  // plot in the active layer
 									//layer -a;  // rescale the layer
 									//layer -g; // Group the datasets in the layer to auto-color increment
 									//layer -gu; // Ungroup the datasets in the layer
-									//legend; // Update the legend						
-									//
-								//};
-								//
-								//
-								//// Individual output plot with a single Id and Ig
-								//string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Output_leakage_Vg=%(Vg$)V";
-								//if (exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-								//{
-									//// Check if the template exists, otherwise, use a generic one
-									//Template$=str$=system.path.Template$+graphname$; // This is the template path
-									//if (exist(Template$)!=0)// if the template exists
-										//win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // create a graph window using template
-									//else
-									//{
-										//win -t p "%(templatepath$)Generic_Output_single.otpu"; // create a graph window using a generic template
-									//};
-									//
-									//page.active = 1; // activate Layer 1
-									//layer.include(rId);  // plot in the active layer
-									//layer.include(rIg);  // plot in the active layer
-									//
-									////layer -a;  // rescale the layer
-									////layer -g; // Group the datasets in the layer to auto-color increment
-									//page.longname$= graphname$; //this renames the active window (long name)
-									//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-									////layer -gu; // Ungroup the datasets in the layer
-									//legend; // Update the legend
-									//
-								//};
-								//
-								//else
-								//{
-									//// create a graph window using template	
-									//win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-									//page.active = 1; // activate Layer 1
-									//layer.include(rId);  // plot in the active layer
-									//layer.include(rIg);  // plot in the active layer
-									////layer -a;  // rescale the layer
-									////layer -g; // Group the datasets in the layer to auto-color increment
-									////layer -gu; // Ungroup the datasets in the layer
-									//legend; // Update the legend						
-									//
-								//};
-								//
-								//win -a %(previousworkbook$);  // activate the previous window (workbook)
-							//};
-				//};
+									legend; // Update the legend						
+									
+								};
+								
+								win -a %(previousworkbook$);  // activate the previous window (workbook)
+							};
+					window -ch 1; // hide the output workbook that was processed
+				};
 			};
-	};
 }

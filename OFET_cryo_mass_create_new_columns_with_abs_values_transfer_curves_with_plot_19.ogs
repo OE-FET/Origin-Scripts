@@ -99,6 +99,7 @@
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
 
 		// Thickness
+		// CYTOP-M 100%: 450 nm (Caironi's recipe)
 		// CYTOP-M 3-1: 550 nm
 		// CYTOP-M 1-5: 25 nm
 		// CYTOP-S 3-1: 860 nm
@@ -369,7 +370,7 @@
 						
 						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 						// Max source-drain electric field (Saturation)
-						// NOTE: This should be smaller than 3*10^4 V/cm (see: DOI:10.1038/nmat5035)
+						// NOTE: This should be smaller than 3*10^4 V/cm (DOI: 10.1038/nmat5035)
 						
 						col(AF)[L]$ = "Max source-drain electric field (Saturation)"; // Long name
 						col(AF)[U]$ = V/cm; // Units
@@ -378,7 +379,7 @@
 						
 						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 						
-						// Contact resistance (Riccardo di Pietro's model)
+						// Contact resistance (Riccardo di Pietro's model, DOI: 10.1063/1.4876057)
 						
 						col(AG)[L]$ = "Average linear current"; // Long name
 						col(AG)[U]$ = A; // Units
@@ -922,109 +923,109 @@
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				else // if this is an output curve
 				{						
-						wks.name$=Output; // Change the sheet name to "Output"
-						int NoofVgs = (wks.ncols-1)/3; // The number of different Vg voltages is going to be equal to the total No of columns, minus the gate voltage column, divided by 3 (as there are three currents for each Vg: Is, Id, Ig).
-						wks.ncols = wks.ncols + NoofVgs*2;  // The number of columns will be equal to the old one plus two new columns for each Vg (one for abs(Id) and one for abs(Ig)).						
-						wks.colwidth = 8;// set all col width to 8
-						
-						
-						// Extract VdStart and VdStop
-						string VdStart$= $(col(A)[1]); // VdStart is the value of the first cell of col(A)						
-						string VdStop$=$(col(A)[wks.maxrows/2]); // VdStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
-						
-						
-						loop(i,1,NoofVgs)
-							{
-								string previousworkbook$=%H; // Get the name of the previous window
-								
-								// Extract Vg
-								int colNo=i+1; // Start from column 2
-								
-								string Vg$=wcol(colNo)[L]$;
-								Vg$=Vg.GetToken(2,"=")$; // Take the string on the right of the "=" sign
-								Vg$=Vg.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-								int Vgint = %(Vg$); // Convert string to integer
-								Vg$= $(Vgint); // Convert integer to string (these two lines get rid of the decimal points)
-								
+					wks.name$=Output; // Change the sheet name to "Output"
+					int NoofVgs = (wks.ncols-1)/3; // The number of different Vg voltages is going to be equal to the total No of columns, minus the gate voltage column, divided by 3 (as there are three currents for each Vg: Is, Id, Ig).
+					wks.ncols = wks.ncols + NoofVgs*2;  // The number of columns will be equal to the old one plus two new columns for each Vg (one for abs(Id) and one for abs(Ig)).						
+					wks.colwidth = 8;// set all col width to 8
+					
+					
+					// Extract VdStart and VdStop
+					string VdStart$= $(col(A)[1]); // VdStart is the value of the first cell of col(A)						
+					string VdStop$=$(col(A)[wks.maxrows/2]); // VdStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+					
+					
+					loop(i,1,NoofVgs)
+						{
+							string previousworkbook$=%H; // Get the name of the previous window
 							
-								// Create a new column for abs(Id)
-								wcol(i+NoofVgs+1+2*NoofVgs)[L]$ = col(%(i+NoofVgs+1))[L]$; // First Id column is i+NoofVgs+1. First empty column on the right is i+NoofVgs+1+2*NoofVgs. abs(Id(Vg)) and Id(Vg) will have a distance of 2*NoofVgs (e.g. col(N) will be ans(col(F)) if NoofVgs is 4)
-								wcol(i+NoofVgs+1+2*NoofVgs)[U]$ = A; // Units
-								wcol(i+NoofVgs+1+2*NoofVgs)[O]$ = "abs(col(%(i+NoofVgs+1)))";
-								wcol(i+NoofVgs+1+2*NoofVgs)[C]$ =  "%(legend$), Vg=%(Vg$)V";
-								
-								
-								// Create a new column for abs(Ig)
-								wcol(i+NoofVgs+1+3*NoofVgs)[L]$ = col(%(i+2*NoofVgs+1))[L]$; // abs(Ig) column will be NoofVgs further away from abs(Id)
-								wcol(i+NoofVgs+1+3*NoofVgs)[U]$ = A; // Units
-								wcol(i+NoofVgs+1+3*NoofVgs)[O]$ = "abs(col(%(i+2*NoofVgs+1)))";
-								wcol(i+NoofVgs+1+3*NoofVgs)[C]$ =  "%(legend$), Vg=%(Vg$)V, Leakage";
-								
-								
-								// Plot output curve
-								range rId = [%H]1!wcol(i+NoofVgs+1+2*NoofVgs);  // data range of abs(Id) column
-								range rIg = [%H]1!wcol(i+NoofVgs+1+3*NoofVgs);  // data range of abs(Ig) column
-								
-								
-								// Check if the measurement is the last measurement at this specific temperature
-								string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
-								if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0)
-									continue; // if this is not the last measurement of its kind, then continue to the next iteration
-								
-								
-								// Output plot with all the Id for a single temperature
-								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_Output";
-								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-								{
-									// Check if the template exists, otherwise, use a generic one
-									string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_%(temperature$).otpu"; // This is the template path
-									if (exist(Template$)!=-1)// if the template exists
-										win -t p "%(Template$)"; // create a graph window using template
-									else
-										win -t p "%(templatepath$)Generic_Output.otpu"; // create a graph window using a generic template
-									
-									page.longname$ = graphname$; //this renames the active window (long name)
-									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-								};
+							// Extract Vg
+							int colNo=i+1; // Start from column 2
+							
+							string Vg$=wcol(colNo)[L]$;
+							Vg$=Vg.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+							Vg$=Vg.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+							int Vgint = %(Vg$); // Convert string to integer
+							Vg$= $(Vgint); // Convert integer to string (these two lines get rid of the decimal points)
+							
+						
+							// Create a new column for abs(Id)
+							wcol(i+NoofVgs+1+2*NoofVgs)[L]$ = col(%(i+NoofVgs+1))[L]$; // First Id column is i+NoofVgs+1. First empty column on the right is i+NoofVgs+1+2*NoofVgs. abs(Id(Vg)) and Id(Vg) will have a distance of 2*NoofVgs (e.g. col(N) will be ans(col(F)) if NoofVgs is 4)
+							wcol(i+NoofVgs+1+2*NoofVgs)[U]$ = A; // Units
+							wcol(i+NoofVgs+1+2*NoofVgs)[O]$ = "abs(col(%(i+NoofVgs+1)))";
+							wcol(i+NoofVgs+1+2*NoofVgs)[C]$ =  "%(legend$), Vg=%(Vg$)V";
+							
+							
+							// Create a new column for abs(Ig)
+							wcol(i+NoofVgs+1+3*NoofVgs)[L]$ = col(%(i+2*NoofVgs+1))[L]$; // abs(Ig) column will be NoofVgs further away from abs(Id)
+							wcol(i+NoofVgs+1+3*NoofVgs)[U]$ = A; // Units
+							wcol(i+NoofVgs+1+3*NoofVgs)[O]$ = "abs(col(%(i+2*NoofVgs+1)))";
+							wcol(i+NoofVgs+1+3*NoofVgs)[C]$ =  "%(legend$), Vg=%(Vg$)V, Leakage";
+							
+							
+							// Plot output curve
+							range rId = [%H]1!wcol(i+NoofVgs+1+2*NoofVgs);  // data range of abs(Id) column
+							range rIg = [%H]1!wcol(i+NoofVgs+1+3*NoofVgs);  // data range of abs(Ig) column
+							
+							
+							// Check if the measurement is the last measurement at this specific temperature
+							string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
+							if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0)
+								continue; // if this is not the last measurement of its kind, then continue to the next iteration
+							
+							
+							// Output plot with all the Id for a single temperature
+							string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_Output";
+							if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+							{
+								// Check if the template exists, otherwise, use a generic one
+								string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_%(temperature$).otpu"; // This is the template path
+								if (exist(Template$)!=-1)// if the template exists
+									win -t p "%(Template$)"; // create a graph window using template
 								else
-									win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-									
-								page.active = 1; // activate Layer 1
-								layer.include(rId);  // plot in the active layer
-								//layer -a;  // rescale the layer
-								//layer -g; // Group the datasets in the layer to auto-color increment
-								//layer -gu; // Ungroup the datasets in the layer
-								//legend; // Update the legend
+									win -t p "%(templatepath$)Generic_Output.otpu"; // create a graph window using a generic template
 								
-								
-								// Individual output plot with a single Id and Ig for all temperatures
-								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Output_Vg=%(Vg$)V";
-								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-								{
-									// Check if the template exists, otherwise, use a generic one
-									string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
-									if (exist(Template$)!=-1)// if the template exists
-										win -t p "%(Template$)"; // create a graph window using template
-									else
-										win -t p "%(templatepath$)Generic_Output_single.otpu"; // create a graph window using a generic template
-									
-									page.longname$ = graphname$; //this renames the active window (long name)
-									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-								};
-								else
-									win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-									
-								page.active = 1; // activate Layer 1
-								layer.include(rId);  // plot in the active layer
-								layer.include(rIg);  // plot in the active layer
-								//layer -a;  // rescale the layer
-								//layer -g; // Group the datasets in the layer to auto-color increment
-								//layer -gu; // Ungroup the datasets in the layer
-								//legend; // Update the legend
-								
-								win -a %(previousworkbook$);  // activate the previous window (workbook)
+								page.longname$ = graphname$; //this renames the active window (long name)
+								page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 							};
-				window -ch 1; // hide the output workbook that was processed
+							else
+								win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+								
+							page.active = 1; // activate Layer 1
+							layer.include(rId);  // plot in the active layer
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							
+							
+							// Individual output plot with a single Id and Ig for all temperatures
+							string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Output_Vg=%(Vg$)V";
+							if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+							{
+								// Check if the template exists, otherwise, use a generic one
+								string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
+								if (exist(Template$)!=-1)// if the template exists
+									win -t p "%(Template$)"; // create a graph window using template
+								else
+									win -t p "%(templatepath$)Generic_Output_single.otpu"; // create a graph window using a generic template
+								
+								page.longname$ = graphname$; //this renames the active window (long name)
+								page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							};
+							else
+								win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+								
+							page.active = 1; // activate Layer 1
+							layer.include(rId);  // plot in the active layer
+							layer.include(rIg);  // plot in the active layer
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							
+							win -a %(previousworkbook$);  // activate the previous window (workbook)
+						};
+					window -ch 1; // hide the output workbook that was processed
 				};
 				
 			};

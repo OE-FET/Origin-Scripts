@@ -23,12 +23,12 @@
 		
 		wks.col2.type=4;	// set col(B) as X
 		
-		fitLR iy:=[%H]1!(2,7)[2:7] oy:=col(I); // Linear fit of col(G) with respect to col(B)
+		fitLR iy:=[%H]1!(2,7)[1:wks.maxrows] oy:=col(I); // Linear fit of col(G) with respect to col(B)
 		Ealin = fitLR.b*kb*1000*1000; // The activation energy is equal to the slope multiplied by the Boltzmann constant, by 1000 (as the horizontal axis is 1000/T), and then again by 1000 (to convert it to meV).
 		Ealin=round(Ealin,1);
 		//fitLR.b=;
 		
-		fitLR iy:=[%H]1!(2,8)[2:5] oy:=col(J); // Linear fit of col(H) with respect to col(B)	
+		fitLR iy:=[%H]1!(2,8)[1:wks.maxrows] oy:=col(J); // Linear fit of col(H) with respect to col(B)	
 		Easat = fitLR.b*kb*1000*1000; // The activation energy is equal to the slope multiplied by the Boltzmann constant, by 1000 (as the horizontal axis is 1000/T), and then again by 1000 (to convert it to meV).
 		Easat=round(Easat,1);
 		//fitLR.b=;

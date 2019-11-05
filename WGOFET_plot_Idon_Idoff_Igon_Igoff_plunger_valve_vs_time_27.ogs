@@ -296,7 +296,7 @@
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Igoff_vs_time_Vd=%(Vd$)V"; //this renames the active window (long name)
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 							break;
-
+							
 							
 						case "plunger": // If the string is "plunger", process and plot the plunger position vs time data
 								
@@ -310,7 +310,7 @@
 							col(C)[L]$ = "Volume of solution in syringe"; // Units
 							col(C)[U]$ = "ul"; // Units
 							col(C)[O]$ = "col(B)/3"; // Function
-
+							
 							// Plot columns
 							range r1 = [%(previousworkbook$)]1!wcol(2);  // data range of column
 							range r2 = [%(previousworkbook$)]1!wcol(3);  // data range of column
@@ -340,9 +340,9 @@
 							
 							
 							// Volume vs time (0-30 minutes) graph
-							win -t p "%(templatepath$)Plunger_vs_time_static_mode_0-30_min.otpu";  // create a graph window using template
+							win -t p "%(templatepath$)Volume_vs_time_static_mode_0-30_min.otpu";  // create a graph window using template
 							//page.active = nActive;  // activate the layer for plot
-							layer.include(r1);  // plot in the active layer
+							layer.include(r2);  // plot in the active layer
 							
 							//layer -a;  // rescale the layer
 							//layer -g; // Group the datasets in the layer to auto-color increment
@@ -352,7 +352,7 @@
 							break;
 							
 							
-						case "valve": // If the string is "plunger", process and plot the plunger position vs time data
+						case "valve": // If the string is "valve", process and plot the plunger position vs time data
 								
 							// Plot Plunger position vs time								
 							col(A)[L]$ = "Time"; // Long name
@@ -360,7 +360,7 @@
 							
 							col(B)[L]$ = "Valve port"; // Units
 							col(B)[U]$ = "No"; // Units
-
+							
 							// Plot columns
 							range r1 = [%(previousworkbook$)]1!wcol(2);  // data range of column
 							
