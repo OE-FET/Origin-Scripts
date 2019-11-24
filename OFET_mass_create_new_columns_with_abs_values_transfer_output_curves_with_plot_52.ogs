@@ -9,9 +9,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 5.1
+// Version: 5.2
 // Current status: Works well.
-// Changes: Get rid of decimal points in output curve Vg extraction.
+// Changes: Removed Riccardo di Pietro's mobility correction, as it now exists in a separate script file.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -80,8 +80,6 @@
 		double e0=8.854E-12; // Vacuum permittivity [F/m]
 		double dielectricthickness=550; // Dielectric thickness [nm]
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
-		double beta; // Parameter for power law dependence of the mobility
-		double kappa; // The correction factor for the mobility
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
 
 		// Thickness
@@ -522,38 +520,6 @@
 						col(AO)[L]$ = "Error"; // Long name
 						col(AO)[U]$ = A; // Units
 						col(AO)[O]$ = "col(AN)*2*sqrt((col(AJ)/col(AI))^2+(col(AH)/col(AG))^2)";
-						
-						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-						
-						// Mobility correction (Riccardo di Pietro's model, DOI: 10.1063/1.4876057)
-						
-						if (material$ == "N2200")
-						{
-							int firstrowsatPL=lastrowsat-round(lastrowsat/3); // The lower limit of the integration will extend at a certain number of points from the last row.
-							nlbegin iy:=col(S)[firstrowsatPL:lastrowsat] func:=Power1 nltree:=ParamTree weight:=0;
-							ParamTree.xc = 0;     // Assign the peak center an X-value of 0.
-							ParamTree.f_xc = 1;   // Fix the peak center (f_xc = 0 is unfixed).
-							nlfit;
-							
-							col(AP)[L]$ = "Power law fit (Saturation mobility)"; // Long name
-							col(AP)[U]$ = cm^2/V*s; // Units
-							col(AP) = fit(col(A), col(S));
-							//range yy = col(AP)[firstrowsatPL:lastrowsat];
-							//yy = fit(col(A)[firstrowsatPL:lastrowsat], col(S)[firstrowsatPL:lastrowsat]);
-							beta = ParamTree.P; // The exponent beta, for the power law dependence of the mobility.
-							kappa = (beta + 2)/(2*(beta+1)); // The correction factor, kappa.
-							nlend;
-							
-							col(AQ)[L]$ = "Beta"; // Long name
-							col(AQ)[1] = beta; // The exponent from the power law fitting.
-							
-							col(AR)[L]$ = "Correction factor"; // Long name
-							col(AR)[1] = kappa; // The calculated correction factor.
-							
-							col(AS)[L]$ = "Corrected mobility (Saturation)"; // Long name
-							col(AS)[U]$ = cm^2/V*s; // Units
-							col(AS) = col(S)/kappa; // The corrected mobility is the original mobility, divided by the correction factor.
-						};
 						
 						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 						// Column legends

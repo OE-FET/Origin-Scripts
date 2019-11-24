@@ -206,7 +206,6 @@ function string findTime (string timelength)
 		double e0=8.854E-12; // Vacuum permittivity [F/m]
 		double dielectricthickness=550; // Dielectric thickness [nm]
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
-		//double beta=1.28; // Parameter for power law dependence of the mobility
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
 
 		// Thickness
