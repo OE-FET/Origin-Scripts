@@ -273,7 +273,7 @@
 				if (meastype$ == "T") // if this is an transfer curve then
 				{
 						wks.name$=Transfer; // Change the sheet name to "Transfer"
-						wks.ncols=40; // set total column number to 40
+						wks.ncols=41; // set total column number to 40
 						wks.colwidth = 10;// set all col width to 10
 						
 						// Extract Vdlin and Vdsat
