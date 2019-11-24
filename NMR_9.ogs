@@ -179,17 +179,6 @@
 							condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
 							break;
 						
-						case "IPA": // If the string is "IPA", write "IPA" in the comment field
-							condgraphlegend$ = "IPA"; // Comment field (graph legend)
-							break;
-						
-						case "N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "N2"; // Comment field (graph legend)
-							break;
-						
-						case "air": // If the string is "air", write "air" in the comment field
-							condgraphlegend$ = "air"; // Comment field (graph legend)
-							break;
 							
 						case "bottle-N2": // If the string is "N2", write "N2" in the comment field
 							condgraphlegend$ = "Bottle reference in N2"; // Comment field (graph legend)

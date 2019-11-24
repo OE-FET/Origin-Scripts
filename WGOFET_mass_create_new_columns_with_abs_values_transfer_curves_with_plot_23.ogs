@@ -31,8 +31,8 @@
 	
 	// Define time points to plot
 	string t1$="20";
-	string t2$="31";
-	string t3$="41";
+	string t2$="30";
+	string t3$="40";
 	string t4$="50";
 	string t5$="60";
 	string t6$="100";
@@ -40,11 +40,11 @@
 	string t8$="140";
 	string t9$="160";
 	string t10$="180";
-	string t11$="201";
+	string t11$="200";
 	string t12$="250";
 	string t13$="300";
 	string t14$="400";
-	string t15$="501";
+	string t15$="500";
 	string t16$="600";
 	string t17$="700";
 	string t18$="750";
@@ -221,21 +221,9 @@
 							string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
 							condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
 							break;
-						
-						case "IPA": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "IPA"; // Comment field (graph legend)
-							break;
 							
-						case "N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "N2"; // Comment field (graph legend)
-							break;
-						
-						case "air": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "air"; // Comment field (graph legend)
-							break;
-							
-						default: // For all other strings, write "air" in the comment field
-							condgraphlegend$ = "air"; // Comment field (graph legend)
+						default: // For all other strings, write the condition string in the comment field
+							condgraphlegend$ = condition$; // Comment field (graph legend)
 							break;
 					}
 						
@@ -302,8 +290,6 @@
 					//string legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(daysgraphlegend$), %(minutesgraphlegend$), %(modegraphlegend$), %(intimegraphlegend$)"; // Legend
 					string legend$ = "%(condgraphlegend$), %(daysgraphlegend$), %(minutesgraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-				
-				string previousworkbook$=%H; // Get the name of the previous window
 				
 				if (meastype$ == "T") // if this is an transfer curve then
 				{
@@ -513,6 +499,8 @@
 						
 						if (firstloop == 1) // if this is the first loop (i.e. if the "Transfer" graph exists)
 						{
+							string previousworkbook$=%H; // Get the name of the previous window
+							
 							// create a graph window using template
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu";
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V"; //this renames the active window (long name)
@@ -560,6 +548,7 @@
 							
 							firstloop = 0;
 							win -a %(previousworkbook$);  // activate the previous window (workbook)
+							window -ch 1; // hide the workbook that was processed
 							
 						};
 						
