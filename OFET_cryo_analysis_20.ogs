@@ -200,7 +200,7 @@
 						
 						
 						// Extract VgStart and VgStop
-						string VgStart$=$(col(A)[1]); // VgStart is the value of the first cell of col(A)						
+						string VgStart$=$(col(A)[1]); // VgStart is the value of the first cell of col(A)
 						string VgStop$=$(col(A)[wks.maxrows/2]); // VgStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
 						
 						
