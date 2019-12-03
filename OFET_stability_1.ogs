@@ -195,7 +195,7 @@ function string findTime (string timelength)
 				timegraphlegend$ = findTime(timelength$)$; // Note ending '$'
 				
 				
-				string legend$ = "%(meascondgraphlegend$), %(timegraphlegend$)"; // Legend
+				string legend$ = "%(timegraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
 				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
@@ -526,7 +526,7 @@ function string findTime (string timelength)
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -559,7 +559,7 @@ function string findTime (string timelength)
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -1020,7 +1020,7 @@ function string findTime (string timelength)
 							if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 							{
 								// Check if the template exists, otherwise, use a generic one
-								string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // This is the template path
+								string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // This is the template path
 								if (exist(Template$)!=-1)// if the template exists
 									win -t p "%(Template$)"; // create a graph window using template
 								else
