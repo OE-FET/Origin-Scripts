@@ -103,6 +103,11 @@
 							//string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
 							additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
 							break;
+							
+						case "F4TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
+							//string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
+							additivegraphlegend$ = "+ F4TCNQ"; // Comment field (graph legend)
+							break;
 						
 						case "SAM-1OCT-v": // If the number is 1, use single form
 							additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
