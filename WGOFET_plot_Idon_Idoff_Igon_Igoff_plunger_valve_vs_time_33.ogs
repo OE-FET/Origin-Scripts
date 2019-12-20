@@ -1,8 +1,8 @@
 // This script is used on WG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 3.2
+// Version: 3.3
 // Current status: Works well.
-// Changes: Calculated Tss using a linear fit instead of a point derivative.
+// Changes: Changed the graph/template name convention.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -289,13 +289,13 @@
 				range Igoff = [%(previousworkbook$)]1!wcol(13);  // data range of column (Ig off)
 				
 				// Idon, Idoff, Igon, Igoff graph
-				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Idon_Idoff_Igon_Igoff_vs_time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 				layer.include(Idon);  // plot in the active layer
 				layer.include(Idoff);  // plot in the active layer
 				layer.include(Igon);  // plot in the active layer
 				layer.include(Igoff);  // plot in the active layer
 					
-				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Idon_Idoff_Igon_Igoff_vs_time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
 				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 				
 				
@@ -308,27 +308,27 @@
 				
 				
 				// Idoff graph
-				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Idoff_vs_time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Idoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 				layer.include(Idoff);  // plot in the active layer
 				
-				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Idoff_vs_time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Idoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
 				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 				
 				
 				// Igon, Igoff graph
-				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Igon_Igoff_vs_time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 				layer.include(Igon);  // plot in the active layer
 				layer.include(Igoff);  // plot in the active layer
 					
-				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Igon_Igoff_vs_time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Igon-Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
 				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 				
 				
 				// Igoff graph
-				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Igoff_vs_time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_%(condition$)_Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 				layer.include(Igoff);  // plot in the active layer
 				
-				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Igoff_vs_time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
 				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 				break;
 			};
@@ -354,20 +354,20 @@
 				
 				
 				// Volume vs time graph
-				win -t p "%(templatepath$)Volume_vs_time.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)Volume-Time.otpu";  // create a graph window using template
 				layer.include(SyringeVolume);  // plot in the active layer
 				
 				//layer -a;  // rescale the layer
-				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Volume_vs_time"; //this renames the active window (long name)
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Volume-Time"; //this renames the active window (long name)
 				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 				
 				
 				// Volume vs time (0-30 minutes) graph
-				win -t p "%(templatepath$)Volume_vs_time_static_mode_0-30_min.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)Volume-Time_static_mode_0-30_min.otpu";  // create a graph window using template
 				layer.include(SyringeVolume);  // plot in the active layer
 				
 				//layer -a;  // rescale the layer
-				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Volume_vs_time_0-30_min"; //this renames the active window (long name)
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Volume-Time_0-30_min"; //this renames the active window (long name)
 				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 			};
 				
@@ -385,11 +385,11 @@
 				range ValvePort = [%(previousworkbook$)]1!wcol(2);  // data range of column
 				
 				// Valve port vs time graph
-				win -t p "%(templatepath$)Valve_port_vs_time.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)Valve-port-Time.otpu";  // create a graph window using template
 				layer.include(ValvePort);  // plot in the active layer
 				
 				layer -a;  // rescale the layer
-				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Valve_port_vs_time"; //this renames the active window (long name)
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Valve-port-Time"; //this renames the active window (long name)
 				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 			};
 	}
