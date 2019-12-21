@@ -127,7 +127,7 @@
 							additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
 							break;
 							
-						case "F4TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
+						case "F4TCNQ": // If the string is "F4TCNQ", write "F4TCNQ" in the comment field
 							//string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
 							additivegraphlegend$ = "+ F4TCNQ"; // Comment field (graph legend)
 							break;
