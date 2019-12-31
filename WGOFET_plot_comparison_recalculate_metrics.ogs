@@ -1,0 +1,101 @@
+// This script is used on WG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
+// Author: Dimitrios Simatos
+// Version: 0.7
+// Current status: Works well.
+// Changes: Calculated additional metrics on the AIO graphs (moving slope, Tss, slopeIdon, IdonSSMean, IdonSSSD, IdonSSRange).
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	// Set variables for all loops
+		
+	string IonIoffTimeAIOWorkbook$; // The long name of the Ion/Ioff-Time (AIO) workbook
+	string IdonTimeAIOGraph$; // The long name of the Idon-Time (AIO) graph
+	string IdoffTimeAIOGraph$; // The long name of the Idoff-Time (AIO) graph
+	string IgonTimeAIOGraph$; // The long name of the Igon-Time (AIO) graph
+	string IgoffTimeAIOGraph$; // The long name of the Igoff-Time (AIO) graph
+	
+	string IdonTimeGraph$; // The long name of the Idon-Time graph
+	string IdoffTimeGraph$; // The long name of the Idoff-Time graph
+	string IgonTimeGraph$; // The long name of the Igon-Time graph
+	string IgoffTimeGraph$; // The long name of the Igoff-Time graph
+	string TransferIgGraph$; // The long name of the Id-Ig-Time graph
+		
+	
+	// Parameters
+	string Vdsat$="-1";
+	string VgStart$="0";
+	string VgStop$="-1";
+	string Rate$="40-ulmin";
+	string CycleLength$="900";
+	
+	double slopeIdon; // The degradation slope of Id on
+	double Tss; // The steady state time
+	int Tssindex; // The row index of the steady state time
+	double Tsswindow = 1E-9; // Window for extracting the steady state time
+	double IdonSSMean; // Mean Id on at steady state
+	double IdonSSSD; // Standard deviation of Id on at steady state
+	double IdonSSRange; // Range of Id on at steady state
+	
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	// Metrics
+	
+	// Steady state time (Tss), and Degradation slope (dIdon/dt)
+	
+	//col(G)[L]$ = "Moving slope of Id on (Saturation)"; // Long name
+	//col(G) = abs(movslope(col(A),col(C),20)); // moving slope of col(C) with 20 points average. I do not use the point derivative because it is very sensitive to noise.
+	
+	loop(i,8,wks.maxrows) // Start from row 8 (after water has been injected)
+	{
+		fitLR iy:=[%H]1!(1,7)[i:i+200] oy:=col(H); // Linear fit of col(G) with respect to col(A), over 200 points (~200 minutes)
+		if (abs(fitLR.b) <  Tsswindow) // Window for extracting the steady state time
+		{									
+			Tss = col(A)[i]; // The steady state time
+			Tssindex = i;
+			slopeIdon = abs(fitLR.b); // The degradation slope.
+			break;
+		};
+	};
+	
+	col(H)[L]$ = "Linear fit on Id on (Saturation)"; // Long name
+	col(H)[C]$ = "Linear fit"; // Long name
+	
+	col(I)[L]$ = "Steady state time of Id on"; // Long name
+	col(I)[U]$ = min; // Units
+	col(I)[1] = Tss;
+	
+	col(J)[L]$ = "Degradation slope of Id on"; // Long name
+	col(J)[U]$ = A/min; // Units
+	col(J)[1] = slopeIdon;
+	
+	
+	// Mean Id on, Standard Deviation, and Range at the steady state
+	IdonSSMean = mean(col(C)[Tssindex:wks.maxrows]);
+	IdonSSSD = StdDev(col(C)[Tssindex:wks.maxrows]);
+	IdonSSRange = max(col(C)[Tssindex:wks.maxrows]) - min(col(C)[Tssindex:wks.maxrows]);
+	
+	col(K)[L]$ = "Mean Id on at steady state"; // Long name
+	col(K)[U]$ = A; // Units
+	col(K)[1] = IdonSSMean;
+	
+	col(L)[L]$ = "Standard deviation of Id on at steady state"; // Long name
+	col(L)[U]$ = A; // Units
+	col(L)[1] = IdonSSSD;
+	
+	col(M)[L]$ = "Range of Id on at steady state"; // Long name
+	col(M)[U]$ = A; // Units
+	col(M)[1] = IdonSSRange;
+	
+}

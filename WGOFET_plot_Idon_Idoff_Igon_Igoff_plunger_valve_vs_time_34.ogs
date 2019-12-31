@@ -1,8 +1,8 @@
 // This script is used on WG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 3.3
+// Version: 3.4
 // Current status: Works well.
-// Changes: Changed the graph/template name convention.
+// Changes: Added units to metrics.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -228,7 +228,7 @@
 				
 				loop(i,8,wks.maxrows) // Start from row 8 (after water has been injected)
 				{
-					fitLR iy:=[%H]1!(1,10)[i:i+200] oy:=col(N); // Linear fit of col(J) with respect to col(A), over 200 points (200 minutes)
+					fitLR iy:=[%H]1!(1,10)[i:i+200] oy:=col(N); // Linear fit of col(J) with respect to col(A), over 200 points (~200 minutes)
 					if (abs(fitLR.b) <  Tsswindow) // Window for extracting the steady state time
 					{									
 						Tss = col(A)[i]; // The steady state time
@@ -237,15 +237,17 @@
 						break;
 					};
 					else continue;
-				};			
+				};
 				
-				col(N)[L]$ = "Linear fit on Id on (Saturation)"; // Long name	
+				col(N)[L]$ = "Linear fit on Id on (Saturation)"; // Long name
 				col(N)[C]$ = "Linear fit"; // Long name
 				
 				col(O)[L]$ = "Steady state time of Id on"; // Long name
+				col(O)[U]$ = min; // Units
 				col(O)[1] = Tss;
 				
-				col(P)[L]$ = "Degradation slope of Id on"; // Long name	
+				col(P)[L]$ = "Degradation slope of Id on"; // Long name
+				col(P)[U]$ = A/min; // Units
 				col(P)[1] = slopeIdon;
 				
 				
@@ -254,13 +256,16 @@
 				IdonSSSD = StdDev(col(J)[Tssindex:wks.maxrows]);
 				IdonSSRange = max(col(J)[Tssindex:wks.maxrows]) - min(col(J)[Tssindex:wks.maxrows]);
 				
-				col(Q)[L]$ = "Mean Id on at steady state"; // Long name	
+				col(Q)[L]$ = "Mean Id on at steady state"; // Long name
+				col(Q)[U]$ = A; // Units
 				col(Q)[1] = IdonSSMean;
 				
-				col(R)[L]$ = "Standard deviation of Id on at steady state"; // Long name	
+				col(R)[L]$ = "Standard deviation of Id on at steady state"; // Long name
+				col(R)[U]$ = A; // Units
 				col(R)[1] = IdonSSSD;
 				
-				col(S)[L]$ = "Range of Id on at steady state"; // Long name	
+				col(S)[L]$ = "Range of Id on at steady state"; // Long name
+				col(S)[U]$ = A; // Units
 				col(S)[1] = IdonSSRange;
 				
 				
