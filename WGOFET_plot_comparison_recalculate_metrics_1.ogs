@@ -1,4 +1,4 @@
-// This script is used on WG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
+// This script is used on WG-OFETs and recalculates the metrics of the graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
 // Version: 0.7
 // Current status: Works well.
@@ -97,5 +97,13 @@
 	col(M)[L]$ = "Range of Id on at steady state"; // Long name
 	col(M)[U]$ = A; // Units
 	col(M)[1] = IdonSSRange;
+	
+	window -ch 1; // hide the "uavg-Vtsat-vs-invT" window
+	if (exist(Text3,16)==16) Text3.text$ = T\-(ss) = $(Tss) min; // If the label exists, update it
+	if (exist(Text4,16)==16) Text4.text$ = d(Id\-(on,SS))/dt = $(slopeIdon, P*2) A/min; // If the label exists, update it
+	if (exist(Text5,16)==16) Text5.text$ = Id\-(on,SS,mean) = $(IdonSSMean, P*2) A; // If the label exists, update it
+	if (exist(Text6,16)==16) Text6.text$ = Id\-(on,SS,SD) = $(IdonSSSD, P*2) A; // If the label exists, update it
+	if (exist(Text7,16)==16) Text7.text$ = Id\-(on,SS,Ran) = $(IdonSSRange, P*2) A; // If the label exists, update it
+	plot -c; // refresh the graph to update the labels	
 	
 }

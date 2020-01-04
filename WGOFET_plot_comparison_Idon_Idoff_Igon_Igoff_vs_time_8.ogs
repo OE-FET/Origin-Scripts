@@ -1,8 +1,8 @@
 // This script is used on WG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
-// Version: 0.7
+// Version: 0.8
 // Current status: Works well.
-// Changes: Calculated additional metrics on the AIO graphs (moving slope, Tss, slopeIdon, IdonSSMean, IdonSSSD, IdonSSRange).
+// Changes: Added labels of metrics on Idon-AIO graph.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -111,7 +111,7 @@
 		string NaNb$ = Lookup("NaN", rb)$;
 		
 		if (Nanb$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted (they yield NaN values)
-		if (daysNo$ == "14") continue; // If daysNo$ is equal to a day in which the experiment had bubbles then just continue to the next workbook.
+		if (daysNo$ == "15" || daysNo$ == "19") continue; // If daysNo$ is equal to a day in which the experiment had bubbles then just continue to the next workbook.
 			else
 			{
 				switch (%(concunits$)) // Case study
@@ -407,6 +407,7 @@
 							range Igoff = [%(previousworkbook$)]1!wcol(13);  // data range of column (Ig off)
 							int rowsNo = wks.maxrows;  // the number of rows of the workbook
 							
+							window -ch 1; // hide the workbook that was processed
 							win -a %(uid2name(range2uid(["%(IonIoffTimeAIOWorkbook$)"]))$); // activate the workbook
 							
 							// Append Idon vs time to a workbook with a unified time axis ("AIO" workbook)
@@ -662,6 +663,13 @@
 	page.active = 1; // activate Layer 1
 	
 	layer -i201 rIdonsatTime;  // plot in the active layer as scatter plot
+	
+	if (exist(Text3,16)==16) Text3.text$ = T\-(ss) = $(Tss) min; // If the label exists, update it
+	if (exist(Text4,16)==16) Text4.text$ = d(Id\-(on,SS))/dt = $(slopeIdon, P*2) A/min; // If the label exists, update it
+	if (exist(Text5,16)==16) Text5.text$ = Id\-(on,SS,mean) = $(IdonSSMean, P*2) A; // If the label exists, update it
+	if (exist(Text6,16)==16) Text6.text$ = Id\-(on,SS,SD) = $(IdonSSSD, P*2) A; // If the label exists, update it
+	if (exist(Text7,16)==16) Text7.text$ = Id\-(on,SS,Ran) = $(IdonSSRange, P*2) A; // If the label exists, update it
+	plot -c; // refresh the graph to update the labels	
 		
 	//layer -a;  // rescale the layer
 	layer -g; // Group the datasets in the layer to auto-color increment
