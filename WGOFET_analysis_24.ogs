@@ -515,22 +515,22 @@
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu";
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V"; //this renames the active window (long name)
 							Ig$=page.longname$;
-
+							
 							// create a graph window using template
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu";
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V_10-200_min"; //this renames the active window (long name)
 							Transfer10200$=page.longname$;
-
+							
 							// create a graph window using template
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu";
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V_10-200_min"; //this renames the active window (long name)
 							Ig10200$=page.longname$;							
-
+							
 							// create a graph window using template
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-750_min.otpu";
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V_200-750_min"; //this renames the active window (long name)
 							Transfer200750$=page.longname$;
-
+							
 							// create a graph window using template
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-750_min.otpu";
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V_200-750_min"; //this renames the active window (long name)
@@ -545,7 +545,7 @@
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_100_min"; //this renames the active window (long name)
 							TransferIg100$=page.longname$;
-
+							
 							// create a graph window using template
 							win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_400_min"; //this renames the active window (long name)
@@ -663,7 +663,7 @@
 								page.active = 1; // activate Layer 1
 								layer.include(rIdsat);  // plot in the active layer
 								layer.include(rIgsat);  // plot in the active layer
-
+								
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
 								//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -682,7 +682,7 @@
 								page.active = 1; // activate Layer 1
 								layer.include(rIdsat);  // plot in the active layer
 								layer.include(rIgsat);  // plot in the active layer
-
+								
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
 								//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -701,7 +701,7 @@
 								page.active = 1; // activate Layer 1
 								layer.include(rIdsat);  // plot in the active layer
 								layer.include(rIgsat);  // plot in the active layer
-
+								
 								//layer -a;  // rescale the layer
 								////layer -g; // Group the datasets in the layer to auto-color increment
 								//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)

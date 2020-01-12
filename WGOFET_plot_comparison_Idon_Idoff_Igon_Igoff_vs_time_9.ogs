@@ -1,8 +1,8 @@
 // This script is used on WG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
-// Version: 0.8
+// Version: 0.9
 // Current status: Works well.
-// Changes: Added labels of metrics on Idon-AIO graph.
+// Changes: Added time variable to template names.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -48,7 +48,7 @@
 	double IdonSSRange; // Range of Id on at steady state
 	
 	// Define time points to plot
-	string t1$="300";
+	string t1$ = "400";
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
@@ -362,9 +362,12 @@
 						else
 							win -t p "%(templatepath$)Generic_Transfer_Time.otpu"; // create a graph window using a generic template
 						
-						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Transfer_Leakage_Vd=%(Vdsat$)V_300-min"; //this renames the active window (long name)
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Transfer_Leakage_Vd=%(Vdsat$)V_%(t1$)-min"; //this renames the active window (long name)
 						TransferIgGraph$ = page.longname$;
 						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						if (exist(Text3,16)==16) Text3.text$ = $(%(t1$)) minutes; // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
 						
 						firstloop = 0;
 						win -a %(previousworkbook$);  // activate the previous window (workbook)
@@ -372,7 +375,7 @@
 					
 				switch (%(meastype$)) // Case study
 					{
-						case "300-min": // If the string is "300-min", process and plot the transfer curve data at the 300th minute
+						case "%(t1$)-min": // If the string is "t1-min", process and plot the transfer curve data at the t1th minute
 							
 							
 							// Plot columns
@@ -669,7 +672,7 @@
 	if (exist(Text5,16)==16) Text5.text$ = Id\-(on,SS,mean) = $(IdonSSMean, P*2) A; // If the label exists, update it
 	if (exist(Text6,16)==16) Text6.text$ = Id\-(on,SS,SD) = $(IdonSSSD, P*2) A; // If the label exists, update it
 	if (exist(Text7,16)==16) Text7.text$ = Id\-(on,SS,Ran) = $(IdonSSRange, P*2) A; // If the label exists, update it
-	plot -c; // refresh the graph to update the labels	
+	plot -c; // refresh the graph to update the labels
 		
 	//layer -a;  // rescale the layer
 	layer -g; // Group the datasets in the layer to auto-color increment
