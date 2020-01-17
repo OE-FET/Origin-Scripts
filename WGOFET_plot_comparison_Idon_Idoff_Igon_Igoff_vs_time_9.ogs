@@ -48,7 +48,7 @@
 	double IdonSSRange; // Range of Id on at steady state
 	
 	// Define time points to plot
-	string t1$ = "400";
+	string t1$ = "300"; // NOTE: The time point needs to be edited also in line 378. The switch command does not work with string variables.
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
@@ -111,7 +111,8 @@
 		string NaNb$ = Lookup("NaN", rb)$;
 		
 		if (Nanb$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted (they yield NaN values)
-		if (daysNo$ == "15" || daysNo$ == "19") continue; // If daysNo$ is equal to a day in which the experiment had bubbles then just continue to the next workbook.
+		//if (sampleNo$ == "1st") continue; // If sampleNo$ is equal to a sample that was damaged then just continue to the next workbook.
+		//if (daysNo$ == "1" || daysNo$ == "4" || daysNo$ == "23") continue; // If daysNo$ is equal to a day in which the experiment had bubbles then just continue to the next workbook.
 			else
 			{
 				switch (%(concunits$)) // Case study
@@ -375,7 +376,7 @@
 					
 				switch (%(meastype$)) // Case study
 					{
-						case "%(t1$)-min": // If the string is "t1-min", process and plot the transfer curve data at the t1th minute
+						case "300-min": // If the string is "t1-min", process and plot the transfer curve data at the t1th minute
 							
 							
 							// Plot columns

@@ -12,9 +12,9 @@
 // NOTE: When fitting the activation energy, fit only the linear part of the ln(mu) curve. Do NOT fit the hump at high temperatures, and the point at 100K (it will not be 100K due to Joule heating).
 
 // Author: Dimitrios Simatos
-// Version: 2.0
+// Version: 2.1
 // Current status: Workbooks with different device numbers need to be processed separately.
-// Changes: Corrected output curve Vg extraction.
+// Changes: Changed the condition for the decimal point truncation.
 
 
 [Main]
@@ -188,15 +188,15 @@
 						Vdlin$=col(D)[L]$;
 						Vdlin$=Vdlin.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 						Vdlin$=Vdlin.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-						if (Vdlin.Find('.')!=0)
-							Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
+						if (Vdlin.Find('.')!=0 && Vdlin.GetToken(2,".")$ == "0")
+							Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
 						
 						
 						Vdsat$=col(E)[L]$;
 						Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 						Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-						if (Vdsat.Find('.')!=0)
-							Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
+						if (Vdsat.Find('.')!=0 && Vdsat.GetToken(2,".")$ == "0")
+							Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
 						
 						
 						// Extract VgStart and VgStop
@@ -942,8 +942,8 @@
 							string Vg$=wcol(i+1)[L]$; // Start from column 2
 							Vg$=Vg.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 							Vg$=Vg.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-							int Vgint = %(Vg$); // Convert string to integer
-							Vg$= $(Vgint); // Convert integer to string (these two lines get rid of the decimal points)
+							if (Vg.Find('.')!=0 && Vg.GetToken(2,".")$ == "0")
+								Vg$=Vg.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
 							
 							
 							// Create a new column for abs(Id)

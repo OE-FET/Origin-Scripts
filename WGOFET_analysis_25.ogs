@@ -1,9 +1,9 @@
 // This script is used in transfer curves taken with the low noise rig in two drain voltages. It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
 // NOTE: If the curves are not plotted in the right order, open the workbook to be plotted first before running the script.
 // Author: Dimitrios Simatos
-// Version: 2.4
+// Version: 2.5
 // Current status: Works well.
-// Changes: Fixed output path.
+// Changes: Changed the condition for the decimal point truncation.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -306,15 +306,15 @@
 						//string Vdlin$=col(D)[L]$;
 						//Vdlin$=Vdlin.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 						//Vdlin$=Vdlin.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-						//if (Vdlin.Find('.')!=0)
-							//Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
+						//if (Vdlin.Find('.')!=0 && Vdlin.GetToken(2,".")$ == "0")
+							//Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
 						
 						
 						Vdsat$=col(C)[L]$;
 						Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 						Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-						if (Vdsat.Find('.')!=0)
-							Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
+						if (Vdsat.Find('.')!=0 && Vdsat.GetToken(2,".")$ == "0")
+							Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
 						
 						
 						// Extract VgStart and VgStop
@@ -998,7 +998,8 @@
 							string Vg$=wcol(i+1)[L]$; // Start from column 2
 							Vg$=Vg.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 							Vg$=Vg.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-							Vg$=Vg.GetToken(1,".")$; // Take the string on the left of the "." (get rid of the decimal points)
+							if (Vg.Find('.')!=0 && Vg.GetToken(2,".")$ == "0")
+								Vg$=Vg.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
 							
 							
 							// Create a new column for abs(Id)
