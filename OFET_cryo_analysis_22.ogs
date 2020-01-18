@@ -12,9 +12,9 @@
 // NOTE: When fitting the activation energy, fit only the linear part of the ln(mu) curve. Do NOT fit the hump at high temperatures, and the point at 100K (it will not be 100K due to Joule heating).
 
 // Author: Dimitrios Simatos
-// Version: 2.1
+// Version: 2.2
 // Current status: Workbooks with different device numbers need to be processed separately.
-// Changes: Changed the condition for the decimal point truncation.
+// Changes: Added legend strings for concentration and additive type.
 
 
 [Main]
@@ -123,6 +123,8 @@
 		double rlin; // Reliability factor (Linear)
 		double rsat; // Reliability factor (Saturation)
 		
+		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
+		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
 		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
 		string daysgraphlegend$; // This string will depend on "daysNo" and it will display the type of liquid for the graph legend
 		string pressuregraphlegend$; // This string will depend on "pressure" and it will display the pressure for the graph legend

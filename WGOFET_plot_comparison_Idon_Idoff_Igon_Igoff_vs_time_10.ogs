@@ -1,8 +1,8 @@
 // This script is used on WG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
-// Version: 0.9
+// Version: 1.0
 // Current status: Works well.
-// Changes: Added time variable to template names.
+// Changes: Added legend strings for concentration and additive type.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -100,6 +100,7 @@
 
 		
 
+		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
 		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
 		string condgraphlegend$; // This string will depend on "condition" and it will display the type of liquid for the graph legend
 		string daysgraphlegend$; // This string will depend on "daysNo" and it will display the type of liquid for the graph legend

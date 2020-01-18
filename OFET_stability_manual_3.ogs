@@ -1,17 +1,21 @@
-// This script is used in bias stress measurements taken with the low noise rig or the testing rig in two drain voltages. It loops over all the workbooks in the folder and plots the transfer and output curves.
-// It then calculates and plots the current vs time, the transfer/output curves, and the threshold voltages vs time.
+// This script is used in transfer curves taken with the low noise rig in two drain voltages, in consecutive time points. It loops over all the workbooks in the folder and plots the transfer and output curves.
+// It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, reliability factor, and Idon vs time.
 // NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
 
 // How to use:
 // 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
-// 2. Run the script.
-// 3. Check that the Vt linear fitting is correct. Otherwise adjust the "int firstrow=lastrow-round(lastrow/6)" row. Reduce the denominator (e.g. to 3) to get a linear fit with more points if needed. Then re-run the script.
+// 2. Copy all the data for a single device to a separate folder.
+// 3. Activate the very first workbook and hide the rest. If I hide all the workbooks, the script may start from the last workbook.
+// 4. Run the script.
+// 5. Check that the Vt linear fitting is correct. Otherwise adjust the "int firstrow=lastrow-round(lastrow/6)" row. Reduce the denominator (e.g. to 3) to get a linear fit with more points if needed. Then re-run the script.
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
+// NOTE: When fitting the activation energy, fit only the linear part of the ln(mu) curve. Do NOT fit the hump at high temperatures, and the point at 100K (it will not be 100K due to Joule heating).
 
 // Author: Dimitrios Simatos
-// Version: 2.1
-// Current status: Workbooks with different device numbers need to be processed separately.
-// Changes: Changed the condition for the decimal point truncation.
+// Version: 0.3
+// Current status: Works well.
+// Changes: Added legend strings for concentration and additive type.
+
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -22,6 +26,42 @@
 	del -al *;// Delete all the local and session variables
 	
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
+function string findCondition (string condition)
+{
+	switch (%(condition$)) // Case study
+		{
+			case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+				condgraphlegend$ = "DI water"; // Comment field (graph legend)
+				break;
+			
+			case "up-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+				condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
+				break;
+			
+			case "t-H2O": // If the string is "town", write "town water" in the comment field
+				condgraphlegend$ = "Town water"; // Comment field (graph legend)
+				break;
+			
+			case "ss": // If the string is "town", write "town water" in the comment field
+				condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
+				break;
+			
+			case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+				string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
+				pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
+				string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
+				string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
+				condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
+				break;
+				
+			default: // For all other strings, write the condition string in the comment field
+				condgraphlegend$ = condition$; // Comment field (graph legend)
+				break;
+		}
+			
+		return condgraphlegend$;
+}
+
 function string findTime (string timelength)
 {
 	if (timelength$ != "initial")
@@ -29,44 +69,13 @@ function string findTime (string timelength)
 			timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
 			timeunits$ = timelength.GetToken(2,"-")$; // get the string, which shows the time units
 			
-			switch (%(timeunits$)) // Case study
-				{
-					case "sec": // If the units are "sec", then
-						if (%(timeNo$) > 60 && %(timeNo$) < 3600)
-						{
-							timegraphlegend$ = "$(round(%(timeNo$)/60,1)) m";
-							break;
-						}
-						if (%(timeNo$) > 3600)
-						{
-							timegraphlegend$ = "$(round(%(timeNo$)/3600,1)) h";
-							break;
-						}
-						else
-							timegraphlegend$ = "%(timeNo$) s"; // Comment field (graph legend)
-							break;
-						
-					case "min": // If the units are "min", then
-						if (%(timeNo$) > 60)
-						{
-							timegraphlegend$ = "$(round(%(timeNo$)/60,1)) h";
-							break;
-						}
-						else
-							timegraphlegend$ = "%(timeNo$) m"; // Comment field (graph legend)
-							break;
-						
-					case "h": // If the units are "h", then
-						timegraphlegend$ = "%(timeNo$) h"; // Comment field (graph legend)
-						break;
-						
-					default: // For all other strings, write the extracted field in the comment field
-						timegraphlegend$ = timeNo$ + " " + timeunits$; // Comment field (graph legend)
-						break;
-				}
+			if (timeunits$ == "min")
+				timeunits$ = "minutes";
 			
-			//if (timeNo$ == "1")
-				//timegraphlegend.TrimRight("s"); // If the number is 1, use single form
+			timegraphlegend$ = timeNo$ + " " + timeunits$; // Comment field (graph legend)
+			
+			if (timeNo$ == "1")
+				timegraphlegend.TrimRight("s"); // If the number is 1, use single form
 			
 		};
 		else
@@ -75,26 +84,25 @@ function string findTime (string timelength)
 			
 		return timegraphlegend$;
 }
+
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
-	string UavgTimeWorkbook$; // The long name of the Uavg-Time workbook
+	string IdonUavgTimeWorkbook$; // The long name of the Idon-Uavg-Time workbook
+	string IdonTimeGraph$; // The long name of the Idon-Time graph
 	string UavgTimeGraph$; // The long name of the Uavg-Time graph
 	string VtTimeGraph$; // The long name of the Vt-Time graph
-
+	
+	
 	doc -ef LB { // loop over all workbooks in folder
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		page.active = 1; // Switch to the first worksheet.
 		
 		string sheetname$=page.longname$; // Get the name of worksheet
 		
-		int i = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
-		int j = sheetname.Find("sample_vs_time"); // It will yield a value different than 0 if the filename contains "sample_vs_time".
-		int k = sheetname.Find("Uavg-Time");
-		int s = sheetname.Find("_S_");
+		int i = sheetname.Find("Idon-Uavg-Time");
+		if(i!=0) continue; // If "Idon-Uavg-Time" is present in the filename, then continue.
 		
-		if (i!=0 || k!=0 || s!=0) continue; // If the filename contains "script" or "sample_vs_time" or "Uavg-Time", then just continue to the next workbook.
-	
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
 		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
@@ -122,80 +130,18 @@ function string findTime (string timelength)
 		string length$ = sheetname.GetToken(12,"_")$; // Get the string that shows the channel length
 		string lengthnumber$ = length.GetToken(1,"-")$; // Get the string that shows the length number
 		string lengthunits$ = length.GetToken(2,"-")$; // Get the string that shows the length units
-
-		string condition$ = sheetname.GetToken(13,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string storageCondition$ = sheetname.GetToken(13,"_")$; // Get the string that shows the storage conditions (air/type of liquid)
 		string dayslength$ = sheetname.GetToken(14,"_")$; // get the string, which shows the number of days
-		string BiasStressType$ = sheetname.GetToken(15,"_")$; // get the string, which shows the type of bias stress (PBS/NBS)
-		
-		// This check is done after the GetToken commands, so that the strings can be extracted, and the template located.
-		if (j!=0) {
-			string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
-			
-			col(A)[L]$ = "Time"; // Long name
-			col(A)[U]$ = "s"; // Units
-			
-			col(B)[L]$ = "Is"; // Long name
-			col(B)[U]$ = "A"; // Units
-			
-			col(C)[L]$ = "Id"; // Long name
-			col(C)[U]$ = "A"; // Units
-			
-			col(D)[L]$ = "Ig"; // Long name
-			col(D)[U]$ = "A"; // Units
-			
-			col(E)[L]$ = "Id ratio"; // Long name
-			col(E)[U]$ = %; // Units
-			double Idratio = col(C)[wks.maxrows]/col(C)[1]*100; // Id ratio
-			Idratio = round(Idratio,0); // Round the Id ratio
-			col(E)[1] = Idratio; // Id ratio
-			
-			
-			// Plot Sample vs Time
-			range rIdStress = [%H]1!col(C);  // data range of Id (Stress)
-			range rIgStress = [%H]1!col(D);  // data range of Ig (Stress)
-			
-			string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_sample_vs_time";
-			if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-			{
-				// Check if the template exists, otherwise, use a generic one
-				string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_sample_vs_time.otpu"; // This is the template path
-				if (exist(Template$)!=-1)// if the template exists
-					win -t p "%(Template$)"; // create a graph window using template
-				else
-					win -t p "%(templatepath$)Generic_sample_vs_time.otpu"; // create a graph window using a generic template
-				
-				page.longname$ = graphname$; //this renames the active window (long name)
-				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-			};
-			else
-				win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-			
-			page.active = 1; // activate Layer 1
-			layer.include(rIdStress);  // plot in the active layer
-			layer.include(rIgStress);  // plot in the active layer
-			//layer -a;  // rescale the layer
-			//layer -g; // Group the datasets in the layer to auto-color increment
-			//layer -gu; // Ungroup the datasets in the layer
-			//legend; // Update the legend
-			
-			if (exist(Text,16)==16) Text.text$ = I\-(d,fin)/I\-(d,init)=$(Idratio) %; // If the label exists, update it
-			plot -c; // refresh the graph to update the labels
-			
-			win -a %(previousworkbook$);  // activate the previous window (workbook)
-			window -ch 1; // hide the workbook that was processed
-			continue;
-				
-		};
-		
+		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
+		string measCondition$ = sheetname.GetToken(15,"_")$; // Get the string that shows the measurement conditions (air/type of liquid)
 		string timelength$ = sheetname.GetToken(16,"_")$; // get the string, which shows the elapsed time
-		string timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
-		string timeunits$; // the string, which shows the time units
-		string meastype$=sheetname.GetToken(17,"_")$; // Get the string "T", "O", or "S", which shows if the curve is a transfer or output curve
-			
+		string minutesNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of minutes
+		string meastype$=sheetname.GetToken(17,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
 		string measNo$=sheetname.GetToken(18,"_")$; // Get the string that shows the measurement number
 		string mode$=sheetname.GetToken(19,"_")$; // Get the string that shows the measurement mode
 		string intime$=sheetname.GetToken(20,"_")$; // Get the string that shows the integration time
-		intime$=intime.GetToken(1,".")$; // Remove ".txt" from the integration time		
+		intime$=intime.GetToken(1,".")$; // Remove ".txt" from the integration time
+		
 		
 		// Transfer curve parameters
 		double W=1000; // Width [um]
@@ -207,23 +153,15 @@ function string findTime (string timelength)
 		double dielectricthickness=550; // Dielectric thickness [nm]
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
-
-		// Thickness
-		// CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
-		// CYTOP-S 100%: The measured thickness is 570 nm.
-		// CYTOP-M 3-1: 550 nm
-		// CYTOP-M 1-5: 25 nm
-		// CYTOP-S 3-1: 860 nm
-		// CYTOP-S 1.5-1: 490 nm
-		// CYTOP-S 1-1: 370 nm
-		// CYTOP-S 1-2: 140 nm
-		// CYTOP-S 1-3: 100 nm
-		// PMMA: 300 nm
 		
 		double jmaxlin; // Max channel current density (Linear)
 		double jmaxsat; // Max channel current density (Saturation)
 		double Pmaxlin; // Max channel power density (Linear)
 		double Pmaxsat; // Max channel power density (Saturation)
+		double Idonlin; // Id on (Linear)
+		double Idonsat; // Id on (Saturation)
+		double ulinavg; // Average mobility (Linear)
+		double usatavg; // Average mobility (Saturation)
 		
 		string Vdlin$; // Vd in the linear regime
 		string Vdsat$; // Vd in the saturation regime
@@ -232,9 +170,12 @@ function string findTime (string timelength)
 		double rlin; // Reliability factor (Linear)
 		double rsat; // Reliability factor (Saturation)
 		
-		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
-		string daysgraphlegend$; // This string will depend on "dayslength" and it will display the type of liquid for the graph legend
-		string timegraphlegend$; // This string will depend on "timelength" and it will display the number of minutes for the graph legend
+		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
+		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
+		string storagecondgraphlegend$; // This string will depend on "storageCondition" and it will display the type of storage condition for the graph legend
+		string meascondgraphlegend$; // This string will depend on "measCondition" and it will display the type of measurement condition for the graph legend
+		string daysgraphlegend$; // This string will depend on "daysNo" and it will display the type of liquid for the graph legend
+		string timegraphlegend$; // This string will depend on "minutesNo" and it will display the number of minutes for the graph legend
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 		// Check for NaN columns
@@ -249,11 +190,14 @@ function string findTime (string timelength)
 			{
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				// Case structures from filenames (used for legends).
-					
-					string daysgraphlegend$ = findTime(dayslength$)$; // Note ending '$'
-					string timegraphlegend$ = findTime(timelength$)$; // Note ending '$'
-					
-					string legend$ = "%(timegraphlegend$)"; // Legend
+				
+				storagecondgraphlegend$ = findCondition(storageCondition$)$; // Note ending '$'
+				meascondgraphlegend$ = findCondition(measCondition$)$; // Note ending '$'
+				daysgraphlegend$ = findTime(dayslength$)$; // Note ending '$'
+				timegraphlegend$ = findTime(timelength$)$; // Note ending '$'
+				
+				
+				string legend$ = "%(timegraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
 				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
@@ -281,8 +225,13 @@ function string findTime (string timelength)
 						
 						
 						// Extract VgStart and VgStop
-						string VgStart$=$(col(A)[1]); // VgStart is the value of the first cell of col(A)
+						string VgStart$=$(col(A)[1]); // VgStart is the value of the first cell of col(A)						
 						string VgStop$=$(col(A)[wks.maxrows/2]); // VgStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+						
+						
+						// Extract Idon in the Linear and Saturation regime
+						Idonlin=$(col(D)[wks.maxrows/2]); // Id on (Linear) is the middle cell of col(D) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+						Idonsat=$(col(E)[wks.maxrows/2]); // Id on (Linear) is the middle cell of col(E) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
 						
 						
 						// Write long name, units, comments, and parameters of columns
@@ -548,11 +497,11 @@ function string findTime (string timelength)
 						
 						
 						// Plot linear transfer curves for a single time point
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_%(timelength$)_Transfer_Vd=%(Vdlin$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_%(measCondition$)_%(timelength$)_Transfer_Vd=%(Vdlin$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -575,11 +524,11 @@ function string findTime (string timelength)
 						
 						
 						// Plot saturation transfer curves for a single time point
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_%(timelength$)_Transfer_Vd=%(Vdsat$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_%(measCondition$)_%(timelength$)_Transfer_Leakage_Vd=%(Vdsat$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -601,19 +550,18 @@ function string findTime (string timelength)
 						legend; // Update the legend
 						
 						
-						
 						// Check if the measurement is the last measurement at a specific time point
-						string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_%(timelength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
+						string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_%(measCondition$)_%(timelength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
 						if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0)
 							continue; // if this is not the last measurement of its kind, then continue to the next iteration
 						
 						
 						// Plot joint transfer curve - SQRT(Idsat) graph for a single time point
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_%(timelength$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_%(measCondition$)_%(timelength$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -646,12 +594,13 @@ function string findTime (string timelength)
 						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 						
 						
+						
 						// Plot linear transfer curve for all time points
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Transfer_Vd=%(Vdlin$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdlin$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -674,11 +623,11 @@ function string findTime (string timelength)
 						
 						
 						// Plot saturation transfer curve for all time points
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Transfer_Vd=%(Vdsat$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -700,13 +649,12 @@ function string findTime (string timelength)
 						//legend; // Update the legend
 						
 						
-						
 						// Plot gm (Linear) for all time points
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_gm-lin_Vd=%(Vdlin$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_gm-lin_Vd=%(Vdlin$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -733,11 +681,11 @@ function string findTime (string timelength)
 						
 						
 						// Plot mobility (Linear) for all time points
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_u-lin_Vd=%(Vdlin$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_u-lin_Vd=%(Vdlin$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -763,12 +711,13 @@ function string findTime (string timelength)
 						legend; // Update the legend
 						
 						
+						
 						// Plot linear fit of Idlin and linear extrapolation (for Vt) for all time points
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-lin_Vd=%(Vdlin$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Vt-lin_Vd=%(Vdlin$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -795,11 +744,11 @@ function string findTime (string timelength)
 						
 						
 						// Plot gm (Saturation) for all time points
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_gm-sat_Vd=%(Vdsat$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_gm-sat_Vd=%(Vdsat$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -826,11 +775,11 @@ function string findTime (string timelength)
 						
 						
 						// Plot mobility (Saturation) for all time points
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_u-sat_Vd=%(Vdsat$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_u-sat_Vd=%(Vdsat$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -857,11 +806,11 @@ function string findTime (string timelength)
 						
 						
 						// Plot linear fit of SQRT(Idsat) and linear extrapolation (for Vt) for all time points
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-sat_Vd=%(Vdsat$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Vt-sat_Vd=%(Vdsat$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -887,13 +836,12 @@ function string findTime (string timelength)
 						//legend; // Update the legend
 						
 						
-						
 						// Plot contact resistance (Linear) for all time points
-						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Rc-lin_Vd=%(Vdlin$)V";
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Rc-lin_Vd=%(Vdlin$)V";
 						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 						{
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
@@ -913,51 +861,72 @@ function string findTime (string timelength)
 						//layer -gu; // Ungroup the datasets in the layer
 						legend; // Update the legend
 						
-						
 						win -a %(previousworkbook$);  // activate the previous window (workbook)
 						
 						
-						// Copy mobility (Linear and Saturation) and Vt values for all time points
-						UavgTimeWorkbook$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V.txt";
-						if(exist(%(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$))==0) // if there is no workbook for this type of measurement then create a new workbook
+						// Copy Idon, mobility (Linear and Saturation) and Vt values for all time points
+						IdonUavgTimeWorkbook$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Idon-Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V.txt";
+						if(exist(%(uid2name(range2uid(["%(IdonUavgTimeWorkbook$)"]))$))==0) // if there is no workbook for this type of measurement then create a new workbook
 						{
 							
 							newbook option:=lsname;
-							page.longname$ = UavgTimeWorkbook$;
+							page.longname$ = IdonUavgTimeWorkbook$;
 							wks.name$ = "Parameters vs Time"; // Change the sheet name to "Parameters vs Time"
-							wks.ncols = 5; // set total column number to 5
+							wks.ncols = 7; // set total column number to 7
 							wks.colwidth = 10;// set all col width to 10
 							
 							col(A)[L]$ = "Time"; // Long name
-							col(A)[U]$ = "s"; // Units
+							col(A)[U]$ = "Minutes"; // Units
 							
-							col(B)[L]$ = "Average mobility"; // Long name
-							col(B)[U]$ = cm^2/V*s; // Units
-							col(B)[C]$ = "Linear";
+							col(B)[L]$ = "Id on"; // Long name
+							col(B)[U]$ = A; // Units
+							col(B)[C]$ = "Linear";							
 							
-							col(C)[L]$ = "Average mobility"; // Long name
-							col(C)[U]$ = cm^2/V*s; // Units
+							col(C)[L]$ = "Id on"; // Long name
+							col(C)[U]$ = A; // Units
 							col(C)[C]$ = "Saturation";
 							
-							col(D)[L]$ = "Threshold voltage"; // Long name
-							col(D)[U]$ = V; // Units
+							col(D)[L]$ = "Average mobility"; // Long name
+							col(D)[U]$ = cm^2/V*s; // Units
 							col(D)[C]$ = "Linear";
 							
-							col(E)[L]$ = "Threshold voltage"; // Long name
-							col(E)[U]$ = V; // Units
+							col(E)[L]$ = "Average mobility"; // Long name
+							col(E)[U]$ = cm^2/V*s; // Units
 							col(E)[C]$ = "Saturation";
+							
+							col(F)[L]$ = "Threshold voltage"; // Long name
+							col(F)[U]$ = V; // Units
+							col(F)[C]$ = "Linear";
+							
+							col(G)[L]$ = "Threshold voltage"; // Long name
+							col(G)[U]$ = V; // Units
+							col(G)[C]$ = "Saturation";
+							
+							
+							// Create plot Idon vs Time
+							
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Idon-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Idon-Time.otpu"; // create a graph window using a generic template
+							
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Idon-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+							IdonTimeGraph$ = page.longname$;
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 							
 							
 							// Create plot u vs Time
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
 								win -t p "%(templatepath$)Generic_Uavg-Time.otpu"; // create a graph window using a generic template
 							
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
 							UavgTimeGraph$ = page.longname$;
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 							
@@ -965,28 +934,30 @@ function string findTime (string timelength)
 							// Create plot Vt vs Time
 							
 							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
 								win -t p "%(templatepath$)Generic_Vt-Time.otpu"; // create a graph window using a generic template
 							
-							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
 							VtTimeGraph$ = page.longname$;
 							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 							
 						};
 						
-						win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
+						win -a %(uid2name(range2uid(["%(IdonUavgTimeWorkbook$)"]))$); // activate the workbook
 						
 						
 						// Copy average mobility (Linear and Saturation)
-						if (timeNo$ != "Initial"){ // If timeNo$ is "Initial" then do not attempt to write the cell.
-							col(A)[wks.maxrows+1] = %(timeNo$); // Increase No of rows by 1.
-							col(B)[wks.maxrows] = ulinavg; // Rows have already increased, so there's no need to add 1.
-							col(C)[wks.maxrows] = usatavg; // Rows have already increased, so there's no need to add 1.
-							col(D)[wks.maxrows] = Vtlin; // Rows have already increased, so there's no need to add 1.
-							col(E)[wks.maxrows] = Vtsat; // Rows have already increased, so there's no need to add 1.
+						if (minutesNo$ != "Initial"){ // If minutesNo$ is "Initial" then do not attempt to write the cell.
+							col(A)[wks.maxrows+1] = %(minutesNo$); // Increase No of rows by 1.
+							col(B)[wks.maxrows] = Idonlin; // Rows have already increased, so there's no need to add 1.
+							col(C)[wks.maxrows] = Idonsat; // Rows have already increased, so there's no need to add 1.
+							col(D)[wks.maxrows] = ulinavg; // Rows have already increased, so there's no need to add 1.
+							col(E)[wks.maxrows] = usatavg; // Rows have already increased, so there's no need to add 1.
+							col(F)[wks.maxrows] = Vtlin; // Rows have already increased, so there's no need to add 1.
+							col(G)[wks.maxrows] = Vtsat; // Rows have already increased, so there's no need to add 1.
 						};
 						
 						win -a %(previousworkbook$);  // activate the previous window (workbook)
@@ -1041,17 +1012,17 @@ function string findTime (string timelength)
 							
 							
 							// Check if the measurement is the last measurement at this specific time point
-							string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_%(timelength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
+							string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_%(measCondition$)_%(timelength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
 							if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0)
 								continue; // if this is not the last measurement of its kind, then continue to the next iteration
 							
 							
 							// Output plot with all the Id for a single time point
-							string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_%(timelength$)_Output";
+							string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_%(measCondition$)_%(timelength$)_Output";
 							if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 							{
 								// Check if the template exists, otherwise, use a generic one
-								string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // This is the template path
+								string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // This is the template path
 								if (exist(Template$)!=-1)// if the template exists
 									win -t p "%(Template$)"; // create a graph window using template
 								else
@@ -1072,11 +1043,11 @@ function string findTime (string timelength)
 							
 							
 							// Individual output plot with a single Id and Ig for all time points
-							string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Output_Vg=%(Vg$)V";
+							string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(storageCondition$)_%(dayslength$)_Output_Vg=%(Vg$)V";
 							if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 							{
 								// Check if the template exists, otherwise, use a generic one
-								string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
+								string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
 								if (exist(Template$)!=-1)// if the template exists
 									win -t p "%(Template$)"; // create a graph window using template
 								else
@@ -1104,25 +1075,29 @@ function string findTime (string timelength)
 			};
 	};
 	
-	// Plot u and Vt vs Time
-	win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
-	range rulinavgTime = [%H]1!col(B);  // data range of average Mobility (Linear)
-	range rusatavgTime = [%H]1!col(C);  // data range of average Mobility (Saturation)
-	range rVtlinTime = [%H]1!col(D);  // data range of Threshold voltage (Linear) column
-	range rVtsatTime = [%H]1!col(E);  // data range of Threshold voltage (Saturation) column
+	// Plot Idon, u, and Vt vs Time
+	win -a %(uid2name(range2uid(["%(IdonUavgTimeWorkbook$)"]))$); // activate the workbook
+	range rIdonlinTime = [%H]1!col(B);  // data range of Id on (Linear) column
+	range rIdonsatTime = [%H]1!col(C);  // data range of Id on (Saturation) column
+	range rulinavgTime = [%H]1!col(D);  // data range of average Mobility (Linear)
+	range rusatavgTime = [%H]1!col(E);  // data range of average Mobility (Saturation)
+	range rVtlinTime = [%H]1!col(F);  // data range of Threshold voltage (Linear) column
+	range rVtsatTime = [%H]1!col(G);  // data range of Threshold voltage (Saturation) column
 	
 	window -ch 1; // hide the workbook that was processed
+	
+	win -a %(uid2name(range2uid(["%(IdonTimeGraph$)"]))$); // activate the workbook
+	page.active = 1; // activate Layer 1
+	
+	layer -i201 rIdonlinTime;  // plot in the active layer as scatter plot
+	layer -i201 rIdonsatTime;  // plot in the active layer as scatter plot
+	
 	
 	win -a %(uid2name(range2uid(["%(UavgTimeGraph$)"]))$); // activate the workbook
 	page.active = 1; // activate Layer 1
 	
 	layer -i201 rulinavgTime;  // plot in the active layer as scatter plot
 	layer -i201 rusatavgTime;  // plot in the active layer as scatter plot
-		
-	//layer -a;  // rescale the layer
-	////layer -g; // Group the datasets in the layer to auto-color increment
-	////layer -gu; // Ungroup the datasets in the layer
-	//legend; // Update the legend
 	
 	
 	win -a %(uid2name(range2uid(["%(VtTimeGraph$)"]))$); // activate the workbook
@@ -1130,9 +1105,4 @@ function string findTime (string timelength)
 
 	layer -i201 rVtlinTime;  // plot in the active layer as scatter plot
 	layer -i201 rVtsatTime;  // plot in the active layer as scatter plot
-		
-	//layer -a;  // rescale the layer
-	////layer -g; // Group the datasets in the layer to auto-color increment
-	////layer -gu; // Ungroup the datasets in the layer
-	//legend; // Update the legend
 };
