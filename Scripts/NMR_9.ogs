@@ -37,7 +37,7 @@
 		// Solvent stands for a deuterated solvent exposed to different conditions (e.g. to trace contaminants).
 		
 		
-			switch (%(architecture$)) // Case study
+		switch (%(architecture$)) // Case study
 		{
 			case "Solvent": // If the string is "Solvent"
 				string solventD$ = sheetname.GetToken(5,"_")$; // Get the string that shows the deuterated solvent
@@ -137,8 +137,8 @@
 					
 		}
 			
-			scale$=scale.GetToken(1,".")$; // Remove ".txt" from the scale
-			scale.Replace(",", "."); // replace "," with "."
+		scale$=scale.GetToken(1,".")$; // Remove ".txt" from the scale
+		scale.Replace(",", "."); // replace "," with "."
 		
 		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
 		string timegraphlegend$; // This string will depend on "timeNo" and it will display the type of liquid for the graph legend
@@ -150,212 +150,212 @@
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-				// Case structures from filenames (used for legends).
-				
-							
-				switch (%(condition$)) // Case study
-					{
-						case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
-							condgraphlegend$ = "DI water"; // Comment field (graph legend)
-							break;
-						
-						case "up-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
-							condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
-							break;
-						
-						case "t-H2O": // If the string is "town", write "town water" in the comment field
-							condgraphlegend$ = "Town water"; // Comment field (graph legend)
-							break;
-						
-						case "ss": // If the string is "town", write "town water" in the comment field
-							condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
-							break;
-						
-						case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
-							string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
-							pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
-							string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
-							string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
-							condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
-							break;
-						
-							
-						case "bottle-N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Bottle reference in N2"; // Comment field (graph legend)
-							break;
-							
-						case "bottle-air": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Bottle reference in air"; // Comment field (graph legend)
-							break;
-						
-						case "vial-N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Vial reference in N2"; // Comment field (graph legend)
-							break;
-						
-						case "vial-air": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Vial reference in air"; // Comment field (graph legend)
-							break;
-						
-						case "glovebox-bubble-N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Bubbled N2"; // Comment field (graph legend)
-							break;
-							
-						case "line-bubble-N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Bubbled N2 (N2 line)"; // Comment field (graph legend)
-							break;
-						
-						case "gun-bubble-N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Bubbled N2 (N2 gun)"; // Comment field (graph legend)
-							break;
-						
-						case "glovebox-substrate-N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Deposited on substrate in N2"; // Comment field (graph legend)
-							break;
-						
-						case "glovebox-substrate-air": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Deposited on substrate in air"; // Comment field (graph legend)
-							break;
-						
-						case "pipette-plastic-N2": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Plastic pipette reference in N2"; // Comment field (graph legend)
-							break;
-							
-						case "suringe-glass-air": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Glass syringe reference in air"; // Comment field (graph legend)
-							break;
-							
-						case "syringe-glass-vial-air": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Vial reference in air (glass syringe)"; // Comment field (graph legend)
-							break;
-						
-						case "pipette-glass-vial-air": // If the string is "N2", write "N2" in the comment field
-							condgraphlegend$ = "Vial reference in air (glass pipette)"; // Comment field (graph legend)
-							break;
-						
-						default: // For all other strings, write the extracted field in the comment field
-							condgraphlegend$ = condition$; // Comment field (graph legend)
-							break;
-					}
-				
-				
-			if (time$ == "initial")
-				
-				legend$ = "%(condgraphlegend$), %(time$)"; // Legend
-			
-			else
-			{
-				timeNo$ = time.GetToken(1,"-")$; // get the string, which shows the time (number)
-				timeunits$ = time.GetToken(2,"-")$; // get the string, which shows the time units
+		// Case structures from filenames (used for legends).
 		
-				switch (%(timeunits$)) // Case study
-					{
-						
-						case "sec": // If the units are "min", change them to "minutes" for the legend
-							timegraphlegend$ = "seconds"; // Comment field (graph legend)
-							break;
-							
-						case "min": // If the units are "min", change them to "minutes" for the legend
-							timegraphlegend$ = "minutes"; // Comment field (graph legend)
-							break;
-							
-						case "h": // If the units are "min", change them to "minutes" for the legend
-							timegraphlegend$ = "hours"; // Comment field (graph legend)
-							break;
-						
-						default: // For all other strings, write the extracted field in the comment field
-							timegraphlegend$ = timeunits$; // Comment field (graph legend)
-							break;
-					}
+		
+		switch (%(condition$)) // Case study
+			{
+				case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+					condgraphlegend$ = "DI water"; // Comment field (graph legend)
+					break;
 				
-				if (timeNo$ == "1")
-					timegraphlegend.TrimRight("s"); // If the number is 1, use single form
+				case "up-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+					condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
+					break;
 				
-				legend$ = "%(condgraphlegend$), %(timeNo$) %(timegraphlegend$)"; // Legend
-			};
+				case "t-H2O": // If the string is "town", write "town water" in the comment field
+					condgraphlegend$ = "Town water"; // Comment field (graph legend)
+					break;
+				
+				case "ss": // If the string is "town", write "town water" in the comment field
+					condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
+					break;
+				
+				case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+					string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
+					pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
+					string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
+					string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
+					condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
+					break;
+				
 					
+				case "bottle-N2": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Bottle reference in N2"; // Comment field (graph legend)
+					break;
 					
+				case "bottle-air": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Bottle reference in air"; // Comment field (graph legend)
+					break;
+				
+				case "vial-N2": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Vial reference in N2"; // Comment field (graph legend)
+					break;
+				
+				case "vial-air": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Vial reference in air"; // Comment field (graph legend)
+					break;
+				
+				case "glovebox-bubble-N2": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Bubbled N2"; // Comment field (graph legend)
+					break;
+					
+				case "line-bubble-N2": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Bubbled N2 (N2 line)"; // Comment field (graph legend)
+					break;
+				
+				case "gun-bubble-N2": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Bubbled N2 (N2 gun)"; // Comment field (graph legend)
+					break;
+				
+				case "glovebox-substrate-N2": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Deposited on substrate in N2"; // Comment field (graph legend)
+					break;
+				
+				case "glovebox-substrate-air": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Deposited on substrate in air"; // Comment field (graph legend)
+					break;
+				
+				case "pipette-plastic-N2": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Plastic pipette reference in N2"; // Comment field (graph legend)
+					break;
+					
+				case "suringe-glass-air": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Glass syringe reference in air"; // Comment field (graph legend)
+					break;
+					
+				case "syringe-glass-vial-air": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Vial reference in air (glass syringe)"; // Comment field (graph legend)
+					break;
+				
+				case "pipette-glass-vial-air": // If the string is "N2", write "N2" in the comment field
+					condgraphlegend$ = "Vial reference in air (glass pipette)"; // Comment field (graph legend)
+					break;
+				
+				default: // For all other strings, write the extracted field in the comment field
+					condgraphlegend$ = condition$; // Comment field (graph legend)
+					break;
+			}
+				
+				
+		if (time$ == "initial")
+			
+			legend$ = "%(condgraphlegend$), %(time$)"; // Legend
+		
+		else
+		{
+			timeNo$ = time.GetToken(1,"-")$; // get the string, which shows the time (number)
+			timeunits$ = time.GetToken(2,"-")$; // get the string, which shows the time units
+		
+			switch (%(timeunits$)) // Case study
+				{
+					
+					case "sec": // If the units are "min", change them to "minutes" for the legend
+						timegraphlegend$ = "seconds"; // Comment field (graph legend)
+						break;
+						
+					case "min": // If the units are "min", change them to "minutes" for the legend
+						timegraphlegend$ = "minutes"; // Comment field (graph legend)
+						break;
+						
+					case "h": // If the units are "min", change them to "minutes" for the legend
+						timegraphlegend$ = "hours"; // Comment field (graph legend)
+						break;
+					
+					default: // For all other strings, write the extracted field in the comment field
+						timegraphlegend$ = timeunits$; // Comment field (graph legend)
+						break;
+				}
+			
+			if (timeNo$ == "1")
+				timegraphlegend.TrimRight("s"); // If the number is 1, use single form
+			
+			legend$ = "%(condgraphlegend$), %(timeNo$) %(timegraphlegend$)"; // Legend
+		};
+				
+				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
 				string previousworkbook$=%H; // Get the name of the previous window
 				
-						Col(A) = Col(D); // Copy Col(D) to Col(A)
-						wks.name$=method$; // Change the sheet name to the method used (e.g. NMR)
-						wks.ncols=4; // set total column number to 4
-						wks.colwidth = 12;// set all col width to 12
-						
-						
-						// Write long name, units, comments, and parameters of columns
-						col(A)[L]$ = "Chemical Shift"; // Long name
-						col(A)[U]$ = ppm; // Units
-						col(B)[L]$ = "Intensity"; // Long name
-						col(B)[U]$ = AU; // Units
-						col(C)[L]$ = "Frequency"; // Long name
-						col(C)[U]$ = Hz; // Units
-						col(D)[L]$ = "Normalized Intensity"; // Long name
-						col(D)[U]$ = AU; // Units
-						col(D)[O]$ = "Col(B)*%(scale$)"; // Units
-						
-						
-						
-						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-						// Column legends
-						
-						col(B)[C]$ = legend$;
-						col(D)[C]$ = col(B)[C]$; // Comment field (graph legend)
-						
-						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-						// Plot graphs
-						// Set range variables
-						range rintnorm = [%H]1!col(D);  // data range of Normalized Intensity column
-						
-						
-						// Plot NMR spectrum (global)
-						string graphname$="%(batch$)_comparison_%(method$)_%(solventD$)_%(frequency$)_all";
-						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-						{
-							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(templatepath$)%(method$)_%(solventD$)_%(frequency$)"; // This is the template path
-							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(Template$)"; // create a graph window using template
-							else
-								win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
-							
-							page.longname$= graphname$; //this renames the active window (long name)
-							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						};
-						else
-							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-							
-						page.active = 1; // activate Layer 1
-						layer.include(rintnorm);  // plot in the active layer
-						layer -a;  // rescale the layer
-						layer -g; // Group the datasets in the layer to auto-color increment
-						layer -gu; // Ungroup the datasets in the layer
-						legend; // Update the legend
-						
-						
-						// Plot NMR spectrum (single)
-						string graphname$=GraphNameSingle$;
-						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-						{
-							// Check if the template exists, otherwise, use a generic one
-							string Template$="%(TemplateNameSingle$).otpu"; // This is the template path
-							if (exist(Template$)!=-1)// if the template exists
-								win -t p "%(Template$)"; // create a graph window using template
-							else
-								win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
-							
-							page.longname$= graphname$; //this renames the active window (long name)
-							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						};
-						else
-							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-							
-						page.active = 1; // activate Layer 1
-						layer.include(rintnorm);  // plot in the active layer
-						layer -a;  // rescale the layer
-						layer -g; // Group the datasets in the layer to auto-color increment
-						layer -gu; // Ungroup the datasets in the layer
-						legend; // Update the legend
-			};
+				Col(A) = Col(D); // Copy Col(D) to Col(A)
+				wks.name$=method$; // Change the sheet name to the method used (e.g. NMR)
+				wks.ncols=4; // set total column number to 4
+				wks.colwidth = 12;// set all col width to 12
+				
+				
+				// Write long name, units, comments, and parameters of columns
+				col(A)[L]$ = "Chemical Shift"; // Long name
+				col(A)[U]$ = ppm; // Units
+				col(B)[L]$ = "Intensity"; // Long name
+				col(B)[U]$ = AU; // Units
+				col(C)[L]$ = "Frequency"; // Long name
+				col(C)[U]$ = Hz; // Units
+				col(D)[L]$ = "Normalized Intensity"; // Long name
+				col(D)[U]$ = AU; // Units
+				col(D)[O]$ = "Col(B)*%(scale$)"; // Units
+				
+				
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Column legends
+				
+				col(B)[C]$ = legend$;
+				col(D)[C]$ = col(B)[C]$; // Comment field (graph legend)
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Plot graphs
+				// Set range variables
+				range rintnorm = [%H]1!col(D);  // data range of Normalized Intensity column
+				
+				
+				// Plot NMR spectrum (global)
+				string graphname$="%(batch$)_comparison_%(method$)_%(solventD$)_%(frequency$)_all";
+				if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+				{
+					// Check if the template exists, otherwise, use a generic one
+					string Template$="%(templatepath$)%(method$)_%(solventD$)_%(frequency$)"; // This is the template path
+					if (exist(Template$)!=-1)// if the template exists
+						win -t p "%(Template$)"; // create a graph window using template
+					else
+						win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
+					
+					page.longname$= graphname$; //this renames the active window (long name)
+					page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+				};
+				else
+					win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+					
+				page.active = 1; // activate Layer 1
+				layer.include(rintnorm);  // plot in the active layer
+				layer -a;  // rescale the layer
+				layer -g; // Group the datasets in the layer to auto-color increment
+				layer -gu; // Ungroup the datasets in the layer
+				legend; // Update the legend
+				
+				
+				// Plot NMR spectrum (single)
+				string graphname$=GraphNameSingle$;
+				if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+				{
+					// Check if the template exists, otherwise, use a generic one
+					string Template$="%(TemplateNameSingle$).otpu"; // This is the template path
+					if (exist(Template$)!=-1)// if the template exists
+						win -t p "%(Template$)"; // create a graph window using template
+					else
+						win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
+					
+					page.longname$= graphname$; //this renames the active window (long name)
+					page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+				};
+				else
+					win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+					
+				page.active = 1; // activate Layer 1
+				layer.include(rintnorm);  // plot in the active layer
+				layer -a;  // rescale the layer
+				layer -g; // Group the datasets in the layer to auto-color increment
+				layer -gu; // Ungroup the datasets in the layer
+				legend; // Update the legend
+	};
 }

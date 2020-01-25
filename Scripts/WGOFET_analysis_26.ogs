@@ -261,34 +261,34 @@
 						
 				switch (%(mode$)) // Case study
 					{
-						case "P": // If the string is "air", write "air in the comment field
+						case "P": // If the string is "P", write "Pulsed" in the comment field
 							modegraphlegend$ = "Pulsed"; // Comment field (graph legend)
 							break;
 						
-						case "C": // If the string is "air", write "air in the comment field
+						case "C": // If the string is "C", write "Continuous" in the comment field
 							modegraphlegend$ = "Continuous"; // Comment field (graph legend)
 							break;
 						
-						default: // For all other numbers, use plural form
+						default: // For all other cases, write "Continuous" in the comment field
 							modegraphlegend$ = "Continuous"; // Comment field (graph legend)
 							break;
 					}
 							
 				switch (%(intime$)) // Case study
 					{
-						case "S": // If the string is "air", write "air in the comment field
+						case "S": // If the string is "S", write "Short" in the comment field
 							intimegraphlegend$ = "Short"; // Comment field (graph legend)
 							break;
 						
-						case "M": // If the string is "air", write "air in the comment field
+						case "M": // If the string is "M", write "Medium" in the comment field
 							intimegraphlegend$ = "Medium"; // Comment field (graph legend)
 							break;
 						
-						case "L": // If the string is "air", write "air in the comment field
+						case "L": // If the string is "L", write "Long" in the comment field
 							intimegraphlegend$ = "Long"; // Comment field (graph legend)
 							break;
 						
-						default: // For all other numbers, use plural form
+						default: // For all other cases, write "Long" in the comment field
 							intimegraphlegend$ = "Long"; // Comment field (graph legend)
 							break;
 					}

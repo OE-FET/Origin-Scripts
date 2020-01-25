@@ -1,0 +1,283 @@
+// This script is used on text files saved by mMass.
+// NOTE: Run the script twice.
+
+// Author: Dimitrios Simatos
+// Version: 0.1
+// Current status: Untested.
+// Changes: 
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+	
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	string GraphNameSingle$; // The long name of the Graph for the plot of a single MS spectrum
+	string TemplateNameSingle$; // The long name of the Graph Template for the plot of a single MS spectrum
+
+
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string sampleNo$ = sheetname.GetToken(2,"_")$; // Get the string that shows the sample number
+		string method$ = sheetname.GetToken(3,"_")$; // Get the string that shows the experimental method (e.g. LCMS, GCNS)
+		string sampleType$ = sheetname.GetToken(4,"_")$; // Get the string that shows the sample type (e.g. Priming Waste, Experiment Waste)
+		string architecture$ = sheetname.GetToken(5,"_")$; // Get the string that shows the architecture		
+		
+		string material$ = sheetname.GetToken(6,"_")$; // Get the string that shows the material
+		string concentration$ = sheetname.GetToken(7,"_")$; // Get the string that shows the concentration
+		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+		
+		string solvent$ = sheetname.GetToken(8,"_")$; // Get the string that shows the solvent content (of the material, NOT the deuterated solvent used to dissolve the film)
+		
+		string annealing$ = sheetname.GetToken(9,"_")$; // Get the string that shows the additive
+		
+		string additive$ = sheetname.GetToken(10,"_")$; // Get the string that shows the additive
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+		
+		string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string dayslength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
+		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
+		string measNo$ = sheetname.GetToken(13,"_")$; // Get the string that shows the measurement number
+		string IonMode$=sheetname.GetToken(14,"_")$; // Get the string that shows the ion measurement mode
+		IonMode$=IonMode.GetToken(1,".")$; // Remove ".txt" from the scale
+				
+				
+		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
+		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
+		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
+		string daysgraphlegend$; // This string will depend on "daysNo" and it will display the type of liquid for the graph legend
+		string modegraphlegend$; // This string will depend on "IonMode" and it will display the measurement mode for the graph legend
+		
+
+		GraphNameSingle$="%(batch$)_%(sampleNo$)_%(method$)_%(sampleType$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(condition$)_%(dayslength$)_%(measNo$)_%(IonMode$)";
+		TemplateNameSingle$="%(templatepath$)%(method$)_%(sampleType$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(IonMode$)";
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+		// Case structures from filenames (used for legends).
+		
+		
+		if(Nanb$=="NaN" || Nanc$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted, they yield NaN values.
+			else
+			{
+				switch (%(concunits$)) // Case study
+					{
+						case "gl": // If the string is "gl", write "g/l" in the comment field
+							conunitslegend$ = "g/l"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							conunitslegend$ = "mg/ml"; // Comment field (graph legend)
+							break;
+					}
+					
+				switch (%(additivetype$)) // Case study
+					{
+						case "Pristine": // If the string is "TCNQ", write "TCNQ" in the comment field
+							additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+							break;
+						
+						case "TCNQ": // If the string is "TCNQ", write "TCNQ" in the comment field
+							additivegraphlegend$ = "+ TCNQ"; // Comment field (graph legend)
+							break;
+						
+						case "F2TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
+							//string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
+							additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
+							break;
+						
+						case "F4TCNQ": // If the string is "F4TCNQ", write "F4TCNQ" in the comment field
+							//string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
+							additivegraphlegend$ = "+ F4TCNQ"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-1OCT-v": // If the number is 1, use single form
+							additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-1OCT-i": // If the number is 1, use single form
+							additivegraphlegend$ = "+ 1-Octanethiol (immersion)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-TDF1OCT-v": // If the number is 1, use single form
+							additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-TDF1OCT-i": // If the number is 1, use single form
+							additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other strings, write "Pristine" in the comment field
+							additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+							break;
+					}
+					
+				switch (%(condition$)) // Case study
+					{
+						case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+							condgraphlegend$ = "DI water"; // Comment field (graph legend)
+							break;
+						
+						case "up-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+							condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
+							break;
+						
+						case "t-H2O": // If the string is "town", write "town water" in the comment field
+							condgraphlegend$ = "Town water"; // Comment field (graph legend)
+							break;
+						
+						case "ss": // If the string is "town", write "town water" in the comment field
+							condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
+							break;
+						
+						case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+							string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
+							pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
+							string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
+							string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
+							condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
+							break;
+							
+						default: // For all other strings, write the condition string in the comment field
+							condgraphlegend$ = condition$; // Comment field (graph legend)
+							break;
+					}
+						
+				switch (%(daysNo$)) // Case study
+					{
+						case "initial": // If the string is "initial", write "initial" in the comment field
+							daysgraphlegend$ = "initial"; // Comment field (graph legend)
+							break;
+						
+						case "1": // If the number is 1, use single form
+							daysgraphlegend$ = "1 day"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							daysgraphlegend$ = "%(daysNo$) days"; // Comment field (graph legend)
+							break;
+					}
+					
+				switch (%(IonMode$)) // Case study
+					{
+						case "P": // If the string is "P", write "Positive" in the comment field
+							modegraphlegend$ = "Positive"; // Comment field (graph legend)
+							break;
+						
+						case "N": // If the string is "N", write "Negative" in the comment field
+							modegraphlegend$ = "Negative"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other cases, write "Positive" in the comment field
+							modegraphlegend$ = "Positive"; // Comment field (graph legend)
+							break;
+					}					
+					
+				//string legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(daysgraphlegend$), %(minutesgraphlegend$), %(modegraphlegend$), %(intimegraphlegend$)"; // Legend
+				string legend$ = "%(condgraphlegend$), %(daysgraphlegend$)"; // Legend				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				string previousworkbook$=%H; // Get the name of the previous window
+				
+				wks.name$=method$; // Change the sheet name to the method used (e.g. LCMS)
+				wks.ncols=5; // set total column number to 5
+				wks.colwidth = 12;// set all col width to 12
+				
+				
+				// Write long name, units, comments, and parameters of columns
+				col(A)[L]$ = "m/z"; // Long name
+				//col(A)[U]$ = ppm; // Units
+				col(B)[L]$ = "Intensity"; // Long name
+				col(B)[U]$ = AU; // Units				
+				
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Column legends
+				
+				col(B)[C]$ = legend$;
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Plot graphs
+				// Set range variables
+				range rint = [%H]1!col(B);  // data range of Intensity column
+				
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Peak analysis
+				
+				pkfind iy:=[%H]1!col(B) method:=max dir:=p npts:=1 filter:=h value:=2E4 ocenter:=col(3) ocenter_x:=col(4) ocenter_y:=col(5); // Max peaks are filtered by height
+				
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				//// Plot MS spectrum (global)
+				//string graphname$="%(batch$)_comparison_%(method$)_%(frequency$)_all";
+				//if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+				//{
+					//// Check if the template exists, otherwise, use a generic one
+					//string Template$="%(templatepath$)%(method$)_%(frequency$)"; // This is the template path
+					//if (exist(Template$)!=-1)// if the template exists
+						//win -t p "%(Template$)"; // create a graph window using template
+					//else
+						//win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
+					//
+					//page.longname$= graphname$; //this renames the active window (long name)
+					//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+				//};
+				//else
+					//win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+					//
+				//page.active = 1; // activate Layer 1
+				//layer.include(rintnorm);  // plot in the active layer
+				//layer -a;  // rescale the layer
+				//layer -g; // Group the datasets in the layer to auto-color increment
+				//layer -gu; // Ungroup the datasets in the layer
+				//legend; // Update the legend
+				
+				
+				// Plot mass spectrometry spectrum (single)
+				string graphname$=GraphNameSingle$;
+				if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+				{
+					// Check if the template exists, otherwise, use a generic one
+					string Template$="%(TemplateNameSingle$).otpu"; // This is the template path
+					if (exist(Template$)!=-1)// if the template exists
+						win -t p "%(Template$)"; // create a graph window using template
+					else
+						win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
+					
+					page.longname$= graphname$; //this renames the active window (long name)
+					page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+				};
+				else
+					win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+					
+				page.active = 1; // activate Layer 1
+				layer -i rint;  // plot in the active layer
+				
+				layer -a;  // rescale the layer
+				legend; // Update the legend
+				
+				set %c -q 1; // Turn the data label on
+				set %c -qc 17; // Set label form as pink
+				set %c -ql 1; // Set label leader line as straight
+				set %c -qm 1; // Set label form as X
+				set %C -qmi [previousworkbook$]1!col(C); // Label only the peaks, NOT all data points
+				set %C -qr 90; // Set label rotation to 90 degrees
+				set %C -qs 16; // Set label font size to 16
+			};
+	};
+}
