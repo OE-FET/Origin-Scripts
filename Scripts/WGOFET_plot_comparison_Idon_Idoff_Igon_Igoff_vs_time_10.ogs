@@ -112,7 +112,7 @@
 		string NaNb$ = Lookup("NaN", rb)$;
 		
 		if (Nanb$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted (they yield NaN values)
-		//if (sampleNo$ == "1st") continue; // If sampleNo$ is equal to a sample that was damaged then just continue to the next workbook.
+		//if (sampleNo$ != "1st") continue; // If sampleNo$ is different to the sample that I am interested in, then just continue to the next workbook.
 		//if (daysNo$ == "1" || daysNo$ == "4" || daysNo$ == "23") continue; // If daysNo$ is equal to a day in which the experiment had bubbles then just continue to the next workbook.
 			else
 			{

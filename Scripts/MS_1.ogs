@@ -1,5 +1,5 @@
 // This script is used on text files saved by mMass.
-// NOTE: Run the script twice.
+// NOTE: Place each file in an individual folder and run the script twice on it. If you only run it once, the smart labels will not show up.
 
 // Author: Dimitrios Simatos
 // Version: 0.1
