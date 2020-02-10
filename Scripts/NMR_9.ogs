@@ -310,7 +310,7 @@
 				
 				
 				// Plot NMR spectrum (global)
-				string graphname$="%(batch$)_comparison_%(method$)_%(solventD$)_%(frequency$)_all";
+				string graphname$="%(batch$)_comparison_%(method$)_%(architecture$)_%(solventD$)_%(frequency$)_all";
 				if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 				{
 					// Check if the template exists, otherwise, use a generic one
