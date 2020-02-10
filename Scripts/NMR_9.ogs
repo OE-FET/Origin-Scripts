@@ -3,7 +3,7 @@
 
 // Author: Dimitrios Simatos
 // Version: 0.9
-// Current status: Untested.
+// Current status: Works well.
 // Changes: Tidy up graph code.
 
 [Main]
@@ -314,7 +314,7 @@
 				if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 				{
 					// Check if the template exists, otherwise, use a generic one
-					string Template$="%(templatepath$)%(method$)_%(solventD$)_%(frequency$)"; // This is the template path
+					string Template$="%(templatepath$)%(method$)_%(solventD$)_%(frequency$).otpu"; // This is the template path
 					if (exist(Template$)!=-1)// if the template exists
 						win -t p "%(Template$)"; // create a graph window using template
 					else
