@@ -187,8 +187,8 @@
 			
 			// NOTE: If this is written with case structures instead of if-then structures, the program will crash due to Origin restrictions
 			
-			int j = sheetname.Find("Imax"); // It will yield a value different than 0 if the filename contains "Imax".
-			if (j!=0) // If the filename contains "Imax", then
+			int j = sheetname.Find("I-vs-time"); // It will yield a value different than 0 if the filename contains "I-vs-time".
+			if (j!=0) // If the filename contains "I-vs-time", then
 			{
 				// Plot Imax, Imin, Ion, Ioff vs time
 				col(A)[L]$ = "Time"; // Long name

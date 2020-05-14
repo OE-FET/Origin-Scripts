@@ -62,12 +62,12 @@
 		int s = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
 		int d = sheetname.Find("sample"); // It will yield a value different than 0 if the filename contains "script".
 		int c = sheetname.Find("comparison"); // It will yield a value different than 0 if the filename contains "comparison".
-		//int i = sheetname.Find("Imax"); // It will yield a value different than 0 if the filename contains "Imax".
+		//int i = sheetname.Find("I-vs-time"); // It will yield a value different than 0 if the filename contains "I-vs-time".
 		int j = sheetname.Find("plunger"); // It will yield a value different than 0 if the filename contains "plunger".
 		int p = sheetname.Find("Priming"); // It will yield a value different than 0 if the filename contains "Priming".
 		
 		if (p!=0 || s!=0 || c!=0 || d!=0) continue; // If the filename contains "Priming", "script", "sample", or "comparison" then just continue to the next workbook.
-		//if (i==0 && j==0) continue; // If the filename does not contain "Imax" and does not contain "plunger", then just continue to the next workbook.
+		//if (i==0 && j==0) continue; // If the filename does not contain "I-vs-time" and does not contain "plunger", then just continue to the next workbook.
 		if (j!=0 && k==1) continue; // If the filename contains "plunger" and the "volume vs time graph" has been plotted, then just continue to the next workbook.
 
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
@@ -402,7 +402,7 @@
 								
 								
 								
-						case "Imax": // If the string is "Imax", process and plot the Imax, Imin, Ion, Ioff vs time data
+						case "I-vs-time": // If the string is "I-vs-time", process and plot the Imax, Imin, Ion, Ioff vs time data
 							
 							win -a %(previousworkbook$);
 							range TimeRange = [%(previousworkbook$)]1!wcol(1);  // data range of column (Time)
