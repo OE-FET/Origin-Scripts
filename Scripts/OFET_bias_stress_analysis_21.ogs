@@ -13,6 +13,19 @@
 // Current status: Workbooks with different device numbers need to be processed separately.
 // Changes: Changed the condition for the decimal point truncation.
 
+
+// Thickness
+// CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
+// CYTOP-S 100%: The measured thickness is 570 nm.
+// CYTOP-M 3-1: 550 nm
+// CYTOP-M 1-5: 25 nm
+// CYTOP-S 3-1: 860 nm
+// CYTOP-S 1.5-1: 490 nm
+// CYTOP-S 1-1: 370 nm
+// CYTOP-S 1-2: 140 nm
+// CYTOP-S 1-3: 100 nm
+// PMMA: 300 nm
+
 [Main]
 //uncomment following line to define functions using outside of this scope
 //@global=1;
@@ -207,18 +220,6 @@ function string findTime (string timelength)
 		double dielectricthickness=550; // Dielectric thickness [nm]
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
-
-		// Thickness
-		// CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
-		// CYTOP-S 100%: The measured thickness is 570 nm.
-		// CYTOP-M 3-1: 550 nm
-		// CYTOP-M 1-5: 25 nm
-		// CYTOP-S 3-1: 860 nm
-		// CYTOP-S 1.5-1: 490 nm
-		// CYTOP-S 1-1: 370 nm
-		// CYTOP-S 1-2: 140 nm
-		// CYTOP-S 1-3: 100 nm
-		// PMMA: 300 nm
 		
 		double jmaxlin; // Max channel current density (Linear)
 		double jmaxsat; // Max channel current density (Saturation)

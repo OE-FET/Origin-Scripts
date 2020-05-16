@@ -17,6 +17,18 @@
 // Changes: Removed storage condition.
 
 
+// Thickness
+// CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
+// CYTOP-S 100%: The measured thickness is 570 nm.
+// CYTOP-M 3-1: 550 nm
+// CYTOP-M 1-5: 25 nm
+// CYTOP-S 3-1: 860 nm
+// CYTOP-S 1.5-1: 490 nm
+// CYTOP-S 1-1: 370 nm
+// CYTOP-S 1-2: 140 nm
+// CYTOP-S 1-3: 100 nm
+// PMMA: 300 nm
+
 [Main]
 //uncomment following line to define functions using outside of this scope
 //@global=1;
