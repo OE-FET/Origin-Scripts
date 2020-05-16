@@ -6,6 +6,7 @@
 // 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
 // 2. Run the script.
 // 3. Check that the Vt linear fitting is correct. Otherwise adjust the slope window (difference between current fit slope and fit slope for Vgmax). Increase the window to relax the constraints for "flatness" of SQRT(Id). Then re-run the script.
+// 4. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
 // Version: 6.0
@@ -285,10 +286,11 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
 		
+		// Rolling Regression function parameters
 		int minRangeLength = 10; // The minimum range of voltages over which the linear fit will be applied.
 		double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
-		double offsetlin = 20; // Offset value in case the dId(Vdlin)/dt function plateaus. Instead of the linear fit starting from Id(Vgmax), it will start from Id(Vgmax+offset) (Linear)
-		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dt function plateaus. Instead of the linear fit starting from Id(Vgmax), it will start from Id(Vgmax+offset) (Saturation)
+		double offsetlin = 20; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
+		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
 		double slopewindowlin = 2E-7; // Window for perfoming the rolling regression (also: 2E-7) (Linear)
 		double slopewindowsat = 2.5E-6; // Window for perfoming the rolling regression (also: 2E-7) (Saturation)
 		
@@ -340,7 +342,7 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 				
 				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
 				
-				if (meastype$ == "T") // if this is an transfer curve then
+				if (meastype$ == "T") // if this is a transfer curve then
 				{
 						wks.name$=Transfer; // Change the sheet name to "Transfer"
 						wks.ncols=41; // set total column number to 41
