@@ -102,11 +102,11 @@ function string findTime (string timelength)
 		string sheetname$=page.longname$; // Get the name of worksheet
 		
 		int i = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
-		int j = sheetname.Find("sample_vs_time"); // It will yield a value different than 0 if the filename contains "sample_vs_time".
+		int j = sheetname.Find("sample"); // It will yield a value different than 0 if the filename contains "sample".
 		int k = sheetname.Find("Uavg-Time");
 		int s = sheetname.Find("_S_");
 		
-		if (i!=0 || k!=0 || s!=0) continue; // If the filename contains "script" or "sample_vs_time" or "Uavg-Time", then just continue to the next workbook.
+		if (i!=0 || k!=0 || s!=0) continue; // If the filename contains "script" or "sample" or "Uavg-Time", then just continue to the next workbook.
 	
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture

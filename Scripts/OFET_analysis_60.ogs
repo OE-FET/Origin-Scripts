@@ -213,7 +213,8 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 			firstfit = fitLR.b;
 			continue;
 		};
-		
+		//i=; // Uncomment these two lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+		//abs(firstfit - fitLR.b)=;
 		if (abs(firstfit - fitLR.b) > slopewindow) // Window for extracting the rolling window slope
 		{
 			Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
@@ -291,8 +292,8 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 		double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
 		double offsetlin = 20; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
 		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
-		double slopewindowlin = 2E-7; // Window for perfoming the rolling regression (also: 2E-7) (Linear)
-		double slopewindowsat = 2.5E-6; // Window for perfoming the rolling regression (also: 2E-7) (Saturation)
+		double slopewindowlin = 2E-7; // (IDTBT: 2E-7, N2200: 7E-9) Window for perfoming the rolling regression (Linear)
+		double slopewindowsat = 2.5E-6; // (IDTBT: 2.5E-6, 2E-7 N2200: ) Window for perfoming the rolling regression (Saturation)
 		
 		double jmaxlin; // Max channel current density (Linear)
 		double jmaxsat; // Max channel current density (Saturation)

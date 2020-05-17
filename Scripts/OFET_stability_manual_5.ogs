@@ -7,13 +7,13 @@
 // 2. Copy all the data for a single device to a separate folder.
 // 3. Activate the very first workbook and hide the rest. If I hide all the workbooks, the script may start from the last workbook.
 // 4. Run the script.
-// 5. Check that the Vt linear fitting is correct. Otherwise adjust the "int firstrow=lastrow-round(lastrow/6)" row. Reduce the denominator (e.g. to 3) to get a linear fit with more points if needed. Then re-run the script.
-// NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
+// 3. Check that the Vt linear fitting is correct. Otherwise adjust the slope window (difference between current fit slope and fit slope for Vgmax). Increase the window to relax the constraints for "flatness" of SQRT(Id). Then re-run the script.
+// 4. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 // NOTE: When fitting the activation energy, fit only the linear part of the ln(mu) curve. Do NOT fit the hump at high temperatures, and the point at 100K (it will not be 100K due to Joule heating).
 
 // Author: Dimitrios Simatos
-// Version: 0.4
-// Current status: Works well.
+// Version: 0.5
+// Current status: Added Rolling Regression function.
 // Changes: Removed storage condition.
 
 
@@ -97,6 +97,36 @@ function string findTime (string timelength)
 		return timegraphlegend$;
 }
 
+// The linear fitting is done from Id(Vgmax)+offset to the i. Id(Vgmax)+offset is the left limit of the voltage range for the linear fit.
+// The index i shows the right limit of the voltage range for the linear fit. It starts from maxrows/2 (Id(Vgmax)) + minRangeLength (the min voltage range I want to fit on; if this is zero, then the left and right limits will overlap) + offset (correction factor in case Id plateaus at the left limit of the range (Vgmax). This happens in the linear regime.).
+// The loop extends from the minimum i value to the end of the voltage range (maxrows). Moving i to the right (via the loop) constitutes the rolling window.
+
+function double RollingRegression (range inputcols, range outputcol, int minRangeLength, int offset, double slopewindow)
+{
+	double Vt; // Threshold voltage (Temporary variable to be used in the Rolling Regression function)
+	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
+	{
+		fitLR iy:=inputcols[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied. 
+		if (i == wks.maxrows/2 + minRangeLength) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
+		{
+			firstfit = fitLR.b;
+			continue;
+		};
+		//i=; // Uncomment these two lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+		//abs(firstfit - fitLR.b)=;
+		if (abs(firstfit - fitLR.b) > slopewindow) // Window for extracting the rolling window slope
+		{
+			Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
+			Vt = round(Vt,1); // Round the threshold voltage
+			break;
+		};
+		else
+			continue;
+	}
+			
+	return Vt;
+}
+
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
@@ -164,6 +194,14 @@ function string findTime (string timelength)
 		double dielectricthickness=550; // Dielectric thickness [nm]
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
+		
+		// Rolling Regression function parameters
+		int minRangeLength = 10; // The minimum range of voltages over which the linear fit will be applied.
+		double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
+		double offsetlin = 20; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
+		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
+		double slopewindowlin = 2E-7; // (IDTBT: 2E-7, N2200: 7E-9) Window for perfoming the rolling regression (Linear)
+		double slopewindowsat = 2.5E-6; // (IDTBT: 2.5E-6, 2E-7 N2200: ) Window for perfoming the rolling regression (Saturation)
 		
 		double jmaxlin; // Max channel current density (Linear)
 		double jmaxsat; // Max channel current density (Saturation)
@@ -271,11 +309,9 @@ function string findTime (string timelength)
 						
 						col(N)[L]$ = "Linear fit on Id (Vd=%(Vdlin$)V)"; // Long name
 						col(N)[U]$ = A; // Units
-						int lastrowlin=wks.maxrows/2; // The upper limit of the integration will be equal to the half of the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
-						int firstrowlin=lastrowlin-round(lastrowlin/3); // The lower limit of the integration will extend at a certain number of points from the last row.
-						fitLR iy:=[%H]1!(1,8)[firstrowlin:lastrowlin] oy:=col(N); // Linear fit
-						Vtlin = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
-						Vtlin = round(Vtlin,1); // Round the threshold voltage
+						range rRGlinIy = [%H]1!(1,8); // Define the range variable (Vg column, d(Id(Vdlin))/dt column) for the input argument of the rolling regression function.
+						range rRGlinOy = [%H]1!col(N); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
+						Vtlin = RollingRegression(rRGlinIy, rRGlinOy, minRangeLength, offsetlin, slopewindowlin); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
@@ -313,11 +349,9 @@ function string findTime (string timelength)
 						
 						col(T)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
 						col(T)[U]$ = A^(1/2); // Units
-						int lastrowsat=wks.maxrows/2; // The upper limit of the integration will be equal to the half of the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
-						int firstrowsat=lastrowsat-round(lastrowsat/3); // The lower limit of the integration will extend at a certain number of points from the last row.
-						fitLR iy:=[%H]1!(1,17)[firstrowsat:lastrowsat] oy:=col(T); // Linear fit
-						Vtsat = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
-						Vtsat = round(Vtsat,1); // Round the threshold voltage
+						range rRGsatIy = [%H]1!(1,17); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
+						range rRGsatOy = [%H]1!col(T); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
+						Vtsat = RollingRegression(rRGsatIy, rRGsatOy, minRangeLength, offsetsat, slopewindowsat); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
 						range rt=(1,20); // Define XYrange
@@ -676,11 +710,6 @@ function string findTime (string timelength)
 						page.active = 1; // activate Layer 1
 						layer.include(rgmlin);  // plot in the active layer
 						
-						//if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
-						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
-						//plot -c; // refresh the graph to update the labels
-						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -706,11 +735,6 @@ function string findTime (string timelength)
 							
 						page.active = 1; // activate Layer 1
 						layer -i201 rulin;  // plot in the active layer as scatter plot
-						
-						//if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
-						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
-						//plot -c; // refresh the graph to update the labels
 						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
@@ -741,9 +765,6 @@ function string findTime (string timelength)
 						layer.include(rIdlinLF);  // plot in the active layer
 						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 						
-						//if (exist(Text2,16)==16) Text2.text$ = V\-(t,lin) = $(Vtlin)V;
-						//plot -c; // refresh the graph to update the labels
-						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -770,11 +791,6 @@ function string findTime (string timelength)
 						page.active = 1; // activate Layer 1
 						layer.include(rgmsat);  // plot in the active layer
 						
-						//if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
-						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
-						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
-						//plot -c; // refresh the graph to update the labels
-						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
 						//layer -gu; // Ungroup the datasets in the layer
@@ -800,11 +816,6 @@ function string findTime (string timelength)
 							
 						page.active = 1; // activate Layer 1
 						layer -i201 rusat;  // plot in the active layer as scatter plot
-						
-						//if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
-						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
-						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
-						//plot -c; // refresh the graph to update the labels
 						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
@@ -833,9 +844,6 @@ function string findTime (string timelength)
 						layer.include(rSqrtIdsat);  // plot in the active layer
 						layer.include(rSqrtIdsatLF);  // plot in the active layer
 						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
-						
-						//if (exist(Text2,16)==16) Text2.text$ = V\-(t,sat)= $(Vtsat)V;
-						//plot -c; // refresh the graph to update the labels
 						
 						//layer -a;  // rescale the layer
 						//layer -g; // Group the datasets in the layer to auto-color increment
