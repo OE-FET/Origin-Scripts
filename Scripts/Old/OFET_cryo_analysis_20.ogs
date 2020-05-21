@@ -1,0 +1,1116 @@
+// This script is used in transfer curves taken with the cryo rig in two drain voltages. It loops over all the workbooks in the folder and plots the transfer curves.
+// It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, and reliability factor.
+// NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
+
+// How to use:
+// 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
+// 2. Copy all the data for a single device to a separate folder.
+// 3. Activate the very first workbook and hide the rest. If I hide all the workbooks, the script may start from the last workbook.
+// 4. Run the script.
+// 5. Check that the Vt linear fitting is correct. Otherwise adjust the "int firstrow=lastrow-round(lastrow/6)" row. Reduce the denominator (e.g. to 3) to get a linear fit with more points if needed. Then re-run the script.
+// NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
+// NOTE: When fitting the activation energy, fit only the linear part of the ln(mu) curve. Do NOT fit the hump at high temperatures, and the point at 100K (it will not be 100K due to Joule heating).
+
+// Author: Dimitrios Simatos
+// Version: 2.0
+// Current status: Workbooks with different device numbers need to be processed separately.
+// Changes: Corrected output curve Vg extraction.
+
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	double kb = 8.617333262145E-5; // Boltzmann constant [eV/K]
+	string UavgInvTWorkbook$; // The long name of the uavg-invT workbook
+	string UavgInvTGraph$; // The long name of the uavg-invT graph
+	string VtTGraph$; // The long name of the Vt-T graph
+	double Ealin; // Activation energy (Linear)
+	double Easat; // Activation energy (Saturation)
+	
+	
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		int i = sheetname.Find("uavg-Vt-T");
+		if(i!=0) continue; // If "uavg-Vt-T" is present in the filename, then continue.
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+
+		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+
+		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+
+		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+
+		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+		
+		string dielectric$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric
+		string dielectricconc$ = sheetname.GetToken(9,"_")$; // Get the string that shows the dielectric concentration or ratio
+
+		string sampleNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the sample number
+
+		string deviceNo$ = sheetname.GetToken(11,"_")$; // Get the string that shows the device number
+
+		string length$ = sheetname.GetToken(12,"_")$; // Get the string that shows the channel length
+		string lengthnumber$ = length.GetToken(1,"-")$; // Get the string that shows the length number
+		string lengthunits$ = length.GetToken(2,"-")$; // Get the string that shows the length units
+		string condition$ = sheetname.GetToken(13,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string dayslength$ = sheetname.GetToken(14,"_")$; // get the string, which shows the number of days
+		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
+		string stepNo$ = sheetname.GetToken(15,"_")$; // Get the string that shows the step number in the cycling process
+		string pressure$ = sheetname.GetToken(16,"_")$; // Get the string that shows the pressure
+		string temperature$ = sheetname.GetToken(17,"_")$; // Get the string that shows the temperature
+		string temperatureNo$ = temperature.GetToken(1,"K")$; // Get the string that shows the temperatureNo
+		string meastype$=sheetname.GetToken(18,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
+		string measNo$=sheetname.GetToken(19,"_")$; // Get the string that shows the measurement number
+		string mode$=sheetname.GetToken(20,"_")$; // Get the string that shows the measurement mode
+		string intime$=sheetname.GetToken(21,"_")$; // Get the string that shows the integration time
+		intime$=intime.GetToken(1,".")$; // Remove ".txt" from the integration time
+		
+		
+		// Transfer curve parameters
+		double W=1000; // Width [um]
+		//double L=20; // Length [um]
+		double L=%(lengthnumber$); // Length [um] (extracted from the file name)
+		double d=3; // Thickness of accumulation layer [nm]
+		double er=2.1; // Dielectric constant (CYTOP: 2.1, PMMA: 3.6, SiO2: 3.9)
+		double e0=8.854E-12; // Vacuum permittivity [F/m]
+		double dielectricthickness=550; // Dielectric thickness [nm]
+		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
+		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
+
+		// Thickness
+		// CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
+		// CYTOP-S 100%: The measured thickness is 570 nm.
+		// CYTOP-M 3-1: 550 nm
+		// CYTOP-M 1-5: 25 nm
+		// CYTOP-S 3-1: 860 nm
+		// CYTOP-S 1.5-1: 490 nm
+		// CYTOP-S 1-1: 370 nm
+		// CYTOP-S 1-2: 140 nm
+		// CYTOP-S 1-3: 100 nm
+		// PMMA: 300 nm
+		
+		double jmaxlin; // Max channel current density (Linear)
+		double jmaxsat; // Max channel current density (Saturation)
+		double Pmaxlin; // Max channel power density (Linear)
+		double Pmaxsat; // Max channel power density (Saturation)
+		double ulinavg; // Average mobility (Linear)
+		double usatavg; // Average mobility (Saturation)
+		
+		string Vdlin$; // Vd in the linear regime
+		string Vdsat$; // Vd in the saturation regime
+		double Vtlin; // Threshold voltage (Linear)
+		double Vtsat; // Threshold voltage (Saturation)
+		double rlin; // Reliability factor (Linear)
+		double rsat; // Reliability factor (Saturation)
+		
+		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
+		string daysgraphlegend$; // This string will depend on "daysNo" and it will display the type of liquid for the graph legend
+		string pressuregraphlegend$; // This string will depend on "pressure" and it will display the pressure for the graph legend
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		// Check for NaN columns
+		range rb = [%H]1!wcol(2);  // data range of (Is) (Vd=Vdlin) column (col(B))
+		range rc = [%H]1!wcol(3);  // data range of (Is) (Vd=Vdsat) column (col(C))
+		
+		string NaNb$ = Lookup("NaN", rb)$;
+		string NaNc$ = Lookup("NaN", rc)$;
+		
+		if(Nanb$=="NaN" || Nanc$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted, they yield NaN values.
+			else
+			{
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Case structures from filenames (used for legends).
+					
+				switch (%(daysNo$)) // Case study
+					{
+						case "initial": // If the string is "initial", write "initial" in the comment field
+							daysgraphlegend$ = "initial"; // Comment field (graph legend)
+							break;
+						
+						case "1": // If the number is 1, use single form
+							daysgraphlegend$ = "1 day"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							daysgraphlegend$ = "%(daysNo$) days"; // Comment field (graph legend)
+							break;
+					}
+					
+						
+				switch (%(pressure$)) // Case study
+					{
+						case "vac": // If the string is "vac", write "Vacuum" in the comment field
+							pressuregraphlegend$ = "Vacuum"; // Comment field (graph legend)
+							break;
+						
+						case "air": // If the string is "air", write "Air" in the comment field
+							pressuregraphlegend$ = "Air"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other cases, write the pressure string in the comment field
+							pressuregraphlegend$ = pressure$; // Comment field (graph legend)
+							break;
+					}
+				
+					string legend$ = "%(temperature$)"; // Legend
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
+				
+				
+				if (meastype$ == "T") // if this is an transfer curve then
+				{
+						wks.name$=Transfer; // Change the sheet name to "Transfer"
+						wks.ncols=41; // set total column number to 41
+						wks.colwidth = 10;// set all col width to 10
+						
+						// Extract Vdlin and Vdsat
+						Vdlin$=col(D)[L]$;
+						Vdlin$=Vdlin.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+						Vdlin$=Vdlin.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+						if (Vdlin.Find('.')!=0)
+							Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
+						
+						
+						Vdsat$=col(E)[L]$;
+						Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+						Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+						if (Vdsat.Find('.')!=0)
+							Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
+						
+						
+						// Extract VgStart and VgStop
+						string VgStart$=$(col(A)[1]); // VgStart is the value of the first cell of col(A)
+						string VgStop$=$(col(A)[wks.maxrows/2]); // VgStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+						
+						
+						// Write long name, units, comments, and parameters of columns
+						col(H)[L]$ = col(D)[L]$; // Long name
+						col(H)[U]$ = col(D)[U]$; // Units
+						col(H)[O]$ = "abs(col(D))";
+						col(I)[L]$ = col(E)[L]$; // Long name
+						col(I)[U]$ = col(E)[U]$; // Units
+						col(I)[O]$ = "abs(col(E))";
+						col(J)[L]$ = col(F)[L]$; // Long name
+						col(J)[U]$ = col(F)[U]$; // Units
+						col(J)[O]$ = "abs(col(F))";
+						col(K)[L]$ = col(G)[L]$; // Long name
+						col(K)[U]$ = col(G)[U]$; // Units
+						col(K)[O]$ = "abs(col(G))";
+						
+						
+						
+						col(L)[L]$ = "gm (Linear)"; // Long name
+						col(L)[U]$ = S; // Units
+						differentiate iy:=Col(H) oy:=Col(L) order:=1;
+						col(L)[O]$ = "abs(col(L))";
+						col(L)[C]$ = "abs(d(Id (Vd=%(Vdlin$)V)/dV)";
+						
+						col(M)[L]$ = "Mobility (Linear)"; // Long name
+						col(M)[U]$ = cm^2/V*s; // Units
+						col(M) = 10000*L*col(L)/(W*Ci*abs(%(Vdlin$))); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+						
+						// The average mobilities are derived by using the linear fit of the slope of the Id (SQRT(Id)) in the Linear (Saturation) regime, instead of the point derivative.
+						
+						col(N)[L]$ = "Linear fit on Id (Vd=%(Vdlin$)V)"; // Long name
+						col(N)[U]$ = A; // Units
+						int lastrowlin=wks.maxrows/2; // The upper limit of the integration will be equal to the half of the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
+						int firstrowlin=lastrowlin-round(lastrowlin/3); // The lower limit of the integration will extend at a certain number of points from the last row.
+						fitLR iy:=[%H]1!(1,8)[firstrowlin:lastrowlin] oy:=col(N); // Linear fit
+						Vtlin = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
+						Vtlin = round(Vtlin,1); // Round the threshold voltage
+						
+						
+						// Linear extrapolation of the linear fit, to find the intercept with the X axis
+						range rn=(1,14); // Define XYrange
+						col(N)=rn(col(A)); // Extrapolate for new X axis (col(A))
+						
+						
+						// The average mobilities are derived by using the linear fit of the slope of the Id (SQRT(Id)) in the Linear (Saturation) regime, instead of the point derivative.
+						col(O)[L]$ = "Average mobility (Linear)"; // Long name
+						col(O)[U]$ = cm^2/V*s; // Units
+						col(O)[1] = 10000*L*abs(fitLR.b)/(W*Ci*abs(%(Vdlin$))); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+						ulinavg=col(O)[1];
+						
+						col(P)[L]$ = "Threshold voltage (Linear)"; // Long name
+						col(P)[U]$ = V; // Units
+						Col(P)[1]=Vtlin; // Threshold voltage (Linear)
+						
+						
+						
+						col(Q)[L]$ = "SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
+						col(Q)[U]$ = A^(1/2); // Units
+						col(Q)[O]$ = "sqrt(col(I))";
+						
+						col(R)[L]$ = "gm (Saturation)"; // Long name
+						col(R)[U]$ = S; // Units
+						differentiate iy:=Col(Q) oy:=Col(R) order:=1;
+						col(R)[O]$ = "abs(col(R))";
+						col(R)[C]$ = "abs(d(SQRT(Id (Vd=%(Vdsat$)V))/dV)";
+						
+						col(S)[L]$ = "Mobility (Saturation)"; // Long name
+						col(S)[U]$ = cm^2/V*s; // Units
+						col(S) = 10000*2*L*col(R)^2/(W*Ci); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+						
+						
+						
+						col(T)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
+						col(T)[U]$ = A^(1/2); // Units
+						int lastrowsat=wks.maxrows/2; // The upper limit of the integration will be equal to the half of the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
+						int firstrowsat=lastrowsat-round(lastrowsat/3); // The lower limit of the integration will extend at a certain number of points from the last row.
+						fitLR iy:=[%H]1!(1,17)[firstrowsat:lastrowsat] oy:=col(T); // Linear fit
+						Vtsat = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
+						Vtsat = round(Vtsat,1); // Round the threshold voltage
+						
+						// Linear extrapolation of the linear fit, to find the intercept with the X axis
+						range rt=(1,20); // Define XYrange
+						col(T)=rt(col(A)); // Extrapolate for new X axis (col(A))
+						
+						
+						// The average mobilities are derived by using the linear fit of the slope of the Id (SQRT(Id)) in the Linear (Saturation) regime, instead of the point derivative.
+						col(U)[L]$ = "Average mobility (Saturation)"; // Long name
+						col(U)[U]$ = cm^2/V*s; // Units
+						col(U)[1] = 10000*2*L*fitLR.b^2/(W*Ci); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+						usatavg=col(U)[1];
+						
+						col(V)[L]$ = "Threshold voltage (Saturation)"; // Long name
+						col(V)[U]$ = V; // Units
+						Col(V)[1] = Vtsat; // Threshold voltage (Saturation)
+						
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Reliability factors
+						
+						// Find the average linear drain current for Vg=0V: Id,lin (Vd=0V)
+						col(W)[L]$ = "Row number for Vg=0"; // Long name
+						vfind ix:=col(A) value:=0 ox:=Col(W); // Find all indices for which Vg=0
+						
+						
+						
+						col(X)[L]$ = "Id,lin (Vg=0V)"; // Long name
+						col(X)[U]$ = A; // Units
+						col(X)[1]=col(H)[col(W)[1]];
+						col(X)[2]=col(H)[col(W)[2]];
+						double IdlinVg0=mean(col(X));
+						col(X)[3]=IdlinVg0; // The average Id,lin (Vg=0V)
+						wcellcolor col(X)[3] color(yellow); // Color the cell with the average value yellow
+						
+						
+						col(Y)[L]$ = "Id,sat (Vg=0V)"; // Long name
+						col(Y)[U]$ = A; // Units
+						col(Y)[1]=col(I)[col(W)[1]];
+						col(Y)[2]=col(I)[col(W)[2]];
+						double IdsatVg0=mean(col(Y));
+						col(Y)[3]=IdsatVg0; // The average Id,sat (Vg=0V)
+						wcellcolor col(Y)[3] color(yellow); // Color the cell with the average value yellow
+						
+						
+						// Reliability factor (Linear)
+						col(Z)[L]$ = "Reliability factor (Linear)"; // Long name
+						col(Z)[U]$ = %; // Units
+						rlin = 100*(max(col(H))-IdlinVg0)/max(abs(col(A)))/max(abs(col(L))); // Multiply by 100, since the units are %
+						rlin = round(rlin,1);
+						
+						// Write rlin on the first cell of col(Z)
+						col(Z)[1]=rlin;
+						
+						// Reliability factor (Saturation)
+						col(AA)[L]$ = "Reliability factor (Saturation)"; // Long name
+						col(AA)[U]$ = %; // Units
+						rsat = 100*((max(col(Q))-SQRT(IdsatVg0)))^2/max(abs(col(A)))^2/max(abs(col(R)))^2; // Multiply by 100, since the units are %
+						rsat = round(rsat,1);
+						
+						// Write rsat on the first cell of col(W)
+						col(AA)[1]=rsat;
+						
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Current density and power density
+						col(AB)[L]$ = "Max channel current density (Linear)"; // Long name
+						col(AB)[U]$ = A/cm^2; // Units
+						col(AB)[1] = max(col(H))/(W*10^(-4)*d*10^(-7)); // W is in um and d in nm. They are both converted to cm.
+						jmaxlin=col(AB)[1];
+						
+						col(AC)[L]$ = "Max channel current density (Saturation)"; // Long name
+						col(AC)[U]$ = A/cm^2; // Units
+						col(AC)[1] = max(col(I))/(W*10^(-4)*d*10^(-7)); // W is in um and d in nm. They are both converted to cm.
+						jmaxsat=col(AC)[1];
+						
+						col(AD)[L]$ = "Max channel power density (Linear)"; // Long name
+						col(AD)[U]$ = W/cm^2; // Units
+						col(AD)[1] = max(col(H))*abs(%(Vdlin$))/(W*10^(-4)*L*10^(-4)); // W and L are in um, and are both converted to cm.
+						Pmaxlin=col(AD)[1];
+						
+						col(AE)[L]$ = "Max channel power density (Saturation)"; // Long name
+						col(AE)[U]$ = W/cm^2; // Units
+						col(AE)[1] = max(col(I))*abs(%(Vdsat$))/(W*10^(-4)*L*10^(-4)); // W and L are in um, and are both converted to cm.
+						Pmaxsat=col(AE)[1];
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Max source-drain electric field (Saturation)
+						// NOTE: This should be smaller than 3*10^4 V/cm (DOI: 10.1038/nmat5035)
+						
+						col(AF)[L]$ = "Max source-drain electric field (Saturation)"; // Long name
+						col(AF)[U]$ = V/cm; // Units
+						col(AF)[1] = abs(%(Vdsat$))/(L*10^(-4)); // W and L are in um, and are both converted to cm.
+						Esd=col(AF)[1];
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Contact resistance (Riccardo di Pietro's model, DOI: 10.1063/1.4876057)
+						
+						col(AG)[L]$ = "Average linear current"; // Long name
+						col(AG)[U]$ = A; // Units
+						col(AG)[O]$ = "abs(col(B)-col(D))/2";
+						
+						col(AH)[L]$ = "Error"; // Long name
+						col(AH)[U]$ = A; // Units
+						col(AH)[O]$ = "col(F)/2 + col(AG)*0.01";
+						
+						col(AI)[L]$ = "Average saturation current"; // Long name
+						col(AI)[U]$ = A; // Units
+						col(AI)[O]$ = "abs(col(C)-col(E))/2";
+						
+						col(AJ)[L]$ = "Error"; // Long name
+						col(AJ)[U]$ = A; // Units
+						col(AJ)[O]$ = "col(G)/2 + col(AI)*0.01";
+						
+						//col(AG)[L]$ = "d(Id (Vd=%(Vdsat$)V)/dV"; // Long name
+						//col(AG)[U]$ = S; // Units
+						//differentiate iy:=Col(AE) oy:=Col(AG) order:=1;
+						
+						col(AK)[L]$ = "d(Id (Vd=%(Vdsat$)V)/dV"; // Long name
+						col(AK)[U]$ = S; // Units
+						differentiate iy:=Col(I) oy:=Col(AK) order:=1;
+						
+						col(AL)[L]$ = "Rc"; // Long name
+						col(AL)[U]$ = Ohm; // Units
+						col(AL)[O]$ = "abs(%(Vdlin$)/col(AG) - 1/col(AK))";
+						
+						//col(AL)[L]$ = "Contact resistance"; // Long name
+						//col(AL)[U]$ = Ohm; // Units
+						//col(AL)[O]$ = "abs(%(Vdlin$)/col(H) - 1/col(AK))";
+						
+						col(AM)[L]$ = "Error"; // Long name
+						col(AM)[U]$ = A; // Units
+						col(AM)[O]$ = "col(AL)*2*sqrt((col(AJ)/col(AI))^2+(col(AH)/col(AG))^2)";
+						
+						col(AN)[L]$ = "Channel voltage"; // Long name
+						col(AN)[U]$ = V; // Units
+						col(AN)[O]$ = "col(AG)/col(AK)";
+						
+						//col(AN)[L]$ = "Channel voltage"; // Long name
+						//col(AN)[U]$ = V; // Units
+						//col(AN)[O]$ = "col(H)/col(AK)";
+						
+						col(AO)[L]$ = "Error"; // Long name
+						col(AO)[U]$ = A; // Units
+						col(AO)[O]$ = "col(AN)*2*sqrt((col(AJ)/col(AI))^2+(col(AH)/col(AG))^2)";
+						
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Column legends
+						
+						col(H)[C]$ = legend$;
+						col(I)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(J)[C]$ = col(H)[C]$ + ", Leakage"; // Comment field (graph legend)
+						col(K)[C]$ = col(H)[C]$ + ", Leakage"; // Comment field (graph legend)
+						col(L)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(M)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(N)[C]$ = col(H)[C]$ + ", Linear fit"; // Comment field (graph legend)
+						col(Q)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(R)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(S)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(T)[C]$ = col(Q)[C]$ + ", Linear fit"; // Comment field (graph legend)
+						col(V)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(AL)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Plot graphs
+						// Set range variables
+						range rIdlin = [%H]1!col(H);  // data range of abs(Id) (Vd=Vdlin) column
+						range rIdsat = [%H]1!col(I);  // data range of abs(Id) (Vd=Vdsat) column
+						range rIglin = [%H]1!col(J);  // data range of abs(Ig) (Vd=Vdlin) column
+						range rIgsat = [%H]1!col(K);  // data range of abs(Ig) (Vd=Vdsat) column
+						
+						range rgmlin = [%H]1!col(L);  // data range of gm (Linear) column
+						range rulin = [%H]1!col(M);  // data range of Mobility (Linear) column
+						range rIdlinLF = [%H]1!col(N);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column
+						range rSqrtIdsat = [%H]1!col(Q);  // data range of SQRT(Id (Vd=Vdsat) /A) column
+						range rgmsat = [%H]1!col(R);  // data range of gm (Saturation) column
+						range rusat = [%H]1!col(S);  // data range of Mobility (Saturation) column
+						range rSqrtIdsatLF = [%H]1!col(T);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column
+						range rRc = [%H]1!col(AL);  // data range of Contact resistance (Linear) column
+						
+						
+						
+						// Plot linear transfer curves for a single temperature
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_Transfer_Vd=%(Vdlin$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_%(temperature$).otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rIdlin);  // plot in the active layer
+						layer.include(rIglin);  // plot in the active layer
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						legend; // Update the legend
+						
+						
+						// Plot saturation transfer curves for a single temperature
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_Transfer_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_%(temperature$).otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rIdsat);  // plot in the active layer
+						layer.include(rIgsat);  // plot in the active layer
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						legend; // Update the legend
+						
+						
+						// Check if the measurement is the last measurement at a specific temperature
+						string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
+						if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0)
+							continue; // if this is not the last measurement of its kind, then continue to the next iteration
+						
+						
+						// Plot joint transfer curve - SQRT(Idsat) graph for a single temperature
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_%(temperature$).otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Transfer_Vt-sat.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rIdlin);  // plot in the active layer
+						layer.include(rIdsat);  // plot in the active layer
+						
+						if (exist(Text3,16)==16) Text3.text$ = (V\-(d) = %(Vdlin$)V);
+						if (exist(Text4,16)==16) Text4.text$ = (V\-(d) = %(Vdsat$)V);
+						if (exist(Text5,16)==16) Text5.text$ = at V\-(d) = %(Vdsat$)V;
+						if (exist(Text,16)==16) Text.text$ = V\-(t,sat) = $(Vtsat)V; //(NOTE: The "Vt" label of the template is assumed to be on Layer 1.)
+						plot -c; // refresh the graph to update the labels
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						//legend; // Update the legend
+						
+						page.active = 2; // activate Layer 2
+						layer.include(rSqrtIdsat);  // plot in the active layer
+						layer.include(rSqrtIdsatLF);  // plot in the active layer
+						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+						
+						
+						
+						// Plot linear transfer curve for all temperatures
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdlin$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rIdlin);  // plot in the active layer
+						layer.include(rIglin);  // plot in the active layer
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						//legend; // Update the legend
+						
+						
+						// Plot saturation transfer curve for all temperatures
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Transfer_single.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rIdsat);  // plot in the active layer
+						layer.include(rIgsat);  // plot in the active layer
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						//legend; // Update the legend
+						
+						
+						// Plot gm (Linear) for all temperatures
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_gm-lin_Vd=%(Vdlin$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_gm-lin.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rgmlin);  // plot in the active layer
+						
+						//if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
+						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
+						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
+						//plot -c; // refresh the graph to update the labels
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						legend; // Update the legend
+						
+						
+						// Plot mobility (Linear) for all temperatures
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_u-lin_Vd=%(Vdlin$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_u-lin.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer -i201 rulin;  // plot in the active layer as scatter plot
+						
+						//if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
+						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
+						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
+						//plot -c; // refresh the graph to update the labels
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						legend; // Update the legend
+						
+						
+						
+						// Plot linear fit of Idlin and linear extrapolation (for Vt) for all temperatures
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Vt-lin_Vd=%(Vdlin$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Vt-lin.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rIdlin);  // plot in the active layer
+						layer.include(rIdlinLF);  // plot in the active layer
+						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+						
+						//if (exist(Text2,16)==16) Text2.text$ = V\-(t,lin) = $(Vtlin)V;
+						//plot -c; // refresh the graph to update the labels
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						//legend; // Update the legend
+						
+						
+						// Plot gm (Saturation) for all temperatures
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_gm-sat_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_gm-sat.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rgmsat);  // plot in the active layer
+						
+						//if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						//plot -c; // refresh the graph to update the labels
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						legend; // Update the legend
+						
+						
+						// Plot mobility (Saturation) for all temperatures
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_u-sat_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_u-sat.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer -i201 rusat;  // plot in the active layer as scatter plot
+						
+						//if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						//if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						//if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						//plot -c; // refresh the graph to update the labels
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						legend; // Update the legend
+						
+						
+						// Plot linear fit of SQRT(Idsat) and linear extrapolation (for Vt) for all temperatures
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Vt-sat_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Vt-sat.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rSqrtIdsat);  // plot in the active layer
+						layer.include(rSqrtIdsatLF);  // plot in the active layer
+						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+						
+						//if (exist(Text2,16)==16) Text2.text$ = V\-(t,sat)= $(Vtsat)V;
+						//plot -c; // refresh the graph to update the labels
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						//legend; // Update the legend
+						
+						
+						// Plot contact resistance (Linear) for all temperatures
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Rc-lin_Vd=%(Vdlin$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Rc-lin.otpu"; // create a graph window using a generic template
+							
+							page.longname$ = graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						};
+						else
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							
+						page.active = 1; // activate Layer 1
+						layer.include(rRc);  // plot in the active layer
+						
+						//layer -a;  // rescale the layer
+						//layer -g; // Group the datasets in the layer to auto-color increment
+						//layer -gu; // Ungroup the datasets in the layer
+						legend; // Update the legend
+						
+						win -a %(previousworkbook$);  // activate the previous window (workbook)
+						
+						
+						// Copy mobility (Linear and Saturation) and Vt values for all temperatures
+						UavgInvTWorkbook$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_uavg-Vt-T_Vd=%(Vdlin$),%(Vdsat$)V.txt";
+						if(exist(%(uid2name(range2uid(["%(UavgInvTWorkbook$)"]))$))==0) // if there is no workbook for this type of measurement then create a new workbook
+						{
+							
+							newbook option:=lsname;
+							page.longname$ = UavgInvTWorkbook$;
+							wks.name$ = "Mobility vs Temperature"; // Change the sheet name to "Mobility vs Temperature"
+							wks.ncols = 12; // set total column number to 12
+							wks.colwidth = 10;// set all col width to 10
+							
+							col(A)[L]$ = "Temperature"; // Long name
+							col(A)[U]$ = "K"; // Units
+							
+							col(B)[L]$ = "1000/T"; // Long name
+							col(B)[U]$ = "1000/K"; // Units
+							
+							col(C)[L]$ = "Average mobility"; // Long name
+							col(C)[U]$ = cm^2/V*s; // Units
+							col(C)[C]$ = "Linear";
+							
+							col(D)[L]$ = "Average mobility"; // Long name
+							col(D)[U]$ = cm^2/V*s; // Units
+							col(D)[C]$ = "Saturation";
+							
+							col(E)[L]$ = "Threshold voltage"; // Long name
+							col(E)[U]$ = V; // Units
+							col(E)[C]$ = "Linear";
+							
+							col(F)[L]$ = "Threshold voltage"; // Long name
+							col(F)[U]$ = V; // Units
+							col(F)[C]$ = "Saturation";
+							
+							col(G)[L]$ = "ln (Average mobility (Linear))"; // Long name
+							col(G)[U]$ = cm^2/V*s; // Units
+							
+							col(H)[L]$ = "ln (Average mobility (Saturation))"; // Long name
+							col(H)[U]$ = cm^2/V*s; // Units
+							
+							
+							// Create plot u vs invT
+							
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-invT_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Uavg-invT.otpu"; // create a graph window using a generic template
+							
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Uavg-invT_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+							UavgInvTGraph$ = page.longname$;
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							
+							
+							// Create plot Vt vs T
+							
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-T_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(Template$)"; // create a graph window using template
+							else
+								win -t p "%(templatepath$)Generic_Vt-T.otpu"; // create a graph window using a generic template
+							
+							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Vt-T_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+							VtTGraph$ = page.longname$;
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							
+						};
+						
+						win -a %(uid2name(range2uid(["%(UavgInvTWorkbook$)"]))$); // activate the workbook
+						
+						
+						// Copy average mobility (Linear and Saturation)
+						col(A)[wks.maxrows+1] = %(temperatureNo$); // Increase No of rows by 1.
+						col(C)[wks.maxrows] = ulinavg; // Rows have already increased, so there's no need to add 1.
+						col(D)[wks.maxrows] = usatavg; // Rows have already increased, so there's no need to add 1.
+						col(E)[wks.maxrows] = Vtlin; // Rows have already increased, so there's no need to add 1.
+						col(F)[wks.maxrows] = Vtsat; // Rows have already increased, so there's no need to add 1.
+						
+						
+						win -a %(previousworkbook$);  // activate the previous window (workbook)
+						window -ch 1; // hide the workbook that was processed
+						continue;
+						
+				};
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				else // if this is an output curve
+				{						
+					wks.name$=Output; // Change the sheet name to "Output"
+					int NoofVgs = (wks.ncols-1)/3; // The number of different Vg voltages is going to be equal to the total No of columns, minus the gate voltage column, divided by 3 (as there are three currents for each Vg: Is, Id, Ig).
+					wks.ncols = wks.ncols + NoofVgs*2;  // The number of columns will be equal to the old one plus two new columns for each Vg (one for abs(Id) and one for abs(Ig)).						
+					wks.colwidth = 8;// set all col width to 8
+					
+					
+					// Extract VdStart and VdStop
+					string VdStart$= $(col(A)[1]); // VdStart is the value of the first cell of col(A)						
+					string VdStop$=$(col(A)[wks.maxrows/2]); // VdStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+					
+					
+					loop(i,1,NoofVgs)
+						{
+							string previousworkbook$=%H; // Get the name of the previous window
+							
+							// Extract Vg							
+							string Vg$=wcol(i+1)[L]$; // Start from column 2
+							Vg$=Vg.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+							Vg$=Vg.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+							int Vgint = %(Vg$); // Convert string to integer
+							Vg$= $(Vgint); // Convert integer to string (these two lines get rid of the decimal points)
+							
+							
+							// Create a new column for abs(Id)
+							wcol(i+NoofVgs+1+2*NoofVgs)[L]$ = col(%(i+NoofVgs+1))[L]$; // First Id column is i+NoofVgs+1. First empty column on the right is i+NoofVgs+1+2*NoofVgs. abs(Id(Vg)) and Id(Vg) will have a distance of 2*NoofVgs (e.g. col(N) will be ans(col(F)) if NoofVgs is 4)
+							wcol(i+NoofVgs+1+2*NoofVgs)[U]$ = A; // Units
+							wcol(i+NoofVgs+1+2*NoofVgs)[O]$ = "abs(col(%(i+NoofVgs+1)))";
+							wcol(i+NoofVgs+1+2*NoofVgs)[C]$ =  "%(legend$), Vg=%(Vg$)V";
+							
+							
+							// Create a new column for abs(Ig)
+							wcol(i+NoofVgs+1+3*NoofVgs)[L]$ = col(%(i+2*NoofVgs+1))[L]$; // abs(Ig) column will be NoofVgs further away from abs(Id)
+							wcol(i+NoofVgs+1+3*NoofVgs)[U]$ = A; // Units
+							wcol(i+NoofVgs+1+3*NoofVgs)[O]$ = "abs(col(%(i+2*NoofVgs+1)))";
+							wcol(i+NoofVgs+1+3*NoofVgs)[C]$ =  "%(legend$), Vg=%(Vg$)V, Leakage";
+							
+							
+							// Plot output curve
+							range rId = [%H]1!wcol(i+NoofVgs+1+2*NoofVgs);  // data range of abs(Id) column
+							range rIg = [%H]1!wcol(i+NoofVgs+1+3*NoofVgs);  // data range of abs(Ig) column
+							
+							
+							// Check if the measurement is the last measurement at this specific temperature
+							string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
+							if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0)
+								continue; // if this is not the last measurement of its kind, then continue to the next iteration
+							
+							
+							// Output plot with all the Id for a single temperature
+							string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(stepNo$)_%(pressure$)_%(temperature$)_Output";
+							if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+							{
+								// Check if the template exists, otherwise, use a generic one
+								string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V_%(temperature$).otpu"; // This is the template path
+								if (exist(Template$)!=-1)// if the template exists
+									win -t p "%(Template$)"; // create a graph window using template
+								else
+									win -t p "%(templatepath$)Generic_Output.otpu"; // create a graph window using a generic template
+								
+								page.longname$ = graphname$; //this renames the active window (long name)
+								page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							};
+							else
+								win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+								
+							page.active = 1; // activate Layer 1
+							layer.include(rId);  // plot in the active layer
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							
+							
+							// Individual output plot with a single Id and Ig for all temperatures
+							string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_Output_Vg=%(Vg$)V";
+							if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+							{
+								// Check if the template exists, otherwise, use a generic one
+								string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
+								if (exist(Template$)!=-1)// if the template exists
+									win -t p "%(Template$)"; // create a graph window using template
+								else
+									win -t p "%(templatepath$)Generic_Output_single.otpu"; // create a graph window using a generic template
+								
+								page.longname$ = graphname$; //this renames the active window (long name)
+								page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							};
+							else
+								win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+								
+							page.active = 1; // activate Layer 1
+							layer.include(rId);  // plot in the active layer
+							layer.include(rIg);  // plot in the active layer
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							
+							win -a %(previousworkbook$);  // activate the previous window (workbook)
+						};
+					window -ch 1; // hide the output workbook that was processed
+				};
+				
+			};
+	};
+	
+	win -a %(uid2name(range2uid(["%(UavgInvTWorkbook$)"]))$); // activate the workbook
+	if (wks.maxrows >> 2){
+		col(B) = 1000/col(A);
+		col(G) = -ln(col(C));
+		col(H) = -ln(col(D));
+		
+		wks.col2.type=4;	// set col(B) as X
+		
+		int lastrowlinT = wks.maxrows; // The upper limit of the integration will be equal to the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
+		int firstrowlinT = 2; // The lower limit of the integration will extend at a certain number of points from the last row.
+		fitLR iy:=[%H]1!(2,7)[firstrowlinT:lastrowlinT] oy:=col(I); // Linear fit of col(G) with respect to col(B)
+		Ealin = fitLR.b*kb*1000*1000; // The activation energy is equal to the slope multiplied by the Boltzmann constant, by 1000 (as the horizontal axis is 1000/T), and then again by 1000 (to convert it to meV).
+		Ealin = round(Ealin,1);
+		//fitLR.b=;
+		
+		//int lastrowsatT = wks.maxrows/2+1; // The upper limit of the integration will be equal to the half of the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
+		int lastrowsatT = wks.maxrows; // The upper limit of the integration will be equal to the half of the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
+		int firstrowsatT = 2; // The lower limit of the integration will extend at a certain number of points from the last row.
+		fitLR iy:=[%H]1!(2,8)[firstrowsatT:lastrowsatT] oy:=col(J); // Linear fit of col(H) with respect to col(B)	
+		Easat = fitLR.b*kb*1000*1000; // The activation energy is equal to the slope multiplied by the Boltzmann constant, by 1000 (as the horizontal axis is 1000/T), and then again by 1000 (to convert it to meV).
+		Easat = round(Easat,1);
+		//fitLR.b=;
+		
+		col(I)[L]$ = "Linear fit on ln (average mobility (Linear))"; // Long name
+		col(J)[L]$ = "Linear fit on ln (average mobility (Saturation))"; // Long name
+		col(K)[1] = Ealin; // Activation energy (Linear)
+		col(K)[L]$ = "Activation energy (Linear)"; // Long name
+		col(K)[U]$ = meV; // Units
+		col(L)[1] = Easat; // Activation energy (Saturation)
+		col(L)[L]$ = "Activation energy (Saturation)"; // Long name
+		col(L)[U]$ = meV; // Units
+		
+		col(M)[L]$ = "Linear fit on average mobility (Linear)"; // Long name
+		col(M) = exp(-col(I)); // Conversion of the linear fit to linear
+		col(M)[C]$ = "Linear fit"; // Long name
+		col(N)[L]$ = "Linear fit on average mobility (Saturation)"; // Long name	
+		col(N) = exp(-col(J)); // Conversion of the linear fit to linear
+		col(N)[C]$ = "Linear fit"; // Long name
+	};
+	
+	else type "The number of data points is too small to perform a linear fit.";
+	
+	// Plot u vs T and Vt-sat vs T (or vs invT)
+	//page.active = nActive;  // activate the layer for plot
+	range rulinavgT = [%H]1!col(C);  // data range of average Mobility (Linear)
+	range rusatavgT = [%H]1!col(D);  // data range of average Mobility (Saturation)
+	range rulinavgTLF = [%H]1!col(M);  // data range of average Mobility (Linear)
+	range rusatavgTLF = [%H]1!col(N);  // data range of average Mobility (Saturation)
+	range rVtlinT = [%H]1!col(E);  // data range of Threshold voltage (Linear) column
+	range rVtsatT = [%H]1!col(F);  // data range of Threshold voltage (Saturation) column
+		
+	
+	win -a %(uid2name(range2uid(["%(UavgInvTGraph$)"]))$); // activate the workbook
+	page.active = 1; // activate Layer 1
+	
+	layer -i201 rulinavgT;  // plot in the active layer as scatter plot
+	layer -i201 rusatavgT;  // plot in the active layer as scatter plot
+	layer.include(rulinavgTLF);  // plot in the active layer
+	layer.include(rusatavgTLF);  // plot in the active layer
+	
+	if (exist(Text2,16)==16) Text2.text$ = E\-(a,lin)= $(Ealin) meV;
+	if (exist(Text3,16)==16) Text3.text$ = E\-(a,sat)= $(Easat) meV;
+	plot -c; // refresh the graph to update the labels
+		
+	//layer -a;  // rescale the layer
+	////layer -g; // Group the datasets in the layer to auto-color increment
+	////layer -gu; // Ungroup the datasets in the layer
+	//legend; // Update the legend
+	
+	win -a %(uid2name(range2uid(["%(UavgInvTWorkbook$)"]))$); // activate the workbook
+	wks.col2.type=1;	// set col(B) as Y
+	
+	window -ch 1; // hide the "uavg-Vtsat-vs-invT" window
+	
+	win -a %(uid2name(range2uid(["%(VtTGraph$)"]))$); // activate the workbook
+	page.active = 1; // activate Layer 1
+
+	layer -i201 rVtlinT;  // plot in the active layer as scatter plot
+	layer -i201 rVtsatT;  // plot in the active layer as scatter plot
+		
+	//layer -a;  // rescale the layer
+	////layer -g; // Group the datasets in the layer to auto-color increment
+	////layer -gu; // Ungroup the datasets in the layer
+	//legend; // Update the legend
+};

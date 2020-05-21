@@ -1,0 +1,59 @@
+[Main]
+
+// Set up a summary workbook, name will be stored in bkname$ by default
+//newbook name:="time_vs_Ion";
+//wks.colwidth = 8; // set all col width to 8
+//Col(1)[L]$="Gate Voltage";
+//Col(2)[L]$="Time_VDrain";
+//Col(2)[U]$="Sec";
+//Col(1)[U]$="V";
+//Col(3)[L]$="Time_VDummyD";
+//Col(3)[U]$="Sec";
+//Col(1)={10,20,30,40,50,60,100};
+
+//string str$ = Book1!page.info.system.import.filename$;
+//str$ = str.mid(10,6)$; // extract 6 characters starting at position 'n'
+// Variable declaration
+//string scn = %c;
+//string sbn = scn.GetToken(5, "_")$;
+//string sbLN;
+//string sbSN;
+
+
+string sheetname;
+
+doc -ef LB { // loop over all workbooks in folder
+	wks.colwidth = 9;// set all col width to 9
+	sheetname$=wks.name$; //get the name of worksheet
+	%A=sheetname.GetToken(4,"_")$; // get the string "T" or "O", which shows if the curve is a transfer or output curve
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	
+
+if(exist(%H,2)==0) //not a workbook, must be a matrix
+		continue;
+	else 
+		if (%H == summarysheetname$) continue;
+			if (%A == "O") continue;	// if this is an output curve then break		
+				else wks.ncols=11; // set total column number to 11
+					// Write long name, units, comments, and parameter1 of column B
+					col(H)[L]$ = "Id (Vd=-5.0V) /A"; // Long name
+					col(H)[U]$ = A; // Units
+					col(H)[O]$="abs(col(D))";
+					col(I)[L]$ = "Id (Vd=-50.0V) /A"; // Long name
+					col(I)[U]$ = A; // Units
+					col(I)[O]$="abs(col(E))";
+					col(H)[C]$ = sheetname$; // Comments
+					col(I)[C]$ = sheetname$; // Comments
+}
+// Add a column
+// wks.addcol();
+// get index of added column
+// int ncols = wks.ncols;
+// set value of this new col to be say 10 times 2nd col
+// wcol(ncols) = col(2) * 10;
+
+//Get the name of this folder
+//string strPath;
+//pe_path path:=strPath;
+
+}

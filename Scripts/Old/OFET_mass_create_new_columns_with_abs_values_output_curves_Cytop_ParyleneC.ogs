@@ -1,0 +1,82 @@
+// This script is used in transfer curves taken with the low noise rig in two drain voltages. It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
+[Main]
+
+doc -ef LB { // loop over all workbooks in folder
+	wks.colwidth = 8;// set all col width to 8
+	string sheetname$=wks.longname$; //get the name of worksheet
+	string a=sheetname.GetToken(13,"_")$; // get the string "T" or "O", which shows if the curve is a transfer or output curve
+	%A=sheetname.GetToken(11,"_")$; // get the string, which shows the number of days
+	i=a.Find('T');
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	
+
+if(exist(%H,2)==0) //not a workbook, must be a matrix
+		continue;
+	else 
+		if (i == 1) continue;	// if this is a transfer curve then break		
+			else wks.ncols=31; // set total column number to 31
+				// Write long name, units, comments, and parameter1 of column B
+				col(A)[L]$ = "Vg"; // Long name
+				col(A)[U]$ = V; // Units
+				col(T1)[L]$ = "Id (Vg=0.0V)"; // Long name
+				col(T1)[U]$ = A; // Units
+				col(T1)[O]$ = "abs(col(H))";
+				col(T2)[L]$ = "Id (Vg=-1.0V)"; // Long name
+				col(T2)[U]$ = A; // Units
+				col(T2)[O]$ = "abs(col(I))";
+				col(T3)[L]$ = "Id (Vg=-2.0V)"; // Long name
+				col(T3)[U]$ = A; // Units
+				col(T3)[O]$ = "abs(col(J))";
+				col(T4)[L]$ = "Id (Vg=-3.0V)"; // Long name
+				col(T4)[U]$ = A; // Units
+				col(T4)[O]$ = "abs(col(K))";
+				col(T5)[L]$ = "Id (Vg=-4.0V)"; // Long name
+				col(T5)[U]$ = A; // Units
+				col(T5)[O]$ = "abs(col(L))";
+				col(T6)[L]$ = "Id (Vg=-5.0V)"; // Long name
+				col(T6)[U]$ = A; // Units
+				col(T6)[O]$ = "abs(col(M))";
+				col(T7)[L]$ = "Ig (Vg=0.0V)"; // Long name
+				col(T7)[U]$ = A; // Units
+				col(T7)[O]$ = "abs(col(N))";
+				col(T8)[L]$ = "Ig (Vg=-1.0V)"; // Long name
+				col(T8)[U]$ = A; // Units
+				col(T8)[O]$ = "abs(col(O))";
+				col(T9)[L]$ = "Ig (Vg=-2.0V)"; // Long name
+				col(T9)[U]$ = A; // Units
+				col(T9)[O]$ = "abs(col(P))";
+				col(T10)[L]$ = "Ig (Vg=-3.0V)"; // Long name
+				col(T10)[U]$ = A; // Units
+				col(T10)[O]$ = "abs(col(Q))";
+				col(T11)[L]$ = "Ig (Vg=-4.0V)"; // Long name
+				col(T11)[U]$ = A; // Units
+				col(T11)[O]$ = "abs(col(R))";
+				col(T12)[L]$ = "Ig (Vg=-5.0V)"; // Long name
+				col(T12)[U]$ = A; // Units
+				col(T12)[O]$ = "abs(col(S))";
+				switch (%A) // Case study
+					{
+						case "air": // If the string is "air", write "air in the comment field
+							col(T1)[C]$ = "Air, first day"; // Comment field (graph legend)
+							break;
+						
+						case "1": // If the number is 1, use single form
+							col(T1)[C]$ = "Saline solution %A day"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							col(T1)[C]$ = "Saline solution %A days"; // Comment field (graph legend)
+							break;
+					}
+				col(T2)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T3)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T4)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T5)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T6)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T7)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T8)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T9)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T10)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T11)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+				col(T12)[C]$ = col(T1)[C]$; // Comment field (graph legend)
+}

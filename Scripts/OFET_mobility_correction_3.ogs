@@ -139,9 +139,9 @@
 					
 					col(AP)[L]$ = "Power law fit (Saturation mobility)"; // Long name
 					col(AP)[U]$ = cm^2/V*s; // Units
-					col(AP) = fit(col(A), col(S));
-					//range yy = col(AP)[firstrowsatPL:lastrowsat];
-					//yy = fit(col(A)[firstrowsatPL:lastrowsat], col(S)[firstrowsatPL:lastrowsat]);
+					//col(AP) = fit(col(A), col(S));
+					range yy = col(AP)[firstrowsatPL:lastrowsat];
+					yy = fit(col(A)[firstrowsatPL:lastrowsat], col(S)[firstrowsatPL:lastrowsat]);
 					beta = ParamTree.P; // The exponent beta, for the power law dependence of the mobility.
 					kappa = (beta + 2)/(2*(beta+1)); // The correction factor, kappa.
 					nlend;
