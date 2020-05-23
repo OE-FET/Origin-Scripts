@@ -819,6 +819,23 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						plot -c; // refresh the graph to update the labels
 						
 						
+						// Plot joint mobility graph
+						TemplateGeneric$ = "%(templatepath$)Generic_u-lin-sat.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-lin-sat_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Layers = {1, 1};
+						Columns = {13, 19};
+						LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
+						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
+						if (exist(Text5,16)==16) Text5.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						if (exist(Text6,16)==16) Text6.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text7,16)==16) Text7.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
+						
+						
 						// Plot linear fit of Idlin and linear extrapolation (for Vt)
 						TemplateGeneric$ = "%(templatepath$)Generic_Vt-lin.otpu";
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Vt-lin_Vd=%(Vdlin$)V";
