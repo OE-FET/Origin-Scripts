@@ -4,15 +4,15 @@
 
 // How to use:
 // 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
-// 2. Run the script.
-// 3. Check that the Vt linear fitting is correct. Otherwise adjust the slope window (difference between current fit slope and fit slope for Vgmax). Increase the window to relax the constraints for "flatness" of SQRT(Id). Then re-run the script.
-// 4. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
+// 2. Activate the very first workbook and hide the rest. If I hide all the workbooks, the script may start from the last workbook.
+// 3. Run the script.
+// 4. Check that the Vt linear fitting is correct. Otherwise adjust the slope window (difference between current fit slope and fit slope for Vgmax). Increase the window to relax the constraints for "flatness" of SQRT(Id). Then re-run the script.
+// 5. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
 // Version: 7.3
 // Current status: Automatic offset calculation does not always work.
 // Changes: Code tidy up and automatic offset code correction.
-
 
 // Thickness
 // CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
@@ -217,13 +217,13 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 		range rIdmax = inputcols[wks.maxrows/2:wks.maxrows];
 		sum(rIdmax); // Generate statistics on input column
 		rowIdmax = $(sum.imax); // The row number of Idmax.
-		rowIdmax=;
+		//rowIdmax=;
 		loop(i,0,wks.maxrows-minRangeLength) // The index i shifts both limits of the integration towards the lower voltages by the same amount, stopping when the slope of the linear fit stops changing. 
 			{
 				fitLR iy:=inputcols[i+rowIdmax:i+rowIdmax+minRangeLength]; // Linear fit from Vg(Idmax) to Vg(Id(i)). The loop shifts both ends of the voltage range over which the linear fit is applied.
-				i=; // Uncomment these three lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-				fitLR.b=;
-				abs(prevfit - fitLR.b)/abs(fitLR.b)*100=;
+				//i=; // Uncomment these three lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+				//fitLR.b=;
+				//abs(prevfit - fitLR.b)/abs(fitLR.b)*100=;
 				if (abs(prevfit - fitLR.b)/abs(fitLR.b)*100 < offsetwindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
 					{
 						offset = i + rowIdmax - wks.maxrows/2;
@@ -367,15 +367,15 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
 		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
-
+		
 		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
 		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
 		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
-
+		
 		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
-
+		
 		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
-
+		
 		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
 		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
 		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
@@ -383,15 +383,15 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		
 		string dielectric$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric
 		string dielectricconc$ = sheetname.GetToken(9,"_")$; // Get the string that shows the dielectric concentration or ratio
-
+		
 		string sampleNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the sample number
-
+		
 		string deviceNo$ = sheetname.GetToken(11,"_")$; // Get the string that shows the device number
-
+		
 		string length$ = sheetname.GetToken(12,"_")$; // Get the string that shows the channel length
 		string lengthnumber$ = length.GetToken(1,"-")$; // Get the string that shows the length number
 		string lengthunits$ = length.GetToken(2,"-")$; // Get the string that shows the length units
-
+		
 		//string stepNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the step number in the cycling process
 		string condition$ = sheetname.GetToken(13,"_")$; // Get the string that shows the conditions (air/type of liquid)
 		string timelength$ = sheetname.GetToken(14,"_")$; // get the string, which shows the number of days
@@ -458,14 +458,12 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				// Case structures from filenames (used for legends).
 				
-				
 				conunitslegend$ = findConcunits(concunits$)$; // Note ending '$'
 				additivegraphlegend$ = findAdditive(additive$)$; // Note ending '$'
 				condgraphlegend$ = findCondition(condition$)$; // Note ending '$'
 				timegraphlegend$ = findTime(timelength$)$; // Note ending '$'
 				modegraphlegend$ = findMode(mode$)$; // Note ending '$'
 				intimegraphlegend$ = findInTime(intime$)$; // Note ending '$'
-				
 				
 				//string legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(timegraphlegend$), %(minutesgraphlegend$), %(modegraphlegend$), %(intimegraphlegend$)"; // Legend
 				string legend$ = "%(condgraphlegend$), %(timegraphlegend$)"; // Legend
@@ -848,23 +846,6 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						plot -c; // refresh the graph to update the labels
 						
 						
-						// Plot joint mobility graph
-						TemplateGeneric$ = "%(templatepath$)Generic_u-lin-sat.otpu";
-						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-lin-sat_Vd=%(Vdsat$)V";
-						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
-						Layers = {1, 1};
-						Columns = {13, 19};
-						LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, LegendUpdate);
-						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
-						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
-						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
-						if (exist(Text5,16)==16) Text5.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
-						if (exist(Text6,16)==16) Text6.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
-						if (exist(Text7,16)==16) Text7.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
-						plot -c; // refresh the graph to update the labels
-						
-						
 						// Plot linear fit of Idlin and linear extrapolation (for Vt)
 						TemplateGeneric$ = "%(templatepath$)Generic_Vt-lin.otpu";
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Vt-lin_Vd=%(Vdlin$)V";
@@ -905,7 +886,24 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 							win -a %(previousworkbook$);  // activate the previous window (workbook)
 							window -ch 1; // hide the transfer workbook that was processed
 							continue; // if this is not the last measurement of its kind, then continue to the next iteration
-						};
+						};						
+						
+						
+						// Plot joint mobility graph
+						TemplateGeneric$ = "%(templatepath$)Generic_u-lin-sat.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-lin-sat_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Layers = {1, 1};
+						Columns = {13, 19};
+						LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
+						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
+						if (exist(Text5,16)==16) Text5.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						if (exist(Text6,16)==16) Text6.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text7,16)==16) Text7.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
 						
 						
 						// Plot joint transfer curve - SQRT(Idsat) graph
@@ -917,7 +915,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						LineTypes = {1, 1, 1, 1}; // 1 for line plot, 2 for scatter plot
 						LegendUpdate = 0; // Do not update the legend
 						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, previousworkbook$, LegendUpdate);
-						LegendUpdate = 1; // Do not update the legend
+						LegendUpdate = 1; // Update the legend
 						page.active = 1; // activate Layer 1
 						if (exist(Text3,16)==16) Text3.text$ = (V\-(d) = %(Vdlin$)V);
 						if (exist(Text4,16)==16) Text4.text$ = (V\-(d) = %(Vdsat$)V);
