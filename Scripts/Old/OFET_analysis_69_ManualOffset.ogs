@@ -9,9 +9,9 @@
 // 4. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 6.8
+// Version: 6.9
 // Current status: Works well.
-// Changes: Re-added Riccardo's mobility correction using a power law fit and fixed Template variable problems.
+// Changes: Fixed issues with Vtlin fit.
 
 
 // Thickness
@@ -210,14 +210,15 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
 	{
 		fitLR iy:=inputcols[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
-		if (fitLR.b == 0)
-			type -a "The slope is 0. You probably need to adjust the offset.";
-		if (i == wks.maxrows/2 + minRangeLength) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
+		if (i == wks.maxrows/2 + minRangeLength + offset) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
 			{
 				firstfit = fitLR.b;
+				//firstfit = ;
 				continue;
 			};
-		//i=; // Uncomment these two lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+		//i=; // Uncomment these three lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+		//fitLR.b=;
+		//firstfit - fitLR.b=;
 		//abs(firstfit - fitLR.b)/abs(firstfit)*100=;
 		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
 			{
@@ -232,10 +233,11 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 	return Vt;
 }
 
-function double PowerLawFit (range inputcols, range outputcol, int minRangeLength, int offset, double slopewindow)
+function double PowerLawFit (range inputcols, range outputcol, int minRangeLength, double slopewindow)
 {
 	double beta; // Parameter for power law dependence of the mobility
 	double firsterror; // The error value of the power law fit (done between Id(Vgmax) and Id(Vg(i=0)).
+	int offset = 0; // Offset value in case the mobility function plateaus. The left limit of the voltage range will start from mu(Vgmax+offset) (Saturation)
 
 	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
 	{
@@ -268,7 +270,7 @@ function double PowerLawFit (range inputcols, range outputcol, int minRangeLengt
 	return beta;
 }
 
-function PlotSingle (string graphname, string Template, string TemplateGeneric, dataset Layers, int ColumnsNo, dataset Columns, dataset LineTypes, string previousworkbook, int LegendUpdate) // Plot transfer curve
+function PlotSingle (string graphname, string Template, string TemplateGeneric, dataset Layers, int ColumnsNo, dataset Columns, dataset LineTypes, string previousworkbook, int LegendUpdate)
 {
 	if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 	{
@@ -386,11 +388,12 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		
 		// Rolling Regression function parameters
 		int minRangeLength = 10; // The minimum range of voltages over which the linear fit will be applied.
-		double offsetlin = 0; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
+		int minRangeLengthPLF = 20; // The minimum range of voltages over which the Power Law fit will be applied.		
+		double offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
 		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
 		double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Linear)
 		double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Saturation)
-		double slopewindowPLF = 30; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for perfoming the power law fit. (Saturation)
+		double slopewindowPLF = 20; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for perfoming the power law fit. (Saturation)
 		
 		double jmaxlin; // Max channel current density (Linear)
 		double jmaxsat; // Max channel current density (Saturation)
@@ -695,7 +698,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						
 						range rPLFusatIy = [%H]1!col(S); // Define the range variable (Vg column, usat column) for the input argument of the rolling regression function.
 						range rPLFusatOy = [%H]1!col(AP); // Define the range variable (power law fit output column) for the input argument of the rolling regression function.
-						beta = PowerLawFit(rPLFusatIy, rPLFusatOy, minRangeLength, offsetsat, slopewindowPLF); // Power Law Fit function that returns the exponent beta. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						beta = PowerLawFit(rPLFusatIy, rPLFusatOy, minRangeLengthPLF, slopewindowPLF); // Power Law Fit function that returns the exponent beta. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						kappa = (beta + 2)/(2*(beta+1)); // The correction factor, kappa.
 						
 						col(AQ)[L]$ = "Beta"; // Long name
@@ -724,6 +727,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						col(T)[C]$ = col(Q)[C]$ + ", Linear fit"; // Comment field (graph legend)
 						col(V)[C]$ = col(H)[C]$; // Comment field (graph legend)
 						col(AL)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						
 						col(AP)[C]$ = col(H)[C]$ + ", Power law fit"; // Comment field (graph legend)
 						col(AS)[C]$ = col(H)[C]$; // Comment field (graph legend)
 						
