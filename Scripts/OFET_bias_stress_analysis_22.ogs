@@ -352,9 +352,9 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 			
 			
 			// Plot Sample vs Time
-			TemplateGeneric$ = "%(templatepath$)Generic_sample_vs_time.otpu";
-			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_sample_vs_time";
-			Template$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_sample_vs_time.otpu"; // This is the template path
+			TemplateGeneric$ = "%(templatepath$)Generic_sample.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_sample";
+			Template$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_sample.otpu"; // This is the template path
 			Layers = {1, 1};
 			Columns = {3, 4};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot

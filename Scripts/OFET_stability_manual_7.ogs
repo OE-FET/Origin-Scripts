@@ -396,8 +396,8 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						
 						
 						// Extract Idon in the Linear and Saturation regime
-						Idonlin=$(col(D)[wks.maxrows/2]); // Id on (Linear) is the middle cell of col(D) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
-						Idonsat=$(col(E)[wks.maxrows/2]); // Id on (Linear) is the middle cell of col(E) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+						Idonlin=$(abs(col(D)[wks.maxrows/2])); // Id on (Linear) is the middle cell of col(D) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+						Idonsat=$(abs(col(E)[wks.maxrows/2])); // Id on (Linear) is the middle cell of col(E) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
 						
 						
 						// Write long name, units, comments, and parameters of columns
