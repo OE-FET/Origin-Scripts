@@ -1,0 +1,436 @@
+// This script is used on text files exported by OPUS. It processes them so that they end up having, the absorbance at column B, the normalized absorbance at column C, and also fixes the longnames.
+// This script is intended for WG-OFETs.
+// NOTE: First process the files in OPUS (atmospheric compensation, cutting, baseline correction), then export them as data point tables, then import them in Origin.
+
+// Author: Dimitrios Simatos
+// Version: 0.2
+// Current status: Work in progress.
+// Changes: Modified for WG-OFETs and EG-OFETs.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+	
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string method$ = sheetname.GetToken(2,"_")$; // Get the string that shows the experimental method (e.g. FTIR, CAS-FTIR)
+		string architecture$ = sheetname.GetToken(3,"_")$; // Get the string that shows the architecture
+		string material$ = sheetname.GetToken(4,"_")$; // Get the string that shows the material
+
+		string concentration$ = sheetname.GetToken(5,"_")$; // Get the string that shows the concentration
+		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+
+		string solvent$ = sheetname.GetToken(6,"_")$; // Get the string that shows the solvent content
+
+		string annealing$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+
+		string additive$ = sheetname.GetToken(8,"_")$; // Get the string that shows the additive
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+		
+		//string dielectric$ = sheetname.GetToken(9,"_")$; // Get the string that shows the dielectric
+		//string dielectricconc$ = sheetname.GetToken(10,"_")$; // Get the string that shows the dielectric concentration or ratio
+
+		string sampleNo$ = sheetname.GetToken(9,"_")$; // Get the string that shows the sample number
+
+		//string deviceNo$ = sheetname.GetToken(11,"_")$; // Get the string that shows the device number
+
+		//string length$ = sheetname.GetToken(12,"_")$; // Get the string that shows the channel length
+		//string lengthnumber$ = length.GetToken(1,"-")$; // Get the string that shows the length number
+		//string lengthunits$ = length.GetToken(2,"-")$; // Get the string that shows the length units
+
+		string stepNo$ = sheetname.GetToken(11,"_")$; // Get the string that shows the step number in the cycling process
+		string condition$ = sheetname.GetToken(12,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string dayslength$ = sheetname.GetToken(13,"_")$; // get the string, which shows the number of days
+		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
+		//string minutesNo$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of minutes
+		
+		string pressure$ = sheetname.GetToken(14,"_")$; // get the string, which shows the pressure
+		string presNo$ = pressure.GetToken(1,"-")$; // get the string, which shows the pressure No
+		string presUnits$ = pressure.GetToken(2,"-")$; // get the string, which shows the pressure units
+		string temperature$ = sheetname.GetToken(15,"_")$; // get the string, which shows the temperature
+		string measNo$=sheetname.GetToken(17,"_")$; // Get the string that shows the measurement number
+		string meastype$=sheetname.GetToken(18,"_")$; // Get the string "A", "S" or "B", which shows if the curve is an "Absorbance" spectrum or a "Sample"/"Background" intensity spectrum
+		string Vg$=sheetname.GetToken(20,"_")$; // Get the string that shows the gate voltage
+		string Vd$=sheetname.GetToken(22,"_")$; // Get the string that shows the drain voltage
+		
+		//string mode$=sheetname.GetToken(17,"_")$; // Get the string that shows the measurement mode
+		//string intime$=sheetname.GetToken(18,"_")$; // Get the string that shows the integration time
+		Vd$=Vd.GetToken(1,".")$; // Remove ".txt" from the drain voltage
+	
+		
+		// Parameters
+		string Rate$="none";
+		string CycleLength$="800";
+		
+		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
+		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
+		string timegraphlegend$; // This string will depend on "timeNo" and it will display the type of liquid for the graph legend
+		//string minutesgraphlegend$; // This string will depend on "minutesNo" and it will display the number of minutes for the graph legend
+		//string meastypegraphlegend$; // This string will depend on "meastype" and it will display the measurement type (sample or background intensity spectrum) for the graph legend
+		
+		string legend$;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Case structures from filenames (used for legends).
+				
+				switch (%(concunits$)) // Case study
+					{
+						case "gl": // If the string is "gl", write "g/l" in the comment field
+							conunitslegend$ = "g/l"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							conunitslegend$ = "mg/ml"; // Comment field (graph legend)
+							break;
+					}
+					
+				switch (%(additivetype$)) // Case study
+					{
+						case "Pristine": // If the string is "TCNQ", write "TCNQ" in the comment field
+							additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+							break;
+						
+						case "TCNQ": // If the string is "TCNQ", write "TCNQ" in the comment field
+							additivegraphlegend$ = "+ TCNQ"; // Comment field (graph legend)
+							break;
+						
+						case "F2TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
+							//string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
+							additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-1OCT-v": // If the string is "SAM-1OCT-v", write "1-Octanethiol (vapor)" in the comment field
+							additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-1OCT-i": // If the string is "SAM-1OCT-i", write "1-Octanethiol (immersion)" in the comment field
+							additivegraphlegend$ = "+ 1-Octanethiol (immersion)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-TDF1OCT-v": // If the string is "SAM-TDF1OCT-v", write "3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)" in the comment field
+							additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-TDF1OCT-i": // If the string is "SAM-TDF1OCT-i", write "3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)" in the comment field
+							additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other strings, write "Pristine" in the comment field
+							additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+							break;
+					}
+							
+				switch (%(condition$)) // Case study
+					{
+						case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+							condgraphlegend$ = "DI water"; // Comment field (graph legend)
+							break;
+						
+						case "up-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+							condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
+							break;
+						
+						case "t-H2O": // If the string is "town", write "town water" in the comment field
+							condgraphlegend$ = "Town water"; // Comment field (graph legend)
+							break;
+						
+						case "ss": // If the string is "town", write "town water" in the comment field
+							condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
+							break;
+						
+						case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+							string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
+							pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
+							string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
+							string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
+							condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
+							break;
+						
+						case "IPA": // If the string is "IPA", write "IPA" in the comment field
+							condgraphlegend$ = "IPA"; // Comment field (graph legend)
+							break;
+						
+						case "N2": // If the string is "N2", write "N2" in the comment field
+							condgraphlegend$ = "N2"; // Comment field (graph legend)
+							break;
+						
+						case "air": // If the string is "air", write "air" in the comment field
+							condgraphlegend$ = "Air"; // Comment field (graph legend)
+							break;
+							
+						default: // For all other strings, write "air" in the comment field
+							condgraphlegend$ = "Air"; // Comment field (graph legend)
+							break;
+					}
+						
+				switch (%(daysNo$)) // Case study
+					{
+						case "initial": // If the string is "initial", write "initial" in the comment field
+							daysgraphlegend$ = "initial"; // Comment field (graph legend)
+							break;
+						
+						case "1": // If the number is 1, use single form
+							daysgraphlegend$ = "1 day"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							daysgraphlegend$ = "%(daysNo$) days"; // Comment field (graph legend)
+							break;
+					}
+						
+							
+						
+					//string legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(daysgraphlegend$), %(minutesgraphlegend$), %(modegraphlegend$), %(intimegraphlegend$)"; // Legend
+					string legend$ = "%(condgraphlegend$), %(daysgraphlegend$), Meas. No %(measNo$), Vg=%(Vg$), Vd=%(Vd$)"; // Legend
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				string previousworkbook$=%H; // Get the name of the previous window
+				
+				if (meastype$ == "A") // if this is an absorbance spectrum then
+				{
+						wks.name$=method$; // Change the sheet name to the method used (e.g. CAS-FTIR)
+						wks.ncols=3; // set total column number to 3
+						wks.colwidth = 12;// set all col width to 12
+						
+						
+						// Write long name, units, comments, and parameters of columns
+						col(A)[L]$ = "Wavenumber"; // Long name
+						col(A)[U]$ = "cm\+(-1)"; // Units
+						col(B)[L]$ = "Absorbance"; // Long name
+						col(B)[U]$ = AU; // Units
+						col(C)[L]$ = "Transmittance"; // Long name
+						col(C)[U]$ = AU; // Units
+						col(C)[O]$ = "(1/log(2-col(B)))/100";
+						
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Column legends
+						
+						col(B)[C]$ = legend$;
+						col(C)[C]$ = col(B)[C]$; // Comment field (graph legend)
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Plot graphs
+						// Set range variables
+						range r1 = [%H]1!col(B);  // data range of Absorbance column
+						range r2 = [%H]1!col(C);  // data range of Transmittance column
+						
+						
+						// Plot FTIR spectrum (global)
+						string graphname$="%(batch$)_comparison_%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_A_W_all";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min.otpu"; // create a graph window using template
+							else
+							{
+								win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
+							};
+							
+							page.active = 1; // activate Layer 1
+							layer.include(r1);  // plot in the active layer
+							
+							layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							
+						};
+						else
+						{
+							// create a graph window using template	
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							layer.include(r1);  // plot in the active layer
+							layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend						
+							
+						};		
+						
+						
+						// Plot FTIR spectrum (single)
+						string graphname$="%(batch$)_%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_meas_%(measNo$)_Vg_%(Vg$)_Vd_%(Vd$)_A_W";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min.otpu"; // create a graph window using template
+							else
+							{
+								win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
+							};
+							
+							page.active = 1; // activate Layer 1
+							layer.include(r1);  // plot in the active layer
+							
+							layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							
+						};
+						else
+						{
+							// create a graph window using template	
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							layer.include(r1);  // plot in the active layer
+							layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend						
+							
+						};
+							
+				};
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				else // if this is an intensity spectrum (sample or background)
+				{	
+						switch (%(meastype$)) // Case study
+							{
+								case "S": // If the number is 1, use single form
+									meastypegraphlegend$ = "Sample"; // Comment field (graph legend)
+									break;
+									
+								case "B": // If the number is 1, use single form
+									meastypegraphlegend$ = "Background"; // Comment field (graph legend)
+									break;
+									
+								default: // For all other numbers, use plural form
+									minutesgraphlegend$ = ""; // Comment field (graph legend)
+									break;
+							}
+							
+						string legend$ = "%(condgraphlegend$), %(daysgraphlegend$), Meas. No %(measNo$), Vg=%(Vg$), Vd=%(Vd$), %(meastypegraphlegend$)"; // Legend
+						
+						wks.name$=method$; // Change the sheet name to the method used (e.g. CAS-FTIR)
+						wks.colwidth = 12;// set all col width to 12
+						
+						
+						// Write long name, units, comments, and parameters of columns
+						col(A)[L]$ = "Wavenumber"; // Long name
+						col(A)[U]$ = "cm\+(-1)"; // Units
+						col(B)[L]$ = "Intensity"; // Long name
+						col(B)[U]$ = AU; // Units
+						
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Column legends
+						
+						col(B)[C]$ = legend$;
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Plot graphs
+						// Set range variables
+						range r1 = [%H]1!col(B);  // data range of Absorbance column
+						
+						
+						// Plot FTIR spectrum (global)
+						string graphname$="%(batch$)_comparison_%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(pressure$)_%(temperature$)_I_W_all";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(pressure$)_%(temperature$)_rate_%(Rate$)_cycle_%(CycleLength$)-min.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(pressure$)_%(temperature$)_rate_%(Rate$)_cycle_%(CycleLength$)-min.otpu"; // create a graph window using template
+							else
+							{
+								win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
+							};
+							
+							page.active = 1; // activate Layer 1
+							layer.include(r1);  // plot in the active layer
+							
+							layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							
+						};
+						else
+						{
+							// create a graph window using template	
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							layer.include(r1);  // plot in the active layer
+							layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend						
+							
+						};		
+						
+						
+						// Plot FTIR spectrum (single)
+						string graphname$="%(batch$)_%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(pressure$)_%(temperature$)_meas_%(measNo$)_Vg_%(Vg$)_Vd_%(Vd$)_I_W";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// Check if the template exists, otherwise, use a generic one
+							string Template$="%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(pressure$)_%(temperature$)_rate_%(Rate$)_cycle_%(CycleLength$)-min.otpu"; // This is the template path
+							if (exist(Template$)!=-1)// if the template exists
+								win -t p "%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(pressure$)_%(temperature$)_rate_%(Rate$)_cycle_%(CycleLength$)-min.otpu"; // create a graph window using template
+							else
+							{
+								win -t p "%(templatepath$)Generic_%(method$).otpu"; // create a graph window using a generic template
+							};
+							
+							page.active = 1; // activate Layer 1
+							layer.include(r1);  // plot in the active layer
+							
+							layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							
+						};
+						else
+						{
+							// create a graph window using template	
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							layer.include(r1);  // plot in the active layer
+							layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend						
+							
+						};
+							
+				};
+			};
+}

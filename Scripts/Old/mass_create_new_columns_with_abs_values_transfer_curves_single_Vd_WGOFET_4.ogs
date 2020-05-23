@@ -1,0 +1,116 @@
+// This script is used in transfer curves taken with the low noise rig in two drain voltages. It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
+// Author: Dimitrios Simatos
+// Version: 0.4
+// Current status: Works well.
+// Changes: Added options for phosphate buffer names.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+	del -al *;// Delete all the local and session variables
+
+	
+
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+		
+		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+		string materialwodash$=material$;
+		materialwodash.Remove("-"); // Remove the dashes, as these will create a problem with the template names in the win -t p command
+		
+		string conc$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+		
+		string additive$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+		string additiveinfo$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive information
+		//string addthickness$ = additiveinfo.GetToken(1,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness units
+		
+		string nostep$ = sheetname.GetToken(9,"_")$; // Get the string that shows the step number in the cycling process
+		string liquid1$ = sheetname.GetToken(10,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string liquid2$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid) (if necessary)
+		string nodays$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
+		string nominutes$ = sheetname.GetToken(13,"_")$; // get the string, which shows the number of minutes
+		string TO$=sheetname.GetToken(15,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
+		i=TO.Find('O'); // output or transfer curve check
+	
+		string liquidgraphlegend$; // This string will depend on "liquid 1" and it will display the type of liquid for the graph legend
+
+		// Time constant addition
+		//int t0 = 0; // time constant to be added to time variable, just in case my experiment is a continuation of a previous one that needs to be taken into account in the elapsed time
+		//int t = %A; // Convert string to integer
+		//t = t0 + t; // add time constant to time
+		//%A=$(t); // Convert integer to string
+
+		if(exist(%H,2)==0) continue; // not a workbook, must be a matrix
+			else 
+				if (i == 1) continue;	// if this is an output curve then break		
+					else wks.ncols=6; // set total column number to 6
+						wks.colwidth = 8;// set all col width to 8
+
+						// Write long name, units, comments, and parameter1 of column B
+						col(A)[L]$ = "Vg"; // Long name
+						col(A)[U]$ = V; // Units
+						col(E)[L]$ = "Id (Vd=-1.0V)"; // Long name
+						col(E)[U]$ = A; // Units
+						col(E)[O]$ = "abs(C)";
+						col(F)[L]$ = "Ig (Vd=-1.0V)"; // Long name
+						col(F)[U]$ = A; // Units
+						col(F)[O]$ = "abs(D)";
+						
+							switch (%(liquid1$)) // Case study
+							{
+								case "ultrapure": // If the string is "air", write "air in the comment field
+									liquid1$ = "Ultrapure water"; // Comment field (graph legend)
+									break;
+								
+								case "town": // If the string is "town", write "town water" in the comment field
+									liquid1$ = "Town water"; // Comment field (graph legend)
+									break;
+								
+								case "phosphatebuffer": // If the number is 1, use single form
+									//string pH$ = liquid2.GetToken(1,"-")$; // get the string, which shows the pH
+									liquid1$ = "Phosphate buffer (pH=4.07, 50 mM)"; // Comment field (graph legend)
+									break;
+								
+								default: // For all other numbers, use plural form
+									%(liquid1$) = "Air"; // Comment field (graph legend)
+									break;
+							}
+						
+						switch (%(nodays$)) // Case study
+							{
+								case "initial": // If the string is "air", write "air in the comment field
+									%(nodays$) = "initial"; // Comment field (graph legend)
+									break;
+								
+								case "1": // If the number is 1, use single form
+									%(nodays$) = "1 day"; // Comment field (graph legend)
+									break;
+								
+								default: // For all other numbers, use plural form
+									%(nodays$) = "%(nodays$) days"; // Comment field (graph legend)
+									break;
+							}
+						switch (%(nominutes$)) // Case study
+							{
+								case "air": // If the string is "air", write "air in the comment field
+									col(E)[C]$ = "%(liquid1$)"; // Comment field (graph legend)
+									break;
+								
+								case "1": // If the number is 1, use single form
+									col(E)[C]$ = "%(liquid1$), %(nodays$), %(nominutes$) minute"; // Comment field (graph legend)
+									break;
+								
+								default: // For all other numbers, use plural form
+									col(E)[C]$ = "%(liquid1$), %(nodays$), %(nominutes$) minutes"; // Comment field (graph legend)
+									break;
+							}
+		col(F)[C]$ = col(E)[C]$ + ", Leakage"; // Comment field (graph legend)
+}

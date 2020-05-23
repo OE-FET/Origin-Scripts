@@ -8,7 +8,7 @@
 
 // Author: Dimitrios Simatos
 // Version: 0.2
-// Current status: Works well.
+// Current status: Used to work well, now it crashes for unknown reasons.
 // Changes: Changed the condition for the decimal point truncation.
 
 [Main]
@@ -139,9 +139,9 @@
 					
 					col(AP)[L]$ = "Power law fit (Saturation mobility)"; // Long name
 					col(AP)[U]$ = cm^2/V*s; // Units
-					//col(AP) = fit(col(A), col(S));
-					range yy = col(AP)[firstrowsatPL:lastrowsat];
-					yy = fit(col(A)[firstrowsatPL:lastrowsat], col(S)[firstrowsatPL:lastrowsat]);
+					col(AP) = fit(col(A), col(S));
+					//range yy = col(AP)[firstrowsatPL:lastrowsat];
+					//yy = fit(col(A)[firstrowsatPL:lastrowsat], col(S)[firstrowsatPL:lastrowsat]);
 					beta = ParamTree.P; // The exponent beta, for the power law dependence of the mobility.
 					kappa = (beta + 2)/(2*(beta+1)); // The correction factor, kappa.
 					nlend;
@@ -173,7 +173,7 @@
 					
 					
 					// Plot corrected mobility (Saturation)
-					string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat-cor_Vd=%(Vdsat$)V";
+					string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_u-sat-cor_Vd=%(Vdsat$)V";
 					if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 					{
 						// Check if the template exists, otherwise, use a generic one
@@ -206,13 +206,13 @@
 					
 					
 					// Check if the measurement is the last measurement of a specific sample
-						string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
+						string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
 						if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0)
 							continue; // if this is not the last measurement of its kind, then continue to the next iteration
 					
 					
 					// Plot Power law fit (Saturation) for the last measurement of the sample
-					string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat-PLF_Vd=%(Vdsat$)V";
+					string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_u-sat-PLF_Vd=%(Vdsat$)V";
 					if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 					{
 						// Check if the template exists, otherwise, use a generic one

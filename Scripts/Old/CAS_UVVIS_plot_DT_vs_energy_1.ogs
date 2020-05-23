@@ -1,0 +1,117 @@
+// This script is used to plot the CAS transmission vs energy curves for a single measurement.
+// Dimitrios Simatos v0.1
+// Current status: Works well but maybe too much trouble. Best done by hand.
+// Changes:
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+	del -al *;// Delete all the local and session variables
+
+	
+
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+		string archwodash$=architecture$;
+		archwodash.Remove("-"); // Remove the dashes, as these will create a problem with the template names in the win -t p command
+
+		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+		string materialwodash$=material$;
+		materialwodash.Remove("-"); // Remove the dashes, as these will create a problem with the template names in the win -t p command
+		
+		string conc$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+		string concwodash$=conc$;
+		concwodash.Remove("-"); // Remove the dashes, as these will create a problem with the template names in the win -t p command
+
+		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+		string solvwodash$=solvent$;
+		solvwodash.Remove("-"); // Remove the dashes, as these will create a problem with the template names in the win -t p command
+
+		string additive$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+		string dielectric$ = sheetname.GetToken(7,"_")$; // Get the string that shows the dielectric
+		string dielwodash$=dielectric$;
+		dielwodash.Remove("-"); // Remove the dashes, as these will create a problem with the template names in the win -t p command
+
+		//string additiveinfo$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive information
+		//string addthickness$ = additiveinfo.GetToken(1,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness units
+
+		string nosample$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
+
+		//string nostep$ = sheetname.GetToken(9,"_")$; // Get the string that shows the step number in the cycling process
+		string liquid$ = sheetname.GetToken(9,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string nodays$ = sheetname.GetToken(10,"_")$; // get the string, which shows the number of days
+		string dayunits$ = sheetname.GetToken(11,"_")$; // get the string, which shows the units (in days)
+		string pres$ = sheetname.GetToken(12,"_")$; // get the string, which shows the pressure
+		string presunits$ = sheetname.GetToken(13,"_")$; // get the string, which shows the pressure units
+		string temp$ = sheetname.GetToken(14,"_")$; // get the string, which shows the temperature
+		string tempunits$ = sheetname.GetToken(15,"_")$; // get the string, which shows the temperature units
+		string nomeas$ = sheetname.GetToken(17,"_")$; // get the string, which shows the number of the measurement
+
+		
+	//// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	//win -t p %(architecture$)_%(materialwodash$)_%(conc$)_%(solvent$)_%(additive$)_%(dielectric$)_DeltaTransmission_energy_Vg=-60V.otpu DT_E_%(materialwodash$)_%(additive$)_%(dielectric$)_%(nosample$)_%(liquid$)_%(nodays$)_-60;
+
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p %(archwodash$)_%(materialwodash$)_%(concwodash$)_%(solvwodash$)_%(additive$)_%(dielwodash$)_DeltaTransmission_energy.otpu DT_E_%(liquid$)_%(nodays$)_%(nomeas$);
+
+	
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		wks.colwidth = 8;// set all col width to 8
+		wks.col1.type=1;	// set col(A) as Y
+		wks.col2.type=4;	// set col(B) as X
+
+		string sheetname$=page.longname$; // Get the name of worksheet
+		string graphlegend$; // This string will show the graph legend
+
+		string workbooktype$ = sheetname.GetToken(18,"_")$; // get the string, which shows the type of workbook
+		string voltage$ = sheetname.GetToken(19,"_")$; // get the string, which shows the gate voltage
+
+		
+		string previousworkbook$=%H; // Get the name of the previous window
+
+		if(exist(%H,2)==0) continue; //not a workbook, must be a matrix
+			else
+				if (workbooktype$=="CMS")
+					{
+								// Set range variables
+								range r1 = [%H]1!wcol(3);  // data range of DT column
+								
+								// CAS graph (for a single measurement)
+								//page.active = nActive;  // activate the layer for plot
+								win -a DT_E_%(liquid$)_%(nodays$)_%(nomeas$);  // activate the graph window
+								layer.include(r1);  // plot in the active layer
+									
+								//layer -a;  // rescale the layer
+								////layer -g; // Group the datasets in the layer to auto-color increment
+								//page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(conc$)_%(solvent$)_%(additive$)_%(additiveinfo$)_step_%(nostep$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+								//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+								//win -r Transfer T_%(material$)_%(additive$)_%(nostep)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+								////layer -gu; // Ungroup the datasets in the layer
+								
+								win -a %(previousworkbook$);  // activate the previous window (workbook)
+
+					};
+						else continue;
+	}
+	
+	// Rename the graphs
+	
+	win -a DT_E_%(liquid$)_%(nodays$)_%(nomeas$);  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	page.longname$= "%(batch$)_%(architecture$)_%(materialwodash$)_%(conc$)_%(solvent$)_%(additive$)_%(dielectric$)_%(nosample$)_%(liquid$)_%(nodays$)_%(dayunits$)_%(pres$)_%(presunits$)_%(temp$)_%(tempunits$)_meas_%(nomeas$)_DeltaTransmission_energy"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+
+}

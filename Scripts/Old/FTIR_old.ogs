@@ -1,0 +1,50 @@
+// This script is used on FTIR data. It processes them so that they end up having, the absorbance at column B, the normalized absorbance at column C, and also fixes the longnames.
+
+
+doc -ef LB { // loop over all workbooks in folder
+	wks.colwidth = 13;// set all col width to 13
+	wks.ncols=4; // set total column number to 4
+	string sheetname$=page.longname$; //get the name of worksheet
+	%M=sheetname.GetToken(4,"_")$; // get the string, which shows the solution in which the sample was in
+	%A=sheetname.GetToken(6,"_")$; // get the string, which shows the pressure
+	%K=sheetname.GetToken(7,"_")$; // get the string, which shows the number of scans
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	
+// Write long name, units, comments, and parameters of column B
+col(A)[L]$ = "Wavelength";
+col(A)[U]$ = "cm\+(-1)";
+col(B)[L]$ = "Transmittance";
+col(B)[U]$ = "AU";
+col(C)[L]$ = "Absorbance";
+col(C)[U]$ = "AU";
+col(C)[O]$ = "2-log(col(B))";
+col(D)[L]$ = "Normalized absorbance";
+col(D)[U]$ = "AU";
+col(D)[O]$ = "col(C)-min(col(C))";
+
+if(exist(%H,2)==0) //not a workbook, must be a matrix
+		continue;
+	else switch (%M)  
+      {
+            case "air":
+                  col(B)[C]$ = "Air 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  col(C)[C]$ = "Air 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  col(D)[C]$ = "Air 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  break;
+            case "DIwater":
+                  col(B)[C]$ = "DI water 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  col(C)[C]$ = "DI water 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  col(D)[C]$ = "DI water 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  break;
+            case "townwater":
+                  col(B)[C]$ = "Town water 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  col(C)[C]$ = "Town water 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  col(D)[C]$ = "Town water 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  break;
+            case "ss":
+                  col(B)[C]$ = "Saline solution 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  col(C)[C]$ = "Saline solution 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  col(D)[C]$ = "Saline solution 12 days, P=%A, %K scans "; // Comment field (graph legend)
+                  break;
+      }
+}

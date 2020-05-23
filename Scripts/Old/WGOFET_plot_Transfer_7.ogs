@@ -1,0 +1,371 @@
+// This script is used on WG-OFETs and plots the transfer curves.
+// Author: Dimitrios Simatos
+// Version: 0.7
+// Current status: Works well.
+// Changes: Added extra plots
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+	del -al *;// Delete all the local and session variables
+
+	string sheetname$=page.longname$; // Get the name of worksheet
+		
+	string material$ = sheetname.GetToken(2,"_")$; // Get the string that shows the material
+	string materialwodash$=material$;
+	materialwodash.Remove("-"); // Remove the dashes, as these will create a problem with the template names in the win -t p command
+	
+	//string additive$=sheetname.GetToken(3,"_")$; // Get the string that shows the additive (with percentage)
+	//%J = additive.GetToken(1,"p")$; // Get the string that shows the additive percentage
+	//%B = additive.GetToken(2,"p")$; // Get the string that shows the additive
+	string architecture$ = sheetname.GetToken(1,"_")$; // Get the string that shows the architecture
+	string solvent$ = sheetname.GetToken(4,"_")$; // Get the string that shows the solvent content
+	string addthickness$ = sheetname.GetToken(5,"_")$; // Get the string that shows the additive thickness
+	string addthicknessunits$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive thickness units
+	string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+	string step$ = sheetname.GetToken(9,"_")$; // Get the string that shows the step number in the cycling process
+	string liquid1$ = sheetname.GetToken(10,"_")$; // Get the string that shows the conditions (air/type of liquid)
+	string liquid2$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid) (if necessary)
+	string liquidgraphlegend$; // This string will depend on "liquid 1" and it will display the type of liquid for the graph legend
+	string nodays$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
+	string nominutes$ = sheetname.GetToken(13,"_")$; // get the string, which shows the number of minutes
+
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p %(architecture$)_WGOFET_%(materialwodash$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_Transfer_Vd_minus_1V.otpu Transfer;
+
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p %(architecture$)_WGOFET_%(materialwodash$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_Ig_Vd_minus_1V.otpu Ig;
+
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p %(architecture$)_WGOFET_%(materialwodash$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_Transfer_Vd_minus_1V_10_200_min.otpu Transfer10200;
+
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p %(architecture$)_WGOFET_%(materialwodash$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_Ig_Vd_minus_1V_10_200_min.otpu Ig10200;
+
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p %(architecture$)_WGOFET_%(materialwodash$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_Transfer_Vd_minus_1V_10_200_min.otpu Transfer200750;
+
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p %(architecture$)_WGOFET_%(materialwodash$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_Ig_Vd_minus_1V_10_200_min.otpu Ig200750;
+	
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p %(architecture$)_WGOFET_%(materialwodash$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_Transfer_Ig_Vd_minus_1V_100_600_min.otpu TransferIg100600;
+	
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)	
+	win -t p %(architecture$)_WGOFET_%(materialwodash$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_Transfer_Ig_Vd_minus_1V_single.otpu TransferIg100;
+
+	// create a graph window using template (NOTE: The values of the variables should not have dashes)
+	win -t p %(architecture$)_WGOFET_%(materialwodash$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_Transfer_Ig_Vd_minus_1V_single.otpu TransferIg401;
+
+	
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		wks.colwidth = 8;// set all col width to 8
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		string nominutes$ = sheetname.GetToken(13,"_")$; // get the string, which shows the number of minutes
+
+
+		switch (%(liquid1$)) // Case study
+			{
+				case "ultrapure": // If the string is "air", write "air in the comment field
+					liquidgraphlegend$ = "ultrapure water"; // Comment field (graph legend)
+					break;
+				
+				case "town": // If the number is 1, use single form
+					liquidgraphlegend$ = "town water"; // Comment field (graph legend)
+					break;
+				
+				default: // For all other numbers, use plural form
+					liquidgraphlegend$ = "air"; // Comment field (graph legend)
+					break;
+			}
+		
+		switch (%(nodays$)) // Case study
+			{
+				case "initial": // If the string is "air", write "air in the comment field
+					%(nodays$) = "initial"; // Comment field (graph legend)
+					break;
+				
+				case "1": // If the number is 1, use single form
+					%(nodays$) = "1 day"; // Comment field (graph legend)
+					break;
+				
+				default: // For all other numbers, use plural form
+					%(nodays$) = "%(nodays$) days"; // Comment field (graph legend)
+					break;
+			}
+		
+		string previousworkbook$=%H; // Get the name of the previous window
+
+		if(exist(%H,2)==0) continue; //not a workbook, must be a matrix
+			else
+				if(%(nominutes$)==21 || %(nominutes$)==30 || %(nominutes$)==40 || %(nominutes$)==50
+					|| %(nominutes$)==60 || %(nominutes$)==100 || %(nominutes$)==120 || %(nominutes$)==140 || %(nominutes$)==161
+					 || %(nominutes$)==180 || %(nominutes$)==200 || %(nominutes$)==300 || %(nominutes$)==401 || %(nominutes$)==501
+					  || %(nominutes$)==600 || %(nominutes$)==700 || %(nominutes$)==750)
+					{
+							// Set range variables
+							range r1 = [%H]1!wcol(5);  // data range of abs(Id) column
+							range r2 = [%H]1!wcol(6);  // data range of abs(Ig) column
+
+							// Id graph (Transfer curves)
+							//page.active = nActive;  // activate the layer for plot
+							win -a Transfer;  // activate the graph window
+							layer.include(r1);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//win -r Transfer T_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+							////layer -gu; // Ungroup the datasets in the layer
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							// Ig graph
+							//page.active = nActive;  // activate the layer for plot
+							win -a Ig;  // activate the graph window
+							layer.include(r2);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//win -a Ig;  // activate the graph window
+							//page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Ig_Vd=-1V"; //this renames the active window (long name)
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//win -r Ig Ig_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+							////layer -gu; // Ungroup the datasets in the layer
+							
+							//win -a %(previousworkbook$);  // activate the previous window (workbook)
+					
+					
+					// Plot the "10-200 minutes" graphs
+					if(%(nominutes$)==21 || %(nominutes$)==30 || %(nominutes$)==40 || %(nominutes$)==50
+					|| %(nominutes$)==60 || %(nominutes$)==100 || %(nominutes$)==120 || %(nominutes$)==140 || %(nominutes$)==161
+					 || %(nominutes$)==180 || %(nominutes$)==200)
+						{
+							// Id graph (Transfer curves)
+							//page.active = nActive;  // activate the layer for plot
+							win -a Transfer10200;  // activate the graph window
+							layer.include(r1);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//win -r Transfer T_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+							////layer -gu; // Ungroup the datasets in the layer
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							// Ig graph
+							//page.active = nActive;  // activate the layer for plot
+							win -a Ig10200;  // activate the graph window
+							layer.include(r2);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//win -a Ig;  // activate the graph window
+							//page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Ig_Vd=-1V"; //this renames the active window (long name)
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//win -r Ig Ig_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+							////layer -gu; // Ungroup the datasets in the layer
+							
+							//win -a %(previousworkbook$);  // activate the previous window (workbook)
+						};		
+						
+					// Plot the "200-750 minutes" graphs
+					if(%(nominutes$)==200 || %(nominutes$)==300 || %(nominutes$)==401 || %(nominutes$)==501
+					|| %(nominutes$)==600 || %(nominutes$)==700 || %(nominutes$)==750)
+						{
+							// Id graph (Transfer curves)
+							//page.active = nActive;  // activate the layer for plot
+							win -a Transfer200750;  // activate the graph window
+							layer.include(r1);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//win -r Transfer T_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+							////layer -gu; // Ungroup the datasets in the layer
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							// Ig graph
+							//page.active = nActive;  // activate the layer for plot
+							win -a Ig200750;  // activate the graph window
+							layer.include(r2);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//win -a Ig;  // activate the graph window
+							//page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Ig_Vd=-1V"; //this renames the active window (long name)
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//win -r Ig Ig_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+							////layer -gu; // Ungroup the datasets in the layer
+							
+							//win -a %(previousworkbook$);  // activate the previous window (workbook)
+						};
+					
+					// Plot the "100-600 minutes" graph
+					if(%(nominutes$)==100 || %(nominutes$)==200 || %(nominutes$)==300 || %(nominutes$)==401 || %(nominutes$)==501
+					|| %(nominutes$)==600)
+						{
+							// Id graph (Transfer curves)
+							//page.active = nActive;  // activate the layer for plot
+							win -a TransferIg100600;  // activate the graph window
+							layer.include(r1);  // plot in the active layer
+							layer.include(r2);  // plot in the active layer
+
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//win -r Transfer T_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+							////layer -gu; // Ungroup the datasets in the layer
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+						};
+					
+					// Plot the "100th minute" graph
+					if(%(nominutes$)==100)
+						{
+							// Id graph (Transfer curves)
+							//page.active = nActive;  // activate the layer for plot
+							win -a TransferIg100;  // activate the graph window
+							layer.include(r1);  // plot in the active layer
+							layer.include(r2);  // plot in the active layer
+
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//win -r Transfer T_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+							////layer -gu; // Ungroup the datasets in the layer
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+						};
+						
+					// Plot the "401th minute" graph
+					if(%(nominutes$)==401)
+						{
+							// Id graph (Transfer curves)
+							//page.active = nActive;  // activate the layer for plot
+							win -a TransferIg401;  // activate the graph window
+							layer.include(r1);  // plot in the active layer
+							layer.include(r2);  // plot in the active layer
+
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//win -r Transfer T_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+							////layer -gu; // Ungroup the datasets in the layer
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+						};
+					};
+					else continue;
+	}
+	
+	// Rename the graphs
+	
+	win -a Transfer;  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	win -r Transfer T_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+
+	
+	win -a Ig;  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	win -a Ig;  // activate the graph window
+	page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Ig_Vd=-1V"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	win -r Ig Ig_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+	
+	win -a Transfer10200;  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V_10-200_min"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	win -r Transfer10200 T10200_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+
+	
+	win -a Ig10200;  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	win -a Ig10200;  // activate the graph window
+	page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Ig_Vd=-1V_10-200_min"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	win -r Ig10200 Ig10200_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+	
+	win -a Transfer200750;  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Vd=-1V_200-750_min"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	win -r Transfer200750 T200750_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+
+	
+	win -a Ig200750;  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	win -a Ig200750;  // activate the graph window
+	page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Ig_Vd=-1V_200-750_min"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	win -r Ig200750 Ig200750_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+
+	
+	win -a TransferIg100600;  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	//layer -g; // Group the datasets in the layer to auto-color increment
+	page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Ig_Vd=-1V_100-600_min"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	win -r TransferIg100600 T100600_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+	//layer -gu; // Ungroup the datasets in the layer
+	//legend; // Update the legend
+	
+	win -a TransferIg100;  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	//layer -g; // Group the datasets in the layer to auto-color increment
+	page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Ig_Vd=-1V_100_min"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	win -r TransferIg100 T100_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+	//layer -gu; // Ungroup the datasets in the layer
+	//legend; // Update the legend
+	
+	win -a TransferIg401;  // activate the graph window
+		
+	//layer -a;  // rescale the layer
+	//layer -g; // Group the datasets in the layer to auto-color increment
+	page.longname$= "132nd_%(architecture$)_%(material$)_10gl_Pristine_%(solvent$)_%(additive$)_%(addthickness$)_%(addthicknessunits$)_%(liquid1$)_%(liquid2$)_%(nodays$)_Transfer_Ig_Vd=-1V_401_min"; //this renames the active window (long name)
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	win -r TransferIg401 T401_%(material$)_%(additive$)_%(nodays$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+	//layer -gu; // Ungroup the datasets in the layer
+	//legend; // Update the legend
+}

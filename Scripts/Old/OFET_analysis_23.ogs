@@ -1,0 +1,753 @@
+// This script is used in transfer curves taken with the low noise rig in two drain voltages. It loops over all the workbooks in the folder and plots the transfer and output curves.
+// It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, and reliability factor.
+// NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
+// Author: Dimitrios Simatos
+// Version: 2.3
+// Current status: Works well.
+// Changes: Added contact resistance calculations.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+
+		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+
+		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+		
+		string additive$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+		
+		string dielectric$ = sheetname.GetToken(7,"_")$; // Get the string that shows the dielectric
+		string dielectricconc$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric concentration or ratio
+
+		string sampleNo$ = sheetname.GetToken(9,"_")$; // Get the string that shows the sample number
+
+		string deviceNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the device number
+
+		string length$ = sheetname.GetToken(11,"_")$; // Get the string that shows the concentration
+		string lengthnumber$ = length.GetToken(1,"-")$; // Get the string that shows the length number
+		string lengthunits$ = length.GetToken(2,"-")$; // Get the string that shows the length units
+
+		//string stepNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the step number in the cycling process
+		string condtype$ = sheetname.GetToken(12,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		//string condinfo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the conditions (air/type of liquid) (if necessary)
+		string dayslength$ = sheetname.GetToken(13,"_")$; // get the string, which shows the number of days
+		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
+		//string minutesNo$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of minutes
+		string workbooktype$=sheetname.GetToken(14,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
+		string workbookNo$=sheetname.GetToken(15,"_")$; // Get the string that shows the workbook number
+		workbookNo$=workbookNo.GetToken(1,".")$; // Remove ".txt" from the workbook number
+
+		// Transfer curve parameters
+		double W=1000; // Width [um]
+		//double L=20; // Length [um]
+		double L=%(lengthnumber$); // Length [um] (extracted from the file name)
+		double d=3; // Thickness of accumulation layer [nm]
+		double er=2.1; // Dielectric constant (CYTOP: 2.1, PMMA: 3.6)
+		double e0=8.854E-12; // Vacuum permittivity [F/m]
+		double dielectricthickness=500; // Dielectric thickness [nm] (CYTOP: 500, PMMA: 300)
+		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance
+		double beta=1.28; // Parameter for power law dependence of the mobility
+		double Vt; // Threshold voltage
+		
+		
+		string condgraphlegend$; // This string will depend on "condtype" and it will display the type of condition for the graph legend
+		string daysgraphlegend$; // This string will depend on "daysNo" and it will display the type of liquid for the graph legend
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		// Check for NaN columns
+		range rb = [%H]1!wcol(2);  // data range of (Is) (Vd=Vdlin) column (col(B))
+		range rc = [%H]1!wcol(3);  // data range of (Is) (Vd=Vdsat) column (col(C))
+		
+		string NaNb$ = Lookup("NaN", rb)$;
+		string NaNc$ = Lookup("NaN", rc)$;		
+		
+		if(Nanb$=="NaN" || Nanc$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted (they yield NaN values)
+			else
+			{
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Case structures from filenames (used for legends).
+				
+				switch (%(condtype$)) // Case study
+					{
+						case "ultrapure": // If the string is "ultrapure", write "ultrapure water" in the comment field
+							condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
+							break;
+						
+						case "town": // If the string is "town", write "town water" in the comment field
+							condgraphlegend$ = "Town water"; // Comment field (graph legend)
+							break;
+						
+						case "ss": // If the string is "town", write "town water" in the comment field
+							condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
+							break;
+						
+						case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+							string pH$ = condinfo.GetToken(2,"-")$; // get the string, which shows the pH
+							pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
+							string bufferconcentration$ = condinfo.GetToken(3,"-")$; // get the string, which shows the buffer concentration
+							string bufferconcunits$ = condinfo.GetToken(4,"-")$; // get the string, which shows the buffer concentration
+							condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
+							break;
+						
+						case "N2": // If the string is "N2", write "N2" in the comment field
+							condgraphlegend$ = "N2"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other strings, write "air" in the comment field
+							condgraphlegend$ = "air"; // Comment field (graph legend)
+							break;
+					}
+						
+				switch (%(daysNo$)) // Case study
+					{
+						case "initial": // If the string is "initial", write "initial" in the comment field
+							daysgraphlegend$ = "initial"; // Comment field (graph legend)
+							break;
+						
+						case "1": // If the number is 1, use single form
+							daysgraphlegend$ = "1 day"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							daysgraphlegend$ = "%(daysNo$) days"; // Comment field (graph legend)
+							break;
+					}
+
+				//switch (%(minutesNo$)) // Case study
+					//{
+						//case "air": // If the string is "air", write "air in the comment field
+							//col(E)[C]$ = "%(condgraphlegend$)"; // Comment field (graph legend)
+							//break;
+						//
+						//case "1": // If the number is 1, use single form
+							//col(E)[C]$ = "%(condgraphlegend$), %(daysgraphlegend$), %(minutesNo$) minute"; // Comment field (graph legend)
+							//break;
+						//
+						//default: // For all other numbers, use plural form
+							//col(E)[C]$ = "%(condgraphlegend$), %(daysgraphlegend$), %(minutesNo$) minutes"; // Comment field (graph legend)
+							//break;
+					//}
+					
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				if (workbooktype$ == "T") // if this is an transfer curve then
+				{
+						wks.name$=Transfer; // Change the sheet name to "Transfer"
+						wks.ncols=14; // set total column number to 14
+						wks.colwidth = 10;// set all col width to 10
+						
+						
+						
+						// Extract Vdlin and Vdsat
+						string Vdlin$=col(D)[L]$;
+						Vdlin$=Vdlin.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+						Vdlin$=Vdlin.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+						if (Vdlin.Find('.')!=0)
+							Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
+						else continue;
+						
+						
+						string Vdsat$=col(E)[L]$;
+						Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+						Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+						if (Vdsat.Find('.')!=0)
+							Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
+						else continue;					
+						
+						
+						// Extract VgStart and VgStop
+						string VgStart$= $(col(A)[1]); // VgStart is the value of the first cell of col(A)						
+						string VgStop$=$(col(A)[wks.maxrows/2]); // VgStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+						
+						
+						// Write long name, units, comments, and parameters of columns
+						col(H)[L]$ = col(D)[L]$; // Long name
+						col(H)[U]$ = col(D)[U]$;; // Units
+						col(H)[O]$ = "abs(col(D))";
+						col(I)[L]$ = col(E)[L]$; // Long name
+						col(I)[U]$ = col(E)[U]$; // Units
+						col(I)[O]$ = "abs(col(E))";
+						col(J)[L]$ = col(F)[L]$; // Long name
+						col(J)[U]$ = col(F)[U]$;; // Units
+						col(J)[O]$ = "abs(col(F))";
+						col(K)[L]$ = col(G)[L]$; // Long name
+						col(K)[U]$ = col(G)[U]$; // Units
+						col(K)[O]$ = "abs(col(G))";
+						
+						
+						
+						col(L)[L]$ = "gm (Linear)"; // Long name
+						col(L)[U]$ = S; // Units
+						differentiate iy:=Col(H) oy:=Col(L) order:=1;
+						col(L)[O]$ = "abs(col(L))";
+						col(L)[C]$ = "abs(d(Id (Vd=%(Vdlin$)V)/dV)";
+						
+						col(M)[L]$ = "Mobility (Linear)"; // Long name
+						col(M)[U]$ = cm^2/V*s; // Units
+						col(M) = 10000*L*col(L)/(W*Ci*abs(%(Vdlin$))); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+						
+						
+						
+						col(N)[L]$ = "SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
+						col(N)[U]$ = A; // Units
+						col(N)[O]$ = "sqrt(col(I))";
+						
+						col(O)[L]$ = "gm (Saturation)"; // Long name
+						col(O)[U]$ = S; // Units
+						differentiate iy:=Col(N) oy:=Col(O) order:=1;
+						col(O)[O]$ = "abs(col(O))";
+						col(O)[C]$ = "abs(d(SQRT(Id (Vd=%(Vdsat$)V))/dV)";
+						
+						col(P)[L]$ = "Mobility (Saturation)"; // Long name
+						col(P)[U]$ = cm^2/V*s; // Units
+						col(P) = 10000*2*L*col(O)^2/(W*Ci); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.						
+						
+						
+						
+						col(Q)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
+						col(Q)[U]$ = A; // Units
+						int lastrow=wks.maxrows/2; // The upper limit of the integration will be equal to the half of the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
+						int firstrow=lastrow-round(lastrow/6); // The lower limit of the integration will extend at a certain number of points from the last row.
+						fitLR iy:=[%H]1!(1,14)[firstrow:lastrow] oy:=col(Q); // Linear fit
+						Vt=-fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
+						
+						// Linear extrapolation of the linear fit, to find the intercept with the X axis
+						range rq=(1,17); // Define XYrange
+						col(Q)=rq(col(A)); // Extrapolate for new X axis (col(A))
+						
+						
+						col(R)[L]$ = "Threshold voltage"; // Long name
+						col(R)[U]$ = V; // Units
+						Col(R)[1]=Vt; // Threshold voltage
+						
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Reliability factors
+						
+						// Find the average linear drain current for Vg=0V: Id,lin (Vd=0V)
+						col(S)[L]$ = "Row number for Vg=0"; // Long name
+						vfind ix:=col(A) value:=0 ox:=Col(S); // Find all indices for which Vg=0
+						
+						
+						
+						col(T)[L]$ = "Id,lin (Vg=0V)"; // Long name
+						col(T)[U]$ = A; // Units
+						col(T)[1]=col(H)[col(S)[1]];
+						col(T)[2]=col(H)[col(S)[2]];
+						double IdlinVg0=mean(col(T));
+						col(T)[3]=IdlinVg0; // The average Id,lin (Vg=0V)
+						wcellcolor col(T)[3] color(yellow); // Color the cell with the average value yellow
+						
+						
+						col(U)[L]$ = "Id,sat (Vg=0V)"; // Long name
+						col(U)[U]$ = A; // Units
+						col(U)[1]=col(I)[col(S)[1]];
+						col(U)[2]=col(I)[col(S)[2]];
+						double IdsatVg0=mean(col(U));
+						col(U)[3]=IdsatVg0; // The average Id,sat (Vg=0V)
+						wcellcolor col(U)[3] color(yellow); // Color the cell with the average value yellow
+						
+						
+						// Reliability factor (Linear)
+						col(V)[L]$ = "Reliability factor (Linear)"; // Long name
+						col(V)[U]$ = %; // Units
+						double rlin=(max(col(H))-IdlinVg0)/max(abs(col(A)))/max(col(L));
+						rlin=round(rlin,1);
+						%A=$(rlin); // Place rlin to a string register, to use it on the graph label
+						
+						// Write rlin on the first cell of col(V)
+						col(V)[1]=rlin;
+						
+						// Reliability factor (Saturation)
+						col(W)[L]$ = "Reliability factor (Saturation)"; // Long name
+						col(W)[U]$ = %; // Units
+						double rsat=(SQRT(max(col(I)))-SQRT(IdsatVg0))^2/max(abs(col(A)))^2/max(col(O))^2;
+						rsat=round(rsat,1);
+						%B=$(rsat); // Place rsat to a string register, to use it on the graph label
+						
+						// Write rsat on the first cell of col(W)
+						col(W)[1]=rsat;
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Current density and power density
+						col(X)[L]$ = "Max channel current density (Linear)"; // Long name
+						col(X)[U]$ = A/cm^2; // Units
+						col(X)[1] = max(col(H))/(W*10^(-4)*d*10^(-7)); // W is in um and d in nm. They are both converted to cm.
+						
+						col(Y)[L]$ = "Max channel current density (Saturation)"; // Long name
+						col(Y)[U]$ = A/cm^2; // Units
+						col(Y)[1] = max(col(I))/(W*10^(-4)*d*10^(-7)); // W is in um and d in nm. They are both converted to cm.
+						
+						col(Z)[L]$ = "Max channel power density (Linear)"; // Long name
+						col(Z)[U]$ = W/cm^2; // Units
+						col(Z)[1] = max(col(H))*abs(%(Vdlin$))/(W*10^(-4)*L*10^(-4)); // W and L are in um, and are both converted to cm.
+						
+						col(AA)[L]$ = "Max channel power density (Saturation)"; // Long name
+						col(AA)[U]$ = W/cm^2; // Units
+						col(AA)[1] = max(col(I))*abs(%(Vdsat$))/(W*10^(-4)*L*10^(-4)); // W and L are in um, and are both converted to cm.
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Contact resistance (Riccardo di Pietro's model)
+						
+						//col(AB)[L]$ = "Average linear current"; // Long name
+						//col(AB)[U]$ = A; // Units
+						//col(AB)[O]$ = "abs(col(B)-col(D))/2";
+						//
+						//col(AC)[L]$ = "Error"; // Long name
+						//col(AC)[U]$ = A; // Units
+						//col(AC)[O]$ = "col(F)/2 + col(AB)*0.01";
+						//
+						//col(AD)[L]$ = "Average saturation current"; // Long name
+						//col(AD)[U]$ = A; // Units
+						//col(AD)[O]$ = "abs(col(C)-col(E))/2";
+						//
+						//col(AE)[L]$ = "Error"; // Long name
+						//col(AE)[U]$ = A; // Units
+						//col(AE)[O]$ = "col(G)/2 + col(AD)*0.01";
+						//
+						//
+						//col(AF)[L]$ = "d(Id (Vd=%(Vdsat$)V)/dV"; // Long name
+						//col(AF)[U]$ = S; // Units
+						//differentiate iy:=Col(AD) oy:=Col(AF) order:=1;
+						//
+						//col(AG)[L]$ = "Contact resistance (Linear)"; // Long name
+						//col(AG)[U]$ = Ohm; // Units
+						//col(AG)[O]$ = "%(Vdlin$)/col(AB) - 1/col(AF)";
+						//
+						//col(AH)[L]$ = "Error"; // Long name
+						//col(AH)[U]$ = A; // Units
+						//col(AH)[O]$ = "col(AG)*2*sqrt((col(AE)/col(AD))^2+(col(AC)/col(AB))^2)";
+						//
+						//col(AI)[L]$ = "Channel voltage"; // Long name
+						//col(AI)[U]$ = V; // Units
+						//col(AI)[O]$ = "col(AB)/col(AF)";
+						//
+						//col(AJ)[L]$ = "Error"; // Long name
+						//col(AJ)[U]$ = A; // Units
+						//col(AJ)[O]$ = "col(AI)*2*sqrt((col(AE)/col(AD))^2+(col(AC)/col(AB))^2)";
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Column legends
+						
+						col(H)[C]$ = "%(condgraphlegend$), %(daysgraphlegend$)";
+						col(I)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(J)[C]$ = col(H)[C]$ + ", Leakage"; // Comment field (graph legend)
+						col(K)[C]$ = col(H)[C]$ + ", Leakage"; // Comment field (graph legend)
+						col(L)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(M)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(N)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(O)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(P)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(Q)[C]$ = col(N)[C]$ + ", Linear fit";; // Comment field (graph legend)
+						col(R)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(S)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(T)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(U)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(V)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(W)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(X)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(Y)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(Z)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(AA)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						//col(AB)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						//col(AC)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						//col(AD)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						//col(AE)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						//col(AF)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						//col(AG)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						//col(AH)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						//col(AI)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						//col(AJ)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Plot graphs
+						// Set range variables
+						range r1 = [%H]1!wcol(8);  // data range of abs(Id) (Vd=Vdlin) column (col(H))
+						range r2 = [%H]1!wcol(9);  // data range of abs(Id) (Vd=Vdsat) column (col(I))
+						range r3 = [%H]1!wcol(10);  // data range of abs(Ig) (Vd=Vdlin) column (col(J))
+						range r4 = [%H]1!wcol(11);  // data range of abs(Ig) (Vd=Vdsat) column (col(K))
+						
+						range r5 = [%H]1!wcol(12);  // data range of gm (Linear) column (col(L))
+						range r6 = [%H]1!wcol(13);  // data range of Mobility (Linear) column (col(M))
+						range r7 = [%H]1!wcol(14);  // data range of SQRT(Id (Vd=Vdsat) /A) column (col(N))
+						range r8 = [%H]1!wcol(15);  // data range of gm (Saturation) column (col(O))
+						range r9 = [%H]1!wcol(16);  // data range of Mobility (Saturation) column (col(P))
+						range r10 = [%H]1!wcol(17);  // data range of Linear fit on SQRT(Id (Vd=Vdsat) /A) column (col(Q))
+						range r11 = [%H]1!wcol(18);  // data range of Threshold voltage column (col(R))
+						range r12 = [%H]1!wcol(19);  // data range of Row number for Vg=0 column (col(S))
+						range r13 = [%H]1!wcol(20);  // data range of Id,lin (Vg=0V) /A column (col(T))
+						range r14 = [%H]1!wcol(21);  // data range of Id,sat (Vg=0V) /A column (col(U))
+						range r15 = [%H]1!wcol(22);  // data range of Reliability factor (Linear) column (col(V))
+						range r16 = [%H]1!wcol(23);  // data range of Reliability factor (Saturation) column (col(W))
+						
+						
+						// Plot linear transfer curve
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condtype$)_%(dayslength$)_Transfer_Vd=%(Vdlin$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							// create a graph window using template	
+							win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
+							layer.include(r1);  // plot in the active layer
+							layer.include(r3);  // plot in the active layer
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							
+						};
+						else
+						{
+							// create a graph window using template	
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							layer.include(r1);  // plot in the active layer
+							layer.include(r3);  // plot in the active layer
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend						
+							
+						};
+						
+						// Plot saturation transfer curve
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condtype$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// create a graph window using template	
+							win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
+							layer.include(r2);  // plot in the active layer
+							layer.include(r4);  // plot in the active layer
+						
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+						};
+						else
+						{
+							// create a graph window using template	
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							layer.include(r2);  // plot in the active layer
+							layer.include(r4);  // plot in the active layer
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+						};
+							
+							
+							
+							
+						// Plot gm (Linear)
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condtype$)_%(dayslength$)_gm-lin_Vd=%(Vdlin$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// create a graph window using template	
+							win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
+							page.active = 1; // activate Layer 1
+							layer.include(r5);  // plot in the active layer							
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+						};
+						else
+						{
+							// create a graph window using template	
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(r5);  // plot in the active layer							
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend			
+							
+							
+							
+						};
+						
+						// Plot mobility (Linear)
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condtype$)_%(dayslength$)_u-lin_Vd=%(Vdlin$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// create a graph window using template	
+							win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
+							page.active = 1; // activate Layer 1
+							layer.include(r6);  // plot in the active layer
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+						};
+						else
+						{
+							// create a graph window using template	
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(r6);  // plot in the active layer						
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							
+							
+						};
+						
+						// Plot gm (Saturation)
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condtype$)_%(dayslength$)_gm-sat_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// create a graph window using template	
+							win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
+							page.active = 1; // activate Layer 1
+							layer.include(r8);  // plot in the active layer							
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+						};
+						else
+						{
+							// create a graph window using template
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(r8);  // plot in the active layer							
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+						};
+						
+						// Plot mobility (Saturation)
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condtype$)_%(dayslength$)_u-sat_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// create a graph window using template	
+							win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
+							page.active = 1; // activate Layer 1
+							layer.include(r9);  // plot in the active layer						
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+						};
+						else
+						{
+							// create a graph window using template
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(r9);  // plot in the active layer							
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+						};
+						
+						
+						// Plot linear fit of SQRT(Idsat) and linear extrapolation (for Vt)
+						string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condtype$)_%(dayslength$)_Vt-sat_Vd=%(Vdsat$)V";
+						if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+						{
+							
+							// create a graph window using template	
+							win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu";
+							page.active = 1; // activate Layer 1
+							layer.include(r7);  // plot in the active layer
+							layer.include(r10);  // plot in the active layer							
+							
+							layer -a;  // rescale the layer
+							
+							layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+							
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							page.longname$= graphname$; //this renames the active window (long name)
+							page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+						};
+						else
+						{
+							// create a graph window using template
+							win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(r7);  // plot in the active layer
+							layer.include(r10);  // plot in the active layer							
+							
+							//layer -a;  // rescale the layer
+							//layer -g; // Group the datasets in the layer to auto-color increment
+							//layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+						};
+				};
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				else // if this is an output curve
+				{						
+						wks.name$=Output; // Change the sheet name to "Output"
+						int NoofVgs = (wks.ncols-1)/3; // The number of different Vg voltages is going to be equal to the total No of columns, minus the gate voltage column, divided by 3 (as there are three currents for each Vg: Is, Id, Ig).
+						wks.ncols = wks.ncols + NoofVgs*2;  // The number of columns will be equal to the old one plus two new columns for each Vg (one for abs(Id) and one for abs(Ig)).						
+						wks.colwidth = 8;// set all col width to 8
+						
+						
+						// Extract VdStart and VdStop
+						string VdStart$= $(col(A)[1]); // VdStart is the value of the first cell of col(A)						
+						string VdStop$=$(col(A)[wks.maxrows/2]); // VdStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+						
+						
+						loop(i,1,NoofVgs)
+							{
+								string previousworkbook$=%H; // Get the name of the previous window
+								
+								// Extract Vg
+								int colNo=i+1; // Start from column 2
+								
+								string Vg$=wcol(colNo)[L]$;
+								Vg$=Vg.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+								Vg$=Vg.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+								int Vgint = %(Vg$); // Convert string to integer
+								Vg$= $(Vgint); // Convert integer to string (these two lines get rid of the decimal points)
+								
+							
+								// Create a new column for abs(Id)
+								wcol(i+NoofVgs+1+2*NoofVgs)[L]$ = col(%(i+NoofVgs+1))[L]$; // First Id column is i+NoofVgs+1. First empty column on the right is i+NoofVgs+1+2*NoofVgs. abs(Id(Vg)) and Id(Vg) will have a distance of 2*NoofVgs (e.g. col(N) will be ans(col(F)) if NoofVgs is 4)
+								wcol(i+NoofVgs+1+2*NoofVgs)[U]$ = A; // Units
+								wcol(i+NoofVgs+1+2*NoofVgs)[O]$ = "abs(col(%(i+NoofVgs+1)))";
+								wcol(i+NoofVgs+1+2*NoofVgs)[C]$ =  "Vg=%(Vg$)V, %(condgraphlegend$), %(daysgraphlegend$)";
+								
+								
+								// Create a new column for abs(Ig)
+								wcol(i+NoofVgs+1+3*NoofVgs)[L]$ = col(%(i+2*NoofVgs+1))[L]$; // abs(Ig) column will be NoofVgs further away from abs(Id)
+								wcol(i+NoofVgs+1+3*NoofVgs)[U]$ = A; // Units
+								wcol(i+NoofVgs+1+3*NoofVgs)[O]$ = "abs(col(%(i+2*NoofVgs+1)))";
+								wcol(i+NoofVgs+1+3*NoofVgs)[C]$ =  "Vg=%(Vg$)V, %(condgraphlegend$), %(daysgraphlegend$), Leakage";
+								
+								
+								// Plot output curve
+								range rId = [%H]1!wcol(i+NoofVgs+1+2*NoofVgs);  // data range of abs(Id) column
+								range rIg = [%H]1!wcol(i+NoofVgs+1+3*NoofVgs);  // data range of abs(Ig) column
+								
+								// Output plot with all the Id
+								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condtype$)_%(dayslength$)_Output";
+								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+								{
+									// create a graph window using template	
+									win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V.otpu";
+									layer.include(rId);  // plot in the active layer
+									
+									layer -a;  // rescale the layer
+									layer -g; // Group the datasets in the layer to auto-color increment
+									page.longname$= graphname$; //this renames the active window (long name)
+									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+									layer -gu; // Ungroup the datasets in the layer
+									legend; // Update the legend
+									
+								};
+								
+								else
+								{
+									// create a graph window using template	
+									win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+									layer.include(rId);  // plot in the active layer
+									layer -a;  // rescale the layer
+									layer -g; // Group the datasets in the layer to auto-color increment
+									layer -gu; // Ungroup the datasets in the layer
+									legend; // Update the legend						
+									
+								};
+								
+								
+								// Individual output plot with a single Id and Ig
+								string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condtype$)_%(dayslength$)_Output_leakage_Vg=%(Vg$)V";
+								if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+								{
+									// create a graph window using template	
+									win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu";
+									layer.include(rId);  // plot in the active layer
+									layer.include(rIg);  // plot in the active layer
+									
+									//layer -a;  // rescale the layer
+									//layer -g; // Group the datasets in the layer to auto-color increment
+									page.longname$= graphname$; //this renames the active window (long name)
+									page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+									//layer -gu; // Ungroup the datasets in the layer
+									legend; // Update the legend
+									
+								};
+								
+								else
+								{
+									// create a graph window using template	
+									win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+									layer.include(rId);  // plot in the active layer
+									layer.include(rIg);  // plot in the active layer
+									//layer -a;  // rescale the layer
+									//layer -g; // Group the datasets in the layer to auto-color increment
+									//layer -gu; // Ungroup the datasets in the layer
+									legend; // Update the legend						
+									
+								};
+								
+								win -a %(previousworkbook$);  // activate the previous window (workbook)
+							};
+				};
+			};
+		plot -c; // refresh the graphs to update the labels
+}

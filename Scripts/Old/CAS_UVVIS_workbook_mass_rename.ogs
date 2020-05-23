@@ -1,0 +1,35 @@
+// This script is used to mass rename the CAS workbooks. It loops over all the workbooks in the folder and renames them
+// from the format [biased -10] (1) to TGBC_CAS_IDTBT_Pristine_75pDCB_PMMA_air_biased_-10V_step1.csv
+[Main]
+
+
+doc -ef LB { // loop over all workbooks in folder
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	wks.colwidth = 9;// set all col width to 9
+	string sheetname$=wks.longname$; //get the long name of worksheet
+	string trimmedsheetname$ = sheetname.Substitute("_", " ", 0)$;
+	trimmedsheetname.Remove("("); // remove ( from workbook name
+	trimmedsheetname.Remove(")"); // remove ) from workbook name
+	trimmedsheetname.Remove("["); // remove [ from workbook name
+	trimmedsheetname.Remove("]"); // remove [ from workbook name
+	trimmedsheetname.Replace("__", "_"); // replace "__" with "_"
+	// now the workbook name should be "condition_voltage" (e.g. "grounded_10" or "CMS_50")
+	%A=trimmedsheetname.GetToken(1,"_")$; // get the string that shows the nature of the workbook (e.g. "biased", "CMS")
+			
+	
+	if (%A == "grounded")
+		{%B=trimmedsheetname.GetToken(2,"_")$; // get the string that shows the voltage (in "biased", "CMS" workbooks) or the step (in "grounded" workbooks)
+		// win -r %h "TGBC"%A%B; // Change workbook short name
+		page.longname$ = "TGBC_CAS_IDTBT_Pristine_75pDCB_cytop_iter_3_air_0V_step%B.csv"; // Change workbook long name
+		col(C)[C]$ = "0V, Air";
+		continue;
+		}
+		else // if workbook is either "biased" or "CMS" then the fields are 3, with 2 showing the voltage and 3 showing the step
+			{%B=trimmedsheetname.GetToken(2,"_")$; // get the string that shows the voltage (in "biased", "CMS" workbooks) or the step (in "grounded" workbooks)
+			%K=trimmedsheetname.GetToken(3,"_")$; // get the string that shows the step (in "biased", "CMS" workbooks)
+			// win -r %h "TGBC"%A%B%K; // Change workbook short name
+			page.longname$ = "TGBC_CAS_IDTBT_Pristine_75pDCB_cytop_iter_3_air_%A_%BV_step%K.csv"; // Change workbook long name
+			col(C)[C]$ = "%BV, Air";
+			continue;
+			}
+}

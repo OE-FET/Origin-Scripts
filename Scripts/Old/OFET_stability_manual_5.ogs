@@ -198,8 +198,8 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 		// Rolling Regression function parameters
 		int minRangeLength = 10; // The minimum range of voltages over which the linear fit will be applied.
 		double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
-		double offsetlin = 20; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
-		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
+		double offsetlin = 20; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
+		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
 		double slopewindowlin = 2E-7; // (IDTBT: 2E-7, N2200: 7E-9) Window for perfoming the rolling regression (Linear)
 		double slopewindowsat = 2.5E-6; // (IDTBT: 2.5E-6, 2E-7 N2200: ) Window for perfoming the rolling regression (Saturation)
 		
@@ -309,7 +309,7 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 						
 						col(N)[L]$ = "Linear fit on Id (Vd=%(Vdlin$)V)"; // Long name
 						col(N)[U]$ = A; // Units
-						range rRGlinIy = [%H]1!(1,8); // Define the range variable (Vg column, d(Id(Vdlin))/dt column) for the input argument of the rolling regression function.
+						range rRGlinIy = [%H]1!(1,8); // Define the range variable (Vg column, d(Id(Vdlin))/dV column) for the input argument of the rolling regression function.
 						range rRGlinOy = [%H]1!col(N); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
 						Vtlin = RollingRegression(rRGlinIy, rRGlinOy, minRangeLength, offsetlin, slopewindowlin); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						

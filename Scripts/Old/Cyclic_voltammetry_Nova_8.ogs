@@ -1,0 +1,237 @@
+// This script is used to perform all the cyclic voltammetry plotting with the data from the Nova software.
+// Author: Dimitrios Simatos
+// Version: 0.8
+// Current status: Works well.
+// Changes: Introduced "additivetype" variable.
+
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+	del -al *;// Delete all the local and session variables
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	string sheetname$=page.longname$; //get the name of worksheet
+	sheetname$ = sheetname.Substitute(".", ",", 0)$; // Substitute comma with dot
+
+	string batch$ = sheetname.GetToken(2,"_")$; // Get the string that shows the batch
+	string architecture$ = sheetname.GetToken(3,"_")$; // Get the string that shows the architecture
+	
+	string material$ = sheetname.GetToken(4,"_")$; // Get the string that shows the material
+	
+	//string matthickness$ = additiveinfo.GetToken(1,"-")$; // Get the string that shows the material thickness
+	//string matthicknessunits$ = additive.GetToken(2,"-")$; // Get the string that shows the material thickness units
+
+	string concentration$ = sheetname.GetToken(5,"_")$; // Get the string that shows the concentration	
+	string solvent$ = sheetname.GetToken(6,"_")$; // Get the string that shows the solvent content
+	
+	string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+	//string addthickness$ = additiveinfo.GetToken(1,"-")$; // Get the string that shows the additive thickness
+	//string addthicknessunits$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness units
+	
+	string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
+	
+	string we$=sheetname.GetToken(9,"_")$; // Get the string that shows the material of the working electrode
+	string ce$=sheetname.GetToken(10,"_")$; // Get the string that shows the material of the counter electrode
+	string re$=sheetname.GetToken(11,"_")$; // Get the string that shows the material of the reference electrode
+	
+	string liquid$ = sheetname.GetToken(12,"_")$; // Get the string that shows the conditions (air/type of liquid)
+	
+	string startV$=sheetname.GetToken(13,"_")$; // Get the string that shows the start voltage
+	string stopV$=sheetname.GetToken(14,"_")$; // Get the string that shows the stop voltage
+	string lowerVertex$=sheetname.GetToken(15,"_")$; // Get the string that shows the lower vertex
+	string upperVertex$=sheetname.GetToken(16,"_")$; // Get the string that shows the upper vertex
+	string stepV$=sheetname.GetToken(17,"_")$; // Get the string that shows the voltage step
+	string rate$=sheetname.GetToken(18,"_")$; // Get the string that shows the scan rate
+		
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	// Create the global CV and I vs t graphs
+	string previousworkbook$=%H; // Get the name of the previous window
+	win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(we$)_%(ce$)_%(re$)_%(liquid$)_cyclic_voltammetry.otpu" Cyclic_voltammetry;  // create a graph window using template
+	win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(we$)_%(ce$)_%(re$)_%(liquid$)_cyclic_voltammetry_I_vs_time.otpu" I_vs_t;  // create a graph window using template
+	win -a %(previousworkbook$);  // activate the previous window (workbook)
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	// Loop over all workbooks
+	doc -ef LB { // loop over all workbooks in folder
+		//---------------------------------------------------------------------------------------------------------------------------------------------------
+		// Set workbook properties
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		wks.colwidth = 8;// set all col width to 8
+		page.active = 1; // Switch to the first worksheet. I do not want the metadata worksheets to be parsed.
+		
+		//---------------------------------------------------------------------------------------------------------------------------------------------------
+		
+		del Col(A);         // Deletes Column A of the active worksheet
+		
+		//---------------------------------------------------------------------------------------------------------------------------------------------------
+		string sheetname$=page.longname$; //get the name of worksheet
+		sheetname$ = sheetname.Substitute(".", ",", 0)$; // Substitute comma with dot
+
+		string batch$ = sheetname.GetToken(2,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(3,"_")$; // Get the string that shows the architecture
+		
+		string material$ = sheetname.GetToken(4,"_")$; // Get the string that shows the material
+		
+		//string matthickness$ = additiveinfo.GetToken(1,"-")$; // Get the string that shows the material thickness
+		//string matthicknessunits$ = additive.GetToken(2,"-")$; // Get the string that shows the material thickness units
+
+		string concentration$ = sheetname.GetToken(5,"_")$; // Get the string that shows the concentration
+		string solvent$ = sheetname.GetToken(6,"_")$; // Get the string that shows the solvent content
+		
+		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+		//string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		//string addthickness$ = additiveinfo.GetToken(1,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness units
+
+		
+		string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
+
+		
+		string we$=sheetname.GetToken(9,"_")$; // Get the string that shows the material of the working electrode
+		string ce$=sheetname.GetToken(10,"_")$; // Get the string that shows the material of the counter electrode
+		string re$=sheetname.GetToken(11,"_")$; // Get the string that shows the material of the reference electrode
+		
+		string liquid$ = sheetname.GetToken(12,"_")$; // Get the string that shows the conditions (air/type of liquid)	
+
+		string startV$=sheetname.GetToken(13,"_")$; // Get the string that shows the start voltage
+		string stopV$=sheetname.GetToken(14,"_")$; // Get the string that shows the stop voltage
+		string lowerVertex$=sheetname.GetToken(15,"_")$; // Get the string that shows the lower vertex
+		string upperVertex$=sheetname.GetToken(16,"_")$; // Get the string that shows the upper vertex
+		string stepV$=sheetname.GetToken(17,"_")$; // Get the string that shows the voltage step
+		string rate$=sheetname.GetToken(18,"_")$; // Get the string that shows the scan rate
+		string totalscans$=sheetname.GetToken(19,"_")$; // Get the string that shows the total number of scans
+		string fileNo$ = sheetname.GetToken(1,"_")$; // get the string, which shows the number of the current file
+		string measNo$ = sheetname.GetToken(20,"_")$; // get the string, which shows the number of the current measurement
+
+		int scanNo = 1; // the number of the current scan
+		measNo$=measNo.GetToken(1,".")$; // Remove ".txt" from the measurement No
+
+		//---------------------------------------------------------------------------------------------------------------------------------------------------
+		// Set column names
+		col(A)[L]$ = "V vs Ag/%(re$)"; // Long name
+		col(A)[U]$ = "V"; // Units
+		
+		col(B)[L]$ = "Time"; // Long name
+		col(B)[U]$ = "Seconds"; // Units
+
+		col(C)[L]$ = "Current"; // Long name
+		col(C)[U]$ = "A"; // Units
+		col(C)[C]$ = "Start: %(startV$), Stop: %(stopV$), V1: %(lowerVertex$), V2: %(upperVertex$), Step: %(stepV$), Rate: %(rate$), all scans"; // Units
+		//---------------------------------------------------------------------------------------------------------------------------------------------------
+		// Calculation of variables for loop
+		int nRows = wks.maxrows; // Get the number of rows (not including empty rows - use "maxrows" command instead of "nRows")
+
+		int SingleScanRows = nRows/%(totalscans$); // This is the number of rows that corresponds to a single scan
+		wks.ncols= 4 + %(totalscans$); // set total column number to the number of scans + 4 (voltage column, time column, all scans column, Scan No column)
+
+		int firstrow = 1; // This is the first row that corresponds to the scan to be copied
+		int lastrow = SingleScanRows; // This is the last row that corresponds to the scan to be copied
+		int i=5; // Column number. The first em%(ce$)y column is No 5. The first 4 are voltage column, time column, all scans column, and Scan No column.
+
+		//---------------------------------------------------------------------------------------------------------------------------------------------------
+		// Create the individual CV graph and the current vs time graph
+		previousworkbook$=%H; // Get the name of the previous window
+		
+		win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(we$)_%(ce$)_%(re$)_%(liquid$)_cyclic_voltammetry.otpu" CV_single;  // create a graph window using template
+		win -t p "%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(we$)_%(ce$)_%(re$)_%(liquid$)_cyclic_voltammetry_I_vs_time.otpu" I_vs_t_single;  // create a graph window using template
+
+		win -a %(previousworkbook$);  // activate the previous window (workbook)
+		//---------------------------------------------------------------------------------------------------------------------------------------------------
+		wks.col2.type=4;	// set col(B) as X
+		
+		// Plot column
+		range r1 = [%(previousworkbook$)]1!wcol(3);  // data range of column
+
+		// Global I vs t graph
+		win -a I_vs_t;  // activate the graph window
+		//page.active = nActive;  // activate the layer for plot
+		layer.include(r1);  // plot in the active layer
+
+		layer -a;  // rescale the layer
+		layer -g; // Group the datasets in the layer to %(we$)to-color increment
+		
+		// Single I vs t graph
+		win -a I_vs_t_single;  // activate the graph window
+		//page.active = nActive;  // activate the layer for plot
+		layer.include(r1);  // plot in the active layer
+
+		layer -a;  // rescale the layer
+		layer -g; // Group the datasets in the layer to %(we$)to-color increment
+		win -a %(previousworkbook$);  // activate the previous window (workbook)
+		
+		wks.col2.type=1;	// set col(B) as Y
+
+		//---------------------------------------------------------------------------------------------------------------------------------------------------
+		// Loop over all columns
+		loop (i, 5, wks.ncols)	 
+			{
+			
+			wcol(i)[L]$="Current";
+			wcol(i)[U]$="A";
+			wcol(i)[C]$="Start: %(startV$), Stop: %(stopV$), V1: %(lowerVertex$), V2: %(upperVertex$), Step: %(stepV$), Rate: %(rate$), Scan No $(scanNo)";
+		
+			wrcopy iw:=%[H]! r1:=firstrow r2:=lastrow c1:=3 c2:=3 ow:=%[H]! dr1:=1 dc1:=i; 
+			
+			previousworkbook$=%H; // Get the name of the previous window
+			wks.col1.type=4;	// set col(A) as X
+
+			wks.colwidth = 8;// set all col width to 8
+
+			// Plot column
+			range r1 = [%(previousworkbook$)]1!wcol(i);  // data range of column
+
+			// Global CV graph
+			win -a Cyclic_voltammetry;  // activate the graph window
+			//page.active = nActive;  // activate the layer for plot
+			layer.include(r1);  // plot in the active layer
+			
+			layer -a;  // rescale the layer
+			layer -g; // Group the datasets in the layer to %(we$)to-color increment
+
+			// Single CV graph
+			win -a CV_single;  // activate the graph window
+			//page.active = nActive;  // activate the layer for plot
+			layer.include(r1);  // plot in the active layer
+			
+			layer -a;  // rescale the layer
+			layer -g; // Group the datasets in the layer to %(we$)to-color increment
+		
+			
+			firstrow = firstrow + SingleScanRows;
+			lastrow = lastrow + SingleScanRows;
+			scanNo++;
+			
+			win -a %(previousworkbook$);  // activate the previous window (workbook)
+
+			};
+			
+			win -a CV_single;  // activate the graph window
+			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(sampleNo$)_%(we$)_%(ce$)_%(re$)_%(liquid$)_Start_%(startV$)_Stop_%(stopV$)_V1_%(lowerVertex$)_V2_%(upperVertex$)_step_%(stepV$)_rate_%(rate$)_%(measno$)_cyclic_voltammetry"; //this renames the active window (long name)
+			win -r CV_single %(material$)_%(fileNo$)_CV; //this renames the active window (short name)
+			layer -gu; // Ungroup the datasets in the layer
+			legend; // Update the legend
+			
+			win -a I_vs_t_single;  // activate the graph window
+			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(sampleNo$)_%(we$)_%(ce$)_%(re$)_%(liquid$)_Start_%(startV$)_Stop_%(stopV$)_V1_%(lowerVertex$)_V2_%(upperVertex$)_step_%(stepV$)_rate_%(rate$)_%(measno$)_I_vs_time"; //this renames the active window (long name)
+			win -r I_vs_t_single %(material$)_%(fileNo$)_It; //this renames the active window (short name)
+			layer -gu; // Ungroup the datasets in the layer
+			legend; // Update the legend
+
+		
+		};
+	
+	win -a Cyclic_voltammetry;  // activate the graph window
+	page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(sampleNo$)_%(we$)_%(ce$)_%(re$)_%(liquid$)_cyclic_voltammetry"; //this renames the active window (long name)
+	win -r Cyclic_voltammetry %(material$)_%(additive$)_CV_all; //this renames the active window (short name); //this renames the active window (short name)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+
+
+	win -a I_vs_t;  // activate the graph window
+	page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(sampleNo$)_%(we$)_%(ce$)_%(re$)_%(liquid$)_I_vs_time"; //this renames the active window (long name)
+	win -r I_vs_t %(material$)_%(additive$)_It_all; //this renames the active window (short name); //this renames the active window (short name)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+}

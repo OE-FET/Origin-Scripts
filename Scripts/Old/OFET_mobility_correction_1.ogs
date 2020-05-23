@@ -7,9 +7,9 @@
 // 3. Check that the power law linear fitting is correct. Otherwise adjust the "int firstrowsatPL=lastrowsat-round(lastrowsat/3)" row. Reduce the denominator (e.g. to 3) to get a linear fit with more points if needed. Then re-run the script.
 
 // Author: Dimitrios Simatos
-// Version: 0.2
+// Version: 0.1
 // Current status: Works well.
-// Changes: Changed the condition for the decimal point truncation.
+// Changes: 
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -59,8 +59,9 @@
 
 		//string stepNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the step number in the cycling process
 		string condition$ = sheetname.GetToken(13,"_")$; // Get the string that shows the conditions (air/type of liquid)
-		string timelength$ = sheetname.GetToken(14,"_")$; // get the string, which shows the number of days
-		string minutesNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of minutes
+		string dayslength$ = sheetname.GetToken(14,"_")$; // get the string, which shows the number of days
+		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
+		//string minutesNo$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of minutes
 		string meastype$=sheetname.GetToken(15,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
 		string measNo$=sheetname.GetToken(16,"_")$; // Get the string that shows the measurement number
 		string mode$=sheetname.GetToken(17,"_")$; // Get the string that shows the measurement mode
@@ -98,22 +99,22 @@
 				
 				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
 				
-				if (meastype$ == "T") // if this is a transfer curve then
+				if (meastype$ == "T") // if this is an transfer curve then
 				{
 					
 					// Extract Vdlin and Vdsat
 					Vdlin$=col(D)[L]$;
 					Vdlin$=Vdlin.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 					Vdlin$=Vdlin.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-					if (Vdlin.Find('.')!=0 && Vdlin.GetToken(2,".")$ == "0")
-						Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
+					if (Vdlin.Find('.')!=0)
+						Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
 					
 					
 					Vdsat$=col(E)[L]$;
 					Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
 					Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
-					if (Vdsat.Find('.')!=0 && Vdsat.GetToken(2,".")$ == "0")
-						Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
+					if (Vdsat.Find('.')!=0)
+						Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points)
 					
 					
 					// Extract VgStart and VgStop
@@ -139,9 +140,9 @@
 					
 					col(AP)[L]$ = "Power law fit (Saturation mobility)"; // Long name
 					col(AP)[U]$ = cm^2/V*s; // Units
-					//col(AP) = fit(col(A), col(S));
-					range yy = col(AP)[firstrowsatPL:lastrowsat];
-					yy = fit(col(A)[firstrowsatPL:lastrowsat], col(S)[firstrowsatPL:lastrowsat]);
+					col(AP) = fit(col(A), col(S));
+					//range yy = col(AP)[firstrowsatPL:lastrowsat];
+					//yy = fit(col(A)[firstrowsatPL:lastrowsat], col(S)[firstrowsatPL:lastrowsat]);
 					beta = ParamTree.P; // The exponent beta, for the power law dependence of the mobility.
 					kappa = (beta + 2)/(2*(beta+1)); // The correction factor, kappa.
 					nlend;
@@ -173,7 +174,7 @@
 					
 					
 					// Plot corrected mobility (Saturation)
-					string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat-cor_Vd=%(Vdsat$)V";
+					string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_u-sat-cor_Vd=%(Vdsat$)V";
 					if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 					{
 						// Check if the template exists, otherwise, use a generic one
@@ -206,13 +207,13 @@
 					
 					
 					// Check if the measurement is the last measurement of a specific sample
-						string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
+						string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
 						if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0)
 							continue; // if this is not the last measurement of its kind, then continue to the next iteration
 					
 					
 					// Plot Power law fit (Saturation) for the last measurement of the sample
-					string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat-PLF_Vd=%(Vdsat$)V";
+					string graphname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_u-sat-PLF_Vd=%(Vdsat$)V";
 					if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 					{
 						// Check if the template exists, otherwise, use a generic one

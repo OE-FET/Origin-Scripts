@@ -1,0 +1,730 @@
+// This script is used on WG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
+// Author: Dimitrios Simatos
+// Version: 0.9
+// Current status: Works well.
+// Changes: Added time variable to template names.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	// Set variables for all loops
+	
+	int firstloop=1;
+	int k = 0; // k is 0 if the "volume vs time graph" has NOT been plotted, and something else (usually 1) if it has been plotted.
+		
+		
+	string IonIoffTimeAIOWorkbook$; // The long name of the Ion/Ioff-Time (AIO) workbook
+	string IdonTimeAIOGraph$; // The long name of the Idon-Time (AIO) graph
+	string IdoffTimeAIOGraph$; // The long name of the Idoff-Time (AIO) graph
+	string IgonTimeAIOGraph$; // The long name of the Igon-Time (AIO) graph
+	string IgoffTimeAIOGraph$; // The long name of the Igoff-Time (AIO) graph
+	
+	string IdonTimeGraph$; // The long name of the Idon-Time graph
+	string IdoffTimeGraph$; // The long name of the Idoff-Time graph
+	string IgonTimeGraph$; // The long name of the Igon-Time graph
+	string IgoffTimeGraph$; // The long name of the Igoff-Time graph
+	string TransferIgGraph$; // The long name of the Id-Ig-Time graph
+		
+	
+	// Parameters
+	string Vdsat$="-1";
+	string VgStart$="0";
+	string VgStop$="-1";
+	string Rate$="40-ulmin";
+	string CycleLength$="900";
+	
+	double slopeIdon; // The degradation slope of Id on
+	double Tss; // The steady state time
+	int Tssindex; // The row index of the steady state time
+	double Tsswindow = 1E-9; // Window for extracting the steady state time
+	double IdonSSMean; // Mean Id on at steady state
+	double IdonSSSD; // Standard deviation of Id on at steady state
+	double IdonSSRange; // Range of Id on at steady state
+	
+	// Define time points to plot
+	string t1$ = "300"; // NOTE: The time point needs to be edited also in line 378. The switch command does not work with string variables.
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+
+	doc -e LB { // loop over all workbooks in project
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		int s = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
+		int d = sheetname.Find("sample"); // It will yield a value different than 0 if the filename contains "script".
+		int c = sheetname.Find("comparison"); // It will yield a value different than 0 if the filename contains "comparison".
+		//int i = sheetname.Find("Imax"); // It will yield a value different than 0 if the filename contains "Imax".
+		int j = sheetname.Find("plunger"); // It will yield a value different than 0 if the filename contains "plunger".
+		int p = sheetname.Find("Priming"); // It will yield a value different than 0 if the filename contains "Priming".
+		
+		if (p!=0 || s!=0 || c!=0 || d!=0) continue; // If the filename contains "Priming", "script", "sample", or "comparison" then just continue to the next workbook.
+		//if (i==0 && j==0) continue; // If the filename does not contain "Imax" and does not contain "plunger", then just continue to the next workbook.
+		if (j!=0 && k==1) continue; // If the filename contains "plunger" and the "volume vs time graph" has been plotted, then just continue to the next workbook.
+
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+
+		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+
+		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+
+		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+
+		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+		
+		//string dielectric$ = sheetname.GetToken(7,"_")$; // Get the string that shows the dielectric
+		//string dielectricconc$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric concentration or ratio
+
+		string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
+
+		string stepNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the step number in the cycling process
+		string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string dayslength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
+		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
+		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
+
+		
+
+		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
+		string condgraphlegend$; // This string will depend on "condition" and it will display the type of liquid for the graph legend
+		string daysgraphlegend$; // This string will depend on "daysNo" and it will display the type of liquid for the graph legend
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		// Check for NaN columns
+		range rb = [%H]1!wcol(2);  // data range of (Is max) column (col(B))
+		
+		string NaNb$ = Lookup("NaN", rb)$;
+		
+		if (Nanb$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted (they yield NaN values)
+		//if (sampleNo$ == "1st") continue; // If sampleNo$ is equal to a sample that was damaged then just continue to the next workbook.
+		//if (daysNo$ == "1" || daysNo$ == "4" || daysNo$ == "23") continue; // If daysNo$ is equal to a day in which the experiment had bubbles then just continue to the next workbook.
+			else
+			{
+				switch (%(concunits$)) // Case study
+					{
+						case "gl": // If the string is "gl", write "g/l" in the comment field
+							conunitslegend$ = "g/l"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							conunitslegend$ = "mg/ml"; // Comment field (graph legend)
+							break;
+					}
+					
+				switch (%(additivetype$)) // Case study
+					{
+						case "Pristine": // If the string is "TCNQ", write "TCNQ" in the comment field
+							additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+							break;
+						
+						case "TCNQ": // If the string is "TCNQ", write "TCNQ" in the comment field
+							additivegraphlegend$ = "+ TCNQ"; // Comment field (graph legend)
+							break;
+						
+						case "F2TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
+							//string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
+							additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
+							break;
+							
+						case "F4TCNQ": // If the string is "F4TCNQ", write "F4TCNQ" in the comment field
+							//string pH$ = condinfo.GetToken(1,"-")$; // get the string, which shows the pH
+							additivegraphlegend$ = "+ F4TCNQ"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-1OCT-v": // If the number is 1, use single form
+							additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-1OCT-i": // If the number is 1, use single form
+							additivegraphlegend$ = "+ 1-Octanethiol (immersion)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-TDF1OCT-v": // If the number is 1, use single form
+							additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)"; // Comment field (graph legend)
+							break;
+						
+						case "SAM-TDF1OCT-i": // If the number is 1, use single form
+							additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other strings, write "Pristine" in the comment field
+							additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+							break;
+					}
+					
+				switch (%(condition$)) // Case study
+					{
+						case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+							condgraphlegend$ = "DI water"; // Comment field (graph legend)
+							break;
+						
+						case "up-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+							condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
+							break;
+						
+						case "t-H2O": // If the string is "town", write "town water" in the comment field
+							condgraphlegend$ = "Town water"; // Comment field (graph legend)
+							break;
+						
+						case "ss": // If the string is "town", write "town water" in the comment field
+							condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
+							break;
+						
+						case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+							string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
+							pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
+							string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
+							string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
+							condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
+							break;
+							
+						default: // For all other strings, write the condition string in the comment field
+							condgraphlegend$ = condition$; // Comment field (graph legend)
+							break;
+					}
+						
+				switch (%(daysNo$)) // Case study
+					{
+						case "initial": // If the string is "initial", write "initial" in the comment field
+							daysgraphlegend$ = "initial"; // Comment field (graph legend)
+							break;
+						
+						case "1": // If the number is 1, use single form
+							daysgraphlegend$ = "1 day"; // Comment field (graph legend)
+							break;
+						
+						default: // For all other numbers, use plural form
+							daysgraphlegend$ = "%(daysNo$) days"; // Comment field (graph legend)
+							break;
+					}
+					
+				legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(daysgraphlegend$)"; // Legend
+				legendAIO$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$)"; // Legend
+		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				string previousworkbook$=%H; // Get the name of the previous window
+
+		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+				// Copy Idon values for all time points
+				IonIoffTimeAIOWorkbook$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Ion-Ioff-Time-AIO_Vd=%(Vdsat$)V.txt";
+				if(exist(%(uid2name(range2uid(["%(IonIoffTimeAIOWorkbook$)"]))$))==0) // if there is no workbook for this type of measurement then create a new workbook
+					{
+						
+						newbook option:=lsname;
+						page.longname$ = IonIoffTimeAIOWorkbook$;
+						wks.name$ = "Parameters vs Time"; // Change the sheet name to "Parameters vs Time"
+						wks.ncols = 13; // set total column number to 13
+						wks.colwidth = 10;// set all col width to 10
+						
+						col(A)[L]$ = "Time"; // Long name
+						col(A)[U]$ = "Minutes"; // Units
+						col(A)[1] = 1;
+						
+						col(B)[L]$ = "Time"; // Long name
+						col(B)[U]$ = "Days"; // Units
+						
+						col(C)[L]$ = "Id on"; // Long name
+						col(C)[U]$ = A; // Units
+						col(C)[C]$ = legendAIO$;
+						
+						col(D)[L]$ = "Id off"; // Long name
+						col(D)[U]$ = A; // Units
+						col(D)[C]$ = legendAIO$;
+						
+						col(E)[L]$ = "Ig on"; // Long name
+						col(E)[U]$ = A; // Units
+						col(E)[C]$ = legendAIO$;
+						
+						col(F)[L]$ = "Ig off"; // Long name
+						col(F)[U]$ = A; // Units
+						col(F)[C]$ = legendAIO$;
+					};
+					
+					
+					
+				// Create plots Idon, Idoff, Igon, Igoff vs Time
+				
+				if (firstloop == 1) // if this is the first loop
+					{
+						// AIO graphs (unified time axis)
+						
+						// Check if the template exists, otherwise, use a generic one
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_comparison_Idon-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						if (exist(Template$)!=-1)// if the template exists
+							win -t p "%(Template$)"; // create a graph window using template
+						else
+							win -t p "%(templatepath$)Generic_Idon-Time-AIO.otpu"; // create a graph window using a generic template
+						
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Idon-Time-AIO_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+						IdonTimeAIOGraph$ = page.longname$;
+						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						
+						// Check if the template exists, otherwise, use a generic one
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_comparison_Idoff-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						if (exist(Template$)!=-1)// if the template exists
+							win -t p "%(Template$)"; // create a graph window using template
+						else
+							win -t p "%(templatepath$)Generic_Idoff-Time-AIO.otpu"; // create a graph window using a generic template
+						
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Idoff-Time-AIO_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+						IdoffTimeAIOGraph$ = page.longname$;
+						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						
+						// Check if the template exists, otherwise, use a generic one
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_comparison_Igon-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						if (exist(Template$)!=-1)// if the template exists
+							win -t p "%(Template$)"; // create a graph window using template
+						else
+							win -t p "%(templatepath$)Generic_Igon-Time-AIO.otpu"; // create a graph window using a generic template
+						
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Igon-Time-AIO_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+						IgonTimeAIOGraph$ = page.longname$;
+						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						
+						// Check if the template exists, otherwise, use a generic one
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_comparison_Igoff-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						if (exist(Template$)!=-1)// if the template exists
+							win -t p "%(Template$)"; // create a graph window using template
+						else
+							win -t p "%(templatepath$)Generic_Igoff-Time-AIO.otpu"; // create a graph window using a generic template
+						
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Igoff-Time-AIO_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+						IgoffTimeAIOGraph$ = page.longname$;
+						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						
+						// Graphs on time axis of a single experiment
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_comparison_Idon-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						if (exist(Template$)!=-1)// if the template exists
+							win -t p "%(Template$)"; // create a graph window using template
+						else
+							win -t p "%(templatepath$)Generic_Idon-Time.otpu"; // create a graph window using a generic template
+						
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Idon-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+						IdonTimeGraph$ = page.longname$;
+						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_comparison_Idoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						if (exist(Template$)!=-1)// if the template exists
+							win -t p "%(Template$)"; // create a graph window using template
+						else
+							win -t p "%(templatepath$)Generic_Idoff-Time.otpu"; // create a graph window using a generic template
+						
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Idoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+						IdoffTimeGraph$ = page.longname$;
+						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_comparison_Igon-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						if (exist(Template$)!=-1)// if the template exists
+							win -t p "%(Template$)"; // create a graph window using template
+						else
+							win -t p "%(templatepath$)Generic_Igon-Time.otpu"; // create a graph window using a generic template
+						
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Igon-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+						IgonTimeGraph$ = page.longname$;
+						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_comparison_Igoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						if (exist(Template$)!=-1)// if the template exists
+							win -t p "%(Template$)"; // create a graph window using template
+						else
+							win -t p "%(templatepath$)Generic_Igoff-Time.otpu"; // create a graph window using a generic template
+						
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+						IgoffTimeGraph$ = page.longname$;
+						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_comparison_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+						if (exist(Template$)!=-1)// if the template exists
+							win -t p "%(Template$)"; // create a graph window using template
+						else
+							win -t p "%(templatepath$)Generic_Transfer_Time.otpu"; // create a graph window using a generic template
+						
+						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Transfer_Leakage_Vd=%(Vdsat$)V_%(t1$)-min"; //this renames the active window (long name)
+						TransferIgGraph$ = page.longname$;
+						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						
+						if (exist(Text3,16)==16) Text3.text$ = $(%(t1$)) minutes; // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
+						
+						firstloop = 0;
+						win -a %(previousworkbook$);  // activate the previous window (workbook)
+					};
+					
+				switch (%(meastype$)) // Case study
+					{
+						case "300-min": // If the string is "t1-min", process and plot the transfer curve data at the t1th minute
+							
+							
+							// Plot columns
+							range Id = [%H]1!col(E);  // data range of abs(Id) column (col(E))
+							range Ig = [%H]1!col(F);  // data range of abs(Ig) column (col(F))
+							
+							// Id graph (Transfer curves)
+							//page.active = nActive;  // activate the layer for plot
+							win -a %(uid2name(range2uid(["%(TransferIgGraph$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(Id);  // plot in the active layer
+							layer.include(Ig);  // plot in the active layer
+							
+							//layer -a;  // rescale the layer
+							////layer -g; // Group the datasets in the layer to auto-color increment
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							////layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+								
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							break;
+								
+								
+								
+						case "Imax": // If the string is "Imax", process and plot the Imax, Imin, Ion, Ioff vs time data
+							
+							win -a %(previousworkbook$);
+							range TimeRange = [%(previousworkbook$)]1!wcol(1);  // data range of column (Time)
+							range Idon = [%(previousworkbook$)]1!wcol(10);  // data range of column (Id on)
+							range Idoff = [%(previousworkbook$)]1!wcol(11);  // data range of column (Id off)
+							range Igon = [%(previousworkbook$)]1!wcol(12);  // data range of column (Ig on)
+							range Igoff = [%(previousworkbook$)]1!wcol(13);  // data range of column (Ig off)
+							int rowsNo = wks.maxrows;  // the number of rows of the workbook
+							
+							window -ch 1; // hide the workbook that was processed
+							win -a %(uid2name(range2uid(["%(IonIoffTimeAIOWorkbook$)"]))$); // activate the workbook
+							
+							// Append Idon vs time to a workbook with a unified time axis ("AIO" workbook)
+							
+							loop(i,8,rowsNo) // loop over all rows of the workbook, and copy the minutesNo (time axis), and the Idon. I ignore the first 8 points because I am not interested in the double layer formation. I want to see the exponential decay part of the Idon.
+							{
+								
+								// Modify the time value
+								double ModifiedTime = TimeRange[i];
+								ModifiedTime = round(ModifiedTime,0);
+								
+								if (daysNo$ == "initial") // If daysNo$ is "Initial" then write "0" in the cell.
+									daysNo$ = 0;
+								else
+									ModifiedTime = %(daysNo$)*24*60+ModifiedTime; // Add the No of days to the elapsed time
+								
+								
+								if (ModifiedTime >> col(A)[wks.maxrows])
+									wks.insertRows(wks.maxrows+1, ModifiedTime-col(A)[wks.maxrows]);
+								
+								col(A)[wks.maxrows] = ModifiedTime;
+								col(B)[wks.maxrows] = %(daysNo$);
+								col(C)[wks.maxrows] = Idon[i];
+								col(D)[wks.maxrows] = Idoff[i];
+								col(E)[wks.maxrows] = Igon[i];
+								col(F)[wks.maxrows] = Igoff[i];
+								
+							};
+							
+							//win -a %(previousworkbook$);  // activate the previous window (workbook)
+							window -ch 1; // hide the workbook that was processed
+							
+							
+							// Plot graphs
+							
+							// Idon graph
+							win -a %(uid2name(range2uid(["%(IdonTimeGraph$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(Idon);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							
+							// Idoff graph
+							win -a %(uid2name(range2uid(["%(IdoffTimeGraph$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(Idoff);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							
+							// Igon graph
+							win -a %(uid2name(range2uid(["%(IgonTimeGraph$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(Igon);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							
+							// Igoff graph
+							win -a %(uid2name(range2uid(["%(IgoffTimeGraph$)"]))$); // activate the graph window
+							page.active = 1; // activate Layer 1
+							layer.include(Igoff);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							legend; // Update the legend
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							break;
+							
+							
+							
+						case "plunger": // If the string is "plunger", process and plot the plunger position vs time data
+								
+							
+							// Plot Plunger position vs time								
+							col(A)[L]$ = "Time"; // Long name
+							col(A)[U]$ = "Minutes"; // Units
+							
+							col(B)[L]$ = "Absolute plunger position"; // Units
+							col(B)[U]$ = "Steps"; // Units
+							
+							col(C)[L]$ = "Volume of solution in syringe"; // Units
+							col(C)[U]$ = "ul"; // Units
+							col(C)[O]$ = "col(B)/3"; // Function
+							
+							// Plot columns
+							range SyringeVolume = [%(previousworkbook$)]1!wcol(3);  // data range of column
+							
+							
+							// Volume vs time graph
+							
+							// Plot Syringe Volume columns in all graphs, in Layer 2.
+							
+							// Idon graph
+							win -a %(uid2name(range2uid(["%(IdonTimeGraph$)"]))$); // activate the graph window
+							page.active = 2; // activate Layer 2
+							layer.include(SyringeVolume);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							
+							// Idoff graph
+							win -a %(uid2name(range2uid(["%(IdoffTimeGraph$)"]))$); // activate the graph window
+							page.active = 2; // activate Layer 2
+							layer.include(SyringeVolume);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							
+							// Igon graph
+							win -a %(uid2name(range2uid(["%(IgonTimeGraph$)"]))$); // activate the graph window
+							page.active = 2; // activate Layer 2
+							layer.include(SyringeVolume);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							
+							// Igoff graph
+							win -a %(uid2name(range2uid(["%(IgoffTimeGraph$)"]))$); // activate the graph window
+							page.active = 2; // activate Layer 2
+							layer.include(SyringeVolume);  // plot in the active layer
+								
+							//layer -a;  // rescale the layer
+							layer -g; // Group the datasets in the layer to auto-color increment
+							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+							layer -gu; // Ungroup the datasets in the layer
+							//legend; // Update the legend
+							
+							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							
+							k = 1; // "volume vs time graph" has been plotted
+							break;
+						
+						
+						default: // For all other cases, break
+							break;
+					}
+			};
+	}
+	win -a %(uid2name(range2uid(["%(IonIoffTimeAIOWorkbook$)"]))$); // activate the workbook
+	
+	// Fix col(A)
+	col(A)[1] = 0;
+	
+	loop(i,2,wks.maxrows)
+	{
+		if (col(A)[i]-col(A)[i-1]!=1)
+			col(A)[i] = col(A)[i-1] + 1;
+	}
+	
+	// Metrics
+	
+	// Steady state time (Tss), and Degradation slope (dIdon/dt)
+	
+	col(G)[L]$ = "Moving slope of Id on (Saturation)"; // Long name
+	col(G) = abs(movslope(col(A),col(C),20)); // moving slope of col(C) with 20 points average. I do not use the point derivative because it is very sensitive to noise.
+	
+	loop(i,8,wks.maxrows) // Start from row 8 (after water has been injected)
+	{
+		fitLR iy:=[%H]1!(1,7)[i:i+200] oy:=col(H); // Linear fit of col(G) with respect to col(A), over 200 points (~200 minutes)
+		if (abs(fitLR.b) <  Tsswindow) // Window for extracting the steady state time
+		{									
+			Tss = col(A)[i]; // The steady state time
+			Tssindex = i;
+			slopeIdon = abs(fitLR.b); // The degradation slope.
+			break;
+		};
+	};
+	
+	col(H)[L]$ = "Linear fit on Id on (Saturation)"; // Long name
+	col(H)[C]$ = "Linear fit"; // Long name
+	
+	col(I)[L]$ = "Steady state time of Id on"; // Long name
+	col(I)[U]$ = min; // Units
+	//col(I)[1] = Tss;
+	cell(1,9) = Tss;
+	
+	col(J)[L]$ = "Degradation slope of Id on"; // Long name
+	col(J)[U]$ = A/min; // Units
+	//col(J)[1] = slopeIdon;
+	cell(1,10) = slopeIdon;
+	
+	
+	// Mean Id on, Standard Deviation, and Range at the steady state
+	IdonSSMean = mean(col(C)[Tssindex:wks.maxrows]);
+	IdonSSSD = StdDev(col(C)[Tssindex:wks.maxrows]);
+	IdonSSRange = max(col(C)[Tssindex:wks.maxrows]) - min(col(C)[Tssindex:wks.maxrows]);
+	
+	col(K)[L]$ = "Mean Id on at steady state"; // Long name
+	col(K)[U]$ = A; // Units
+	//col(K)[1] = IdonSSMean;
+	cell(1,11) = IdonSSMean;
+	
+	col(L)[L]$ = "Standard deviation of Id on at steady state"; // Long name
+	col(L)[U]$ = A; // Units
+	//col(L)[1] = IdonSSSD;
+	cell(1,12) = IdonSSSD;
+	
+	col(M)[L]$ = "Range of Id on at steady state"; // Long name
+	col(M)[U]$ = A; // Units
+	//col(M)[1] = IdonSSRange;
+	cell(1,13) = IdonSSRange;
+	
+	range rIdonsatTime = [%H]1!col(C);  // data range of Id on (Saturation) column
+	range rIdoffsatTime = [%H]1!col(D);  // data range of Id off (Saturation) column
+	range rIgonsatTime = [%H]1!col(E);  // data range of Ig on (Saturation) column
+	range rIgoffsatTime = [%H]1!col(F);  // data range of Ig off (Saturation) column
+	
+	window -ch 1; // hide the workbook that was processed
+	
+	// Idon graph
+	win -a %(uid2name(range2uid(["%(IdonTimeAIOGraph$)"]))$); // activate the graph window
+	page.active = 1; // activate Layer 1
+	
+	layer -i201 rIdonsatTime;  // plot in the active layer as scatter plot
+	
+	if (exist(Text3,16)==16) Text3.text$ = T\-(ss) = $(Tss) min; // If the label exists, update it
+	if (exist(Text4,16)==16) Text4.text$ = d(Id\-(on,SS))/dt = $(slopeIdon, P*2) A/min; // If the label exists, update it
+	if (exist(Text5,16)==16) Text5.text$ = Id\-(on,SS,mean) = $(IdonSSMean, P*2) A; // If the label exists, update it
+	if (exist(Text6,16)==16) Text6.text$ = Id\-(on,SS,SD) = $(IdonSSSD, P*2) A; // If the label exists, update it
+	if (exist(Text7,16)==16) Text7.text$ = Id\-(on,SS,Ran) = $(IdonSSRange, P*2) A; // If the label exists, update it
+	plot -c; // refresh the graph to update the labels
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+	
+	////win -a %(previousworkbook$);  // activate the previous window (workbook)
+	
+	
+	// Idoff graph
+	win -a %(uid2name(range2uid(["%(IdoffTimeAIOGraph$)"]))$); // activate the graph window
+	page.active = 1; // activate Layer 1
+	
+	layer -i201 rIdoffsatTime;  // plot in the active layer as scatter plot
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+	
+	////win -a %(previousworkbook$);  // activate the previous window (workbook)
+	
+	
+	// Igon graph
+	win -a %(uid2name(range2uid(["%(IgonTimeAIOGraph$)"]))$); // activate the graph window
+	page.active = 1; // activate Layer 1
+	
+	layer -i201 rIgonsatTime;  // plot in the active layer as scatter plot
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+	
+	////win -a %(previousworkbook$);  // activate the previous window (workbook)
+	
+	
+	// Igoff graph
+	win -a %(uid2name(range2uid(["%(IgoffTimeAIOGraph$)"]))$); // activate the graph window
+	page.active = 1; // activate Layer 1
+	
+	layer -i201 rIgoffsatTime;  // plot in the active layer as scatter plot
+		
+	//layer -a;  // rescale the layer
+	layer -g; // Group the datasets in the layer to auto-color increment
+	//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	layer -gu; // Ungroup the datasets in the layer
+	legend; // Update the legend
+	
+	////win -a %(previousworkbook$);  // activate the previous window (workbook)
+}

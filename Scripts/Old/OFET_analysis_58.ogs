@@ -6,12 +6,11 @@
 // 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
 // 2. Run the script.
 // 3. Check that the Vt linear fitting is correct. Otherwise adjust the slope window (difference between current fit slope and fit slope for Vgmax). Increase the window to relax the constraints for "flatness" of SQRT(Id). Then re-run the script.
-// 4. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 6.0
+// Version: 5.8
 // Current status: Works well.
-// Changes: Added offset variable in the Rolling Regression function.
+// Changes: Turned rolling regression into a function.
 
 
 // Thickness
@@ -198,34 +197,28 @@ function string findInTime (string intime)
 		return intimegraphlegend$;
 }
 
-// The linear fitting is done from Id(Vgmax)+offset to the i. Id(Vgmax)+offset is the left limit of the voltage range for the linear fit.
-// The index i shows the right limit of the voltage range for the linear fit. It starts from maxrows/2 (Id(Vgmax)) + minRangeLength (the min voltage range I want to fit on; if this is zero, then the left and right limits will overlap) + offset (correction factor in case Id plateaus at the left limit of the range (Vgmax). This happens in the linear regime.).
-// The loop extends from the minimum i value to the end of the voltage range (maxrows). Moving i to the right (via the loop) constitutes the rolling window.
-
-function double RollingRegression (range inputcols, range outputcol, int minRangeLength, int offset, double slopewindow)
+function double RollingRegression (range inputcols, range outputcol, int minRangeLength, double slopewindow)
 {
-	double Vt; // Threshold voltage (Temporary variable to be used in the Rolling Regression function)
-	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
+	loop(i,wks.maxrows/2 + minRangeLength,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
 	{
-		fitLR iy:=inputcols[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied. 
+		fitLR iy:=inputcols[wks.maxrows/2:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied. 
 		if (i == wks.maxrows/2 + minRangeLength) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
 		{
 			firstfit = fitLR.b;
 			continue;
 		};
-		//i=; // Uncomment these two lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-		//abs(firstfit - fitLR.b)=;
+		
 		if (abs(firstfit - fitLR.b) > slopewindow) // Window for extracting the rolling window slope
 		{
-			Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
-			Vt = round(Vt,1); // Round the threshold voltage
+			Vtsat = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
+			Vtsat = round(Vtsat,1); // Round the threshold voltage
 			break;
 		};
 		else
 			continue;
 	}
 			
-	return Vt;
+	return Vtsat;
 }
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -287,13 +280,9 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
 		
-		// Rolling Regression function parameters
 		int minRangeLength = 10; // The minimum range of voltages over which the linear fit will be applied.
-		double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
-		double offsetlin = 20; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
-		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dt function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
-		double slopewindowlin = 2E-7; // (IDTBT: 2E-7, N2200: 7E-9) Window for perfoming the rolling regression (Linear)
-		double slopewindowsat = 2.5E-6; // (IDTBT: 2.5E-6, 2E-7 N2200: ) Window for perfoming the rolling regression (Saturation)
+		double firstfit = 0; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
+		double slopewindow = 2.5E-6; // Window for perfoming the rolling regression (also: 2E-7)
 		
 		double jmaxlin; // Max channel current density (Linear)
 		double jmaxsat; // Max channel current density (Saturation)
@@ -343,7 +332,7 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 				
 				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
 				
-				if (meastype$ == "T") // if this is a transfer curve then
+				if (meastype$ == "T") // if this is an transfer curve then
 				{
 						wks.name$=Transfer; // Change the sheet name to "Transfer"
 						wks.ncols=41; // set total column number to 41
@@ -399,9 +388,11 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 						
 						col(N)[L]$ = "Linear fit on Id (Vd=%(Vdlin$)V)"; // Long name
 						col(N)[U]$ = A; // Units
-						range rRGlinIy = [%H]1!(1,8); // Define the range variable (Vg column, d(Id(Vdlin))/dt column) for the input argument of the rolling regression function.
-						range rRGlinOy = [%H]1!col(N); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
-						Vtlin = RollingRegression(rRGlinIy, rRGlinOy, minRangeLength, offsetlin, slopewindowlin); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						int lastrowlin=wks.maxrows/2; // The upper limit of the integration will be equal to the half of the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
+						int firstrowlin=lastrowlin-round(lastrowlin/3); // The lower limit of the integration will extend at a certain number of points from the last row.
+						fitLR iy:=[%H]1!(1,8)[firstrowlin:lastrowlin] oy:=col(N); // Linear fit
+						Vtlin = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
+						Vtlin = round(Vtlin,1); // Round the threshold voltage
 						
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
@@ -409,7 +400,7 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 						col(N)=rn(col(A)); // Extrapolate for new X axis (col(A))
 						
 						
-						// The average mobilities are derived by using the linear fit of the slope of the Id d(SQRT(Id(Vdsat)))/dt in the Linear (Saturation) regime, instead of the point derivative.
+						// The average mobilities are derived by using the linear fit of the slope of the Id (SQRT(Id)) in the Linear (Saturation) regime, instead of the point derivative.
 						col(O)[L]$ = "Average mobility (Linear)"; // Long name
 						col(O)[U]$ = cm^2/V*s; // Units
 						col(O)[1] = 10000*L*abs(fitLR.b)/(W*Ci*abs(%(Vdlin$))); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
@@ -437,9 +428,8 @@ function double RollingRegression (range inputcols, range outputcol, int minRang
 						
 						col(T)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
 						col(T)[U]$ = A^(1/2); // Units
-						range rRGsatIy = [%H]1!(1,17); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
-						range rRGsatOy = [%H]1!col(T); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
-						Vtsat = RollingRegression(rRGsatIy, rRGsatOy, minRangeLength, offsetsat, slopewindowsat); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						range rRGsat = [%H]1!(1,17); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
+						Vtsat = RollingRegression(rRGsat, col(T), minRangeLength, slopewindow); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, slope window variable).
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
 						range rt=(1,20); // Define XYrange
