@@ -131,7 +131,7 @@ function string findCondition (string condition)
 		return condgraphlegend$;
 }
 
-function string findTime (string timelength)
+function string MakeTimeLegend (string timelength)
 {
 	if (timelength$ != "initial")
 		{
@@ -270,7 +270,7 @@ function double PowerLawFit (range inputcols, range outputcol, int minRangeLengt
 	return beta;
 }
 
-function PlotSingle (string graphname, string Template, string TemplateGeneric, dataset Layers, int ColumnsNo, dataset Columns, dataset LineTypes, string previousworkbook, int LegendUpdate)
+function PlotSingle (string graphname, string Template, string TemplateGeneric, dataset Layers, int ColumnsNo, dataset Columns, dataset LineTypes, string previousworkbook, int LegendUpdate, int ReColor, int ReScale)
 {
 	if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 	{
@@ -311,11 +311,15 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		
 	};
 
-	//layer -a;  // rescale the layer
-	//layer -g; // Group the datasets in the layer to auto-color increment
-	//layer -gu; // Ungroup the datasets in the layer
 	if (LegendUpdate == 1)
 		legend; // Update the legend
+
+	if (ReColor == 1)
+		layer -g; // Group the datasets in the layer to auto-color increment
+		layer -gu; // Ungroup the datasets in the layer
+		
+	if (ReScale == 1)
+		layer -a;  // rescale the layer
 }
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
@@ -324,11 +328,8 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 	string Template$;
 	dataset Columns;
 	dataset LineTypes;
-	int LegendUpdate;
 
-	doc -ef LB { // loop over all workbooks in folder
-		LegendUpdate = 1; // Set the legend to be updated when plotting a function.
-		
+	doc -ef LB { // loop over all workbooks in folder		
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		page.active = 1; // Switch to the first worksheet.
 		
@@ -390,7 +391,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		// Rolling Regression function parameters
 		int minRangeLength = 10; // The minimum range of voltages over which the linear fit will be applied.
 		int minRangeLengthPLF = 20; // The minimum range of voltages over which the Power Law fit will be applied.		
-		double offsetlin = 20; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
+		double offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
 		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
 		double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Linear)
 		double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Saturation)
@@ -432,7 +433,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 				conunitslegend$ = findConcunits(concunits$)$; // Note ending '$'
 				additivegraphlegend$ = findAdditive(additive$)$; // Note ending '$'
 				condgraphlegend$ = findCondition(condition$)$; // Note ending '$'
-				timegraphlegend$ = findTime(timelength$)$; // Note ending '$'
+				timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
 				modegraphlegend$ = findMode(mode$)$; // Note ending '$'
 				intimegraphlegend$ = findInTime(intime$)$; // Note ending '$'
 				
@@ -741,14 +742,14 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Layers = {1, 1};
 						Columns = {8, 10};
 						LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
 						
 						
 						// Plot saturation transfer curve
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Transfer_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 						Columns = {9, 11};
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
 						
 						
 						// Plot gm (Linear)
@@ -758,7 +759,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Layers = {1};
 						Columns = {12};
 						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
 						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
 						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
@@ -770,7 +771,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_gm-sat_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 						Columns = {18};
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
 						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
 						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
 						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
@@ -784,7 +785,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Layers = {1};
 						Columns = {13};
 						LineTypes = {2}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
 						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
 						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
@@ -796,7 +797,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 						Columns = {19};
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
 						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
 						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
 						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
@@ -808,7 +809,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat-cor_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat-cor_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 						Columns = {45};
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
 						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
 						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
 						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
@@ -824,7 +825,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Layers = {1, 1};
 						Columns = {8, 14};
 						LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
 						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 						if (exist(Text2,16)==16) Text2.text$ = V\-(t,lin) = $(Vtlin)V;
 						plot -c; // refresh the graph to update the labels
@@ -835,7 +836,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Vt-sat_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 						Columns = {17, 20};
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
 						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 						if (exist(Text2,16)==16) Text2.text$ = V\-(t,sat)= $(Vtsat)V;
 						plot -c; // refresh the graph to update the labels
@@ -848,7 +849,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Layers = {1};
 						Columns = {38};
 						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
 						
 						
 						// Check if the measurement is the last measurement of this device
@@ -867,7 +868,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Layers = {1, 1};
 						Columns = {13, 19};
 						LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 1, 0);
 						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
 						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
@@ -885,7 +886,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Columns = {8, 9, 17, 20};
 						LineTypes = {1, 1, 1, 1}; // 1 for line plot, 2 for scatter plot
 						LegendUpdate = 0; // Do not update the legend
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, previousworkbook$, 1, 0, 0);
 						LegendUpdate = 1; // Update the legend
 						page.active = 1; // activate Layer 1
 						if (exist(Text3,16)==16) Text3.text$ = (V\-(d) = %(Vdlin$)V);
@@ -903,7 +904,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Layers = {1, 1, 1};
 						Columns = {19, 42, 45};
 						LineTypes = {2, 1, 2}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 3, Columns, LineTypes, previousworkbook$, LegendUpdate);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 3, Columns, LineTypes, previousworkbook$, 1, 0, 0);
 						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
 						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
 						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
@@ -967,7 +968,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 							Layers = {1};
 							Columns = {i+NoofVgs+1+2*NoofVgs};
 							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, LegendUpdate);
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
 							
 							
 							// Individual output plot with a single Id and Ig
@@ -977,7 +978,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 							Layers = {1, 1};
 							Columns = {i+NoofVgs+1+2*NoofVgs, i+NoofVgs+1+3*NoofVgs};
 							LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, LegendUpdate);
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
 							
 							
 							win -a %(previousworkbook$);  // activate the previous window (workbook)
