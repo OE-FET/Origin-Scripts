@@ -147,10 +147,12 @@
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				// Case structures from filenames (used for legends).
 				
-				conunitslegend$ = findConcunits(concunits$)$; // Note ending '$'
-				additivegraphlegend$ = findAdditive(additive$)$; // Note ending '$'
-				condgraphlegend$ = findCondition(condition$)$; // Note ending '$'
+				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
+				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
+				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
 				timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
+				modegraphlegend$ = MakeMeasModeLegend(mode$)$; // Note ending '$'
+				intimegraphlegend$ = MakeInTimeLegend(intime$)$; // Note ending '$'
 				
 				string legend$ = "%(timegraphlegend$)"; // Legend
 				

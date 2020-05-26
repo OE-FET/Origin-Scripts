@@ -83,7 +83,7 @@ function double DielectricThicknessCalc (string dielectric, string dielectriccon
 		return dielectricthickness;
 }
 
-function string findPressure (string pressure)
+function string MakePressureLegend (string pressure)
 {
 	switch (%(pressure$)) // Case study
 		{
@@ -103,7 +103,7 @@ function string findPressure (string pressure)
 		return pressuregraphlegend$;
 }
 
-function string findConcunits (string concunits)
+function string MakeConcUnitsLegend (string concunits)
 {
 	switch (%(concunits$)) // Case study
 		{
@@ -119,7 +119,7 @@ function string findConcunits (string concunits)
 		return conunitslegend$;
 }
 
-function string findAdditive (string additivetype)
+function string MakeAdditiveLegend (string additivetype)
 {
 	switch (%(additivetype$)) // Case study
 		{
@@ -163,7 +163,7 @@ function string findAdditive (string additivetype)
 		return additivegraphlegend$;
 }
 
-function string findCondition (string condition)
+function string MakeConditionLegend (string condition)
 {
 	switch (%(condition$)) // Case study
 		{
@@ -326,7 +326,7 @@ function string RecalculateTime (string timelength, string TimeUnitsStabilityPlo
 		return RecalculatedTimeNo$;
 }
 
-function string findMode (string mode)
+function string MakeMeasModeLegend (string mode)
 {
 	switch (%(mode$)) // Case study
 		{
@@ -346,7 +346,7 @@ function string findMode (string mode)
 		return modegraphlegend$;
 }
 
-function string findInTime (string intime)
+function string MakeInTimeLegend (string intime)
 {
 	switch (%(intime$)) // Case study
 		{
