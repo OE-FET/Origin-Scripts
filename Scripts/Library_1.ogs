@@ -1,3 +1,15 @@
+// This script is used as a library file that contains all the functions that other scripts call.
+
+// How to use:
+// 1. Place it in the folder with the other scripts.
+// 2. Add the following line to the main script: Library_1.Main; // Run Main section of Library file
+// 3. Run the main script.
+
+// Author: Dimitrios Simatos
+// Version: 0.1
+// Current status: Works well.
+// Changes: Added all functions.
+
 [Main]
 //uncomment following line to define functions using outside of this scope
 @global=1;
@@ -5,7 +17,7 @@
 function double DielectricThicknessCalc (string dielectric, string dielectricconc)
 {
 	string dielectricinfo$ = dielectric$ + "_" + dielectricconc$;
-	//double dielectricthickness;
+	double dielectricthickness;
 	
 	// Thickness
 	// CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
@@ -67,7 +79,7 @@ function double DielectricThicknessCalc (string dielectric, string dielectriccon
 				break;
 		}
 		
-		dielectricthickness=;
+		//dielectricthickness=;
 		return dielectricthickness;
 }
 
