@@ -10,9 +10,9 @@
 // 5. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 6.9
-// Current status: Works well.
-// Changes: Fixed issues with Vtlin fit.
+// Version: 7.3
+// Current status: Automatic offset calculation does not always work.
+// Changes: Code tidy up and automatic offset code correction.
 
 // Thickness
 // CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
@@ -202,11 +202,42 @@ function string findInTime (string intime)
 // The index i shows the right limit of the voltage range for the linear fit. It starts from maxrows/2 (Id(Vgmax)) + minRangeLength (the min voltage range I want to fit on; if this is zero, then the left and right limits will overlap) + offset (correction factor in case Id plateaus at the left limit of the range (Vgmax). This happens in the linear regime.).
 // The loop extends from the minimum i value to the end of the voltage range (maxrows). Moving i to the right (via the loop) constitutes the rolling window.
 
-function double RollingRegression (range inputcols, range outputcol, int minRangeLength, int offset, double slopewindow)
+function double RollingRegression (range inputcols, range outputcol, int minRangeLength, double slopewindow, int offsetwindow)
 {
 	double Vt; // Threshold voltage (Temporary variable to be used in the Rolling Regression function)
 	double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
+	double prevfit = 100; // The previous value of the slope of the linear fit (done between Vg(Idmax) and Vg(Id(i))).
+	int offset = 0; // Offset initialization. If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
+	int rowIdmax; // The row number of Idmax.
 	
+	// Calculate the offset
+	fitLR iy:=inputcols[wks.maxrows/2:wks.maxrows/2 + minRangeLength]; // Linear fit from Id(Vgmax) to Id(Vgmax)+minRangeLength (offset=0).
+	fitLR.b=;
+	if (fitLR.b>0) // If the slope is positive, it will rise to infinity and not intercept the X-axis, resulting in a bad fit.
+	{
+		range rIdmax = inputcols[wks.maxrows/2:wks.maxrows];
+		sum(rIdmax); // Generate statistics on input column
+		rowIdmax = $(sum.imax); // The row number of Idmax.
+		//rowIdmax=;
+		loop(i,0,wks.maxrows-minRangeLength) // The index i shifts both limits of the integration towards the lower voltages by the same amount, stopping when the slope of the linear fit stops changing. 
+			{
+				fitLR iy:=inputcols[i+rowIdmax:i+rowIdmax+minRangeLength]; // Linear fit from Vg(Idmax) to Vg(Id(i)). The loop shifts both ends of the voltage range over which the linear fit is applied.
+				i=; // Uncomment these three lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+				fitLR.b=;
+				abs(prevfit - fitLR.b)/abs(fitLR.b)*100=;
+				if (abs(prevfit - fitLR.b)/abs(fitLR.b)*100 < offsetwindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
+					{
+						offset = i + rowIdmax - wks.maxrows/2;
+						break;
+					};
+					else
+					{
+						prevfit = fitLR.b;
+						continue;
+					};
+			};
+	};
+	offset=;
 	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
 	{
 		fitLR iy:=inputcols[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
@@ -250,8 +281,8 @@ function double PowerLawFit (range inputcols, range outputcol, int minRangeLengt
 				firsterror = ParamTree.rmse;
 				continue;
 			};
-		//i=; // Uncomment these two lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-		//100*abs(firsterror - ParamTree.rmse)/abs(firsterror)=;
+		i=; // Uncomment these two lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+		100*abs(firsterror - ParamTree.rmse)/abs(firsterror)=;
 		if ((abs(firsterror - ParamTree.rmse)/abs(firsterror))*100 > slopewindow) // Window for extracting the power law fit window error. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
 			{
 				//outputcol = fit(col(A), col(S));
@@ -389,10 +420,9 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		double kappa; // The correction factor for the mobility
 		
 		// Rolling Regression function parameters
-		int minRangeLength = 10; // The minimum range of voltages over which the linear fit will be applied.
+		int minRangeLength = 10; // (Usually 10. Between 7 and 20.) The minimum range of voltages over which the linear fit will be applied.
 		int minRangeLengthPLF = 20; // The minimum range of voltages over which the Power Law fit will be applied.		
-		double offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
-		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
+		double offsetwindow = 10; // [%] (Usually 10%) Percentage of slope variation allowed before offset is declared. The offset determines if the fitting will start from Vgmax or from Vgmax+offset.
 		double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Linear)
 		double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Saturation)
 		double slopewindowPLF = 20; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for perfoming the power law fit. (Saturation)
@@ -499,9 +529,9 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						
 						col(N)[L]$ = "Linear fit on Id (Vd=%(Vdlin$)V)"; // Long name
 						col(N)[U]$ = A; // Units
-						range rRGlinIy = [%H]1!(1,8); // Define the range variable (Vg column, d(Id(Vdlin))/dV column) for the input argument of the rolling regression function.
+						range rRGlinIy = [%H]1!col(H); // Define the range variable (Vg column, d(Id(Vdlin))/dV column) for the input argument of the rolling regression function.
 						range rRGlinOy = [%H]1!col(N); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
-						Vtlin = RollingRegression(rRGlinIy, rRGlinOy, minRangeLength, offsetlin, slopewindowlin); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						Vtlin = RollingRegression(rRGlinIy, rRGlinOy, minRangeLength, slopewindowlin, offsetwindow); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
@@ -537,9 +567,9 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						
 						col(T)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
 						col(T)[U]$ = A^(1/2); // Units
-						range rRGsatIy = [%H]1!(1,17); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
+						range rRGsatIy = [%H]1!col(Q); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
 						range rRGsatOy = [%H]1!col(T); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
-						Vtsat = RollingRegression(rRGsatIy, rRGsatOy, minRangeLength, offsetsat, slopewindowsat); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						Vtsat = RollingRegression(rRGsatIy, rRGsatOy, minRangeLength, slopewindowsat, offsetwindow); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
 						range rt=(1,20); // Define XYrange
@@ -759,7 +789,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Layers = {1};
 						Columns = {12};
 						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 0, 0);
 						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
 						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
@@ -858,7 +888,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 							win -a %(previousworkbook$);  // activate the previous window (workbook)
 							window -ch 1; // hide the transfer workbook that was processed
 							continue; // if this is not the last measurement of its kind, then continue to the next iteration
-						};
+						};						
 						
 						
 						// Plot joint mobility graph

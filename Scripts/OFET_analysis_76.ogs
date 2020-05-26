@@ -10,21 +10,9 @@
 // 5. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 7.3
-// Current status: Automatic offset calculation does not always work.
-// Changes: Code tidy up and automatic offset code correction.
-
-// Thickness
-// CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
-// CYTOP-S 100%: The measured thickness is 570 nm.
-// CYTOP-M 3-1: 550 nm
-// CYTOP-M 1-5: 25 nm
-// CYTOP-S 3-1: 860 nm
-// CYTOP-S 1.5-1: 490 nm
-// CYTOP-S 1-1: 370 nm
-// CYTOP-S 1-2: 140 nm
-// CYTOP-S 1-3: 100 nm
-// PMMA: 300 nm
+// Version: 7.6
+// Current status: Works well.
+// Changes: Re-added case for the dielectric thickness.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -35,322 +23,10 @@
 	del -al *;// Delete all the local and session variables
 	
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-function string findConcunits (string concunits)
-{
-	switch (%(concunits$)) // Case study
-		{
-			case "gl": // If the string is "gl", write "g/l" in the comment field
-				conunitslegend$ = "g/l"; // Comment field (graph legend)
-				break;
-			
-			default: // For all other numbers, use plural form
-				conunitslegend$ = "mg/ml"; // Comment field (graph legend)
-				break;
-		}
-			
-		return conunitslegend$;
-}
+// Call libraries.
 
-function string findAdditive (string additivetype)
-{
-	switch (%(additivetype$)) // Case study
-		{
-			case "Pristine": // If the string is "TCNQ", write "TCNQ" in the comment field
-				additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
-				break;
-			
-			case "TCNQ": // If the string is "TCNQ", write "TCNQ" in the comment field
-				additivegraphlegend$ = "+ TCNQ"; // Comment field (graph legend)
-				break;
-			
-			case "F2TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
-				additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
-				break;
-			
-			case "F4TCNQ": // If the string is "F4TCNQ", write "F4TCNQ" in the comment field
-				additivegraphlegend$ = "+ F4TCNQ"; // Comment field (graph legend)
-				break;
-			
-			case "SAM-1OCT-v": // If the number is 1, use single form
-				additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
-				break;
-			
-			case "SAM-1OCT-i": // If the number is 1, use single form
-				additivegraphlegend$ = "+ 1-Octanethiol (immersion)"; // Comment field (graph legend)
-				break;
-			
-			case "SAM-TDF1OCT-v": // If the number is 1, use single form
-				additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)"; // Comment field (graph legend)
-				break;
-			
-			case "SAM-TDF1OCT-i": // If the number is 1, use single form
-				additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)"; // Comment field (graph legend)
-				break;
-			
-			default: // For all other strings, write "Pristine" in the comment field
-				additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
-				break;
-		}
-			
-		return additivegraphlegend$;
-}
+	Library1.Main; // Run Main section of Library file
 
-function string findCondition (string condition)
-{
-	switch (%(condition$)) // Case study
-		{
-			case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
-				condgraphlegend$ = "DI water"; // Comment field (graph legend)
-				break;
-			
-			case "up-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
-				condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
-				break;
-			
-			case "t-H2O": // If the string is "town", write "town water" in the comment field
-				condgraphlegend$ = "Town water"; // Comment field (graph legend)
-				break;
-			
-			case "ss": // If the string is "town", write "town water" in the comment field
-				condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
-				break;
-			
-			case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
-				string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
-				pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
-				string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
-				string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
-				condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
-				break;
-				
-			default: // For all other strings, write the condition string in the comment field
-				condgraphlegend$ = condition$; // Comment field (graph legend)
-				break;
-		}
-			
-		return condgraphlegend$;
-}
-
-function string MakeTimeLegend (string timelength)
-{
-	if (timelength$ != "initial")
-		{
-			timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
-			timeunits$ = timelength.GetToken(2,"-")$; // get the string, which shows the time units
-			
-			if (timeunits$ == "min")
-				timeunits$ = "minutes";
-			
-			timegraphlegend$ = timeNo$ + " " + timeunits$; // Comment field (graph legend)
-			
-			if (timeNo$ == "1")
-				timegraphlegend.TrimRight("s"); // If the number is 1, use single form
-			
-		};
-		else
-			//timegraphlegend$ = timelength$; // Legend
-			timegraphlegend$ = "Initial"; // Legend
-			
-		return timegraphlegend$;
-}
-
-function string findMode (string mode)
-{
-	switch (%(mode$)) // Case study
-		{
-			case "P": // If the string is "P", write "Pulsed" in the comment field
-				modegraphlegend$ = "Pulsed"; // Comment field (graph legend)
-				break;
-			
-			case "C": // If the string is "C", write "Continuous" in the comment field
-				modegraphlegend$ = "Continuous"; // Comment field (graph legend)
-				break;
-			
-			default: // For all other cases, write "Continuous" in the comment field
-				modegraphlegend$ = "Continuous"; // Comment field (graph legend)
-				break;
-		}
-			
-		return modegraphlegend$;
-}
-
-function string findInTime (string intime)
-{
-	switch (%(intime$)) // Case study
-		{
-			case "S": // If the string is "S", write "Short" in the comment field
-				intimegraphlegend$ = "Short"; // Comment field (graph legend)
-				break;
-			
-			case "M": // If the string is "M", write "Medium" in the comment field
-				intimegraphlegend$ = "Medium"; // Comment field (graph legend)
-				break;
-			
-			case "L": // If the string is "L", write "Long" in the comment field
-				intimegraphlegend$ = "Long"; // Comment field (graph legend)
-				break;
-			
-			default: // For all other cases, write "Long" in the comment field
-				intimegraphlegend$ = "Long"; // Comment field (graph legend)
-				break;
-		}
-			
-		return intimegraphlegend$;
-}
-
-// The linear fitting is done from Id(Vgmax)+offset to the i. Id(Vgmax)+offset is the left limit of the voltage range for the linear fit.
-// The index i shows the right limit of the voltage range for the linear fit. It starts from maxrows/2 (Id(Vgmax)) + minRangeLength (the min voltage range I want to fit on; if this is zero, then the left and right limits will overlap) + offset (correction factor in case Id plateaus at the left limit of the range (Vgmax). This happens in the linear regime.).
-// The loop extends from the minimum i value to the end of the voltage range (maxrows). Moving i to the right (via the loop) constitutes the rolling window.
-
-function double RollingRegression (range inputcols, range outputcol, int minRangeLength, double slopewindow, int offsetwindow)
-{
-	double Vt; // Threshold voltage (Temporary variable to be used in the Rolling Regression function)
-	double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
-	double prevfit = 100; // The previous value of the slope of the linear fit (done between Vg(Idmax) and Vg(Id(i))).
-	int offset = 0; // Offset initialization. If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
-	int rowIdmax; // The row number of Idmax.
-	
-	// Calculate the offset
-	fitLR iy:=inputcols[wks.maxrows/2:wks.maxrows/2 + minRangeLength]; // Linear fit from Id(Vgmax) to Id(Vgmax)+minRangeLength (offset=0).
-	if (fitLR.b>0) // If the slope is positive, it will rise to infinity and not intercept the X-axis, resulting in a bad fit.
-	{
-		range rIdmax = inputcols[wks.maxrows/2:wks.maxrows];
-		sum(rIdmax); // Generate statistics on input column
-		rowIdmax = $(sum.imax); // The row number of Idmax.
-		//rowIdmax=;
-		loop(i,0,wks.maxrows-minRangeLength) // The index i shifts both limits of the integration towards the lower voltages by the same amount, stopping when the slope of the linear fit stops changing. 
-			{
-				fitLR iy:=inputcols[i+rowIdmax:i+rowIdmax+minRangeLength]; // Linear fit from Vg(Idmax) to Vg(Id(i)). The loop shifts both ends of the voltage range over which the linear fit is applied.
-				//i=; // Uncomment these three lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-				//fitLR.b=;
-				//abs(prevfit - fitLR.b)/abs(fitLR.b)*100=;
-				if (abs(prevfit - fitLR.b)/abs(fitLR.b)*100 < offsetwindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
-					{
-						offset = i + rowIdmax - wks.maxrows/2;
-						break;
-					};
-					else
-					{
-						prevfit = fitLR.b;
-						continue;
-					};
-			};
-	};
-	offset=;
-	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
-	{
-		fitLR iy:=inputcols[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
-		if (i == wks.maxrows/2 + minRangeLength + offset) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
-			{
-				firstfit = fitLR.b;
-				//firstfit = ;
-				continue;
-			};
-		//i=; // Uncomment these three lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-		//fitLR.b=;
-		//firstfit - fitLR.b=;
-		//abs(firstfit - fitLR.b)/abs(firstfit)*100=;
-		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
-			{
-				Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
-				Vt = round(Vt,1); // Round the threshold voltage
-				break;
-			};
-		else
-			continue;
-	}
-			
-	return Vt;
-}
-
-function double PowerLawFit (range inputcols, range outputcol, int minRangeLength, double slopewindow)
-{
-	double beta; // Parameter for power law dependence of the mobility
-	double firsterror; // The error value of the power law fit (done between Id(Vgmax) and Id(Vg(i=0)).
-	int offset = 0; // Offset value in case the mobility function plateaus. The left limit of the voltage range will start from mu(Vgmax+offset) (Saturation)
-
-	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
-	{
-		nlbegin iy:=inputcols[wks.maxrows/2+offset:i] func:=Power1 nltree:=ParamTree weight:=0; // Fit from u(Vgmax) to u(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
-		ParamTree.xc = 0;     // Assign the peak center an X-value of 0.
-		ParamTree.f_xc = 1;   // Fix the peak center (f_xc = 0 is unfixed).		
-		nlfit;
-		if (i == wks.maxrows/2 + minRangeLength) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
-			{
-				firsterror = ParamTree.rmse;
-				continue;
-			};
-		i=; // Uncomment these two lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-		100*abs(firsterror - ParamTree.rmse)/abs(firsterror)=;
-		if ((abs(firsterror - ParamTree.rmse)/abs(firsterror))*100 > slopewindow) // Window for extracting the power law fit window error. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
-			{
-				//outputcol = fit(col(A), col(S));
-				range yy = outputcol[wks.maxrows/2+offset:i];
-				yy = fit(col(A)[wks.maxrows/2+offset:i], col(S)[wks.maxrows/2+offset:i]);  // Not working with inputcols instead of col(S). Need to figure out why.
-				//yy = fit(col(A)[wks.maxrows/2+offset:i], inputcols[wks.maxrows/2+offset:i]);
-				beta = ParamTree.P; // The exponent beta, for the power law dependence of the mobility.
-				beta = round(beta,1); // Round beta
-				nlend;
-				break;
-			};
-			else
-				continue;
-	}
-	
-	return beta;
-}
-
-function PlotSingle (string graphname, string Template, string TemplateGeneric, dataset Layers, int ColumnsNo, dataset Columns, dataset LineTypes, string previousworkbook, int LegendUpdate, int ReColor, int ReScale)
-{
-	if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
-	{
-		// Check if the template exists, otherwise, use a generic one
-		if (exist(Template$)!=-1)// if the template exists
-			win -t p "%(Template$)"; // create a graph window using template
-		else
-			win -t p "%(TemplateGeneric$)"; // create a graph window using a generic template
-		
-		page.longname$ = graphname$; //this renames the active window (long name)
-		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-	};
-	else
-		win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-		
-
-	loop(j, 1, ColumnsNo)
-	{
-		win -a %(uid2name(range2uid(["%(previousworkbook$)"]))$); // Note that I cannot use "win -a %(previousworkbook$);" inside the function.
-		range rI = [%H]1!wcol(Columns[j]); // range variable
-		
-		win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
-		page.active = Layers[j]; // activate Layer i
-		switch (LineTypes(j)) // Case study
-		{
-			case 1: // If the string is "1", plot in the active layer as line plot
-				layer.include(rI);  // plot in the active layer as line plot
-				break;
-			
-			case 2: // If the string is "2", plot in the active layer as scatter plot
-				layer -i201 rI;  // plot in the active layer as scatter plot
-				break;
-			
-			default: // For all other cases, plot in the active layer as line plot
-				layer.include(rI);  // plot in the active layer as line plot
-				break;
-		}
-		
-	};
-
-	if (LegendUpdate == 1)
-		legend; // Update the legend
-
-	if (ReColor == 1)
-		layer -g; // Group the datasets in the layer to auto-color increment
-		layer -gu; // Ungroup the datasets in the layer
-		
-	if (ReScale == 1)
-		layer -a;  // rescale the layer
-}
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
 	string TemplateGeneric$;
@@ -411,7 +87,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		double d=3; // Thickness of accumulation layer [nm]
 		double er=2.1; // Dielectric constant (CYTOP: 2.1, PMMA: 3.6, SiO2: 3.9)
 		double e0=8.854E-12; // Vacuum permittivity [F/m]
-		double dielectricthickness=550; // Dielectric thickness [nm]
+		double dielectricthickness = DielectricThicknessCalc(dielectric$, dielectricconc$); // Dielectric thickness [nm]
 		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
 		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
 		
@@ -421,7 +97,8 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		// Rolling Regression function parameters
 		int minRangeLength = 10; // The minimum range of voltages over which the linear fit will be applied.
 		int minRangeLengthPLF = 20; // The minimum range of voltages over which the Power Law fit will be applied.		
-		double offsetwindow = 10; // [%] Percentage of slope variation allowed before offset is declared. The offset determines if the fitting will start from Vgmax or from Vgmax+offset.
+		double offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
+		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
 		double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Linear)
 		double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Saturation)
 		double slopewindowPLF = 20; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for perfoming the power law fit. (Saturation)
@@ -528,9 +205,9 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						
 						col(N)[L]$ = "Linear fit on Id (Vd=%(Vdlin$)V)"; // Long name
 						col(N)[U]$ = A; // Units
-						range rRGlinIy = [%H]1!col(H); // Define the range variable (Vg column, d(Id(Vdlin))/dV column) for the input argument of the rolling regression function.
+						range rRGlinIy = [%H]1!(1,8); // Define the range variable (Vg column, d(Id(Vdlin))/dV column) for the input argument of the rolling regression function.
 						range rRGlinOy = [%H]1!col(N); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
-						Vtlin = RollingRegression(rRGlinIy, rRGlinOy, minRangeLength, slopewindowlin, offsetwindow); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						Vtlin = RollingRegression(rRGlinIy, rRGlinOy, minRangeLength, offsetlin, slopewindowlin); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
@@ -566,9 +243,9 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						
 						col(T)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
 						col(T)[U]$ = A^(1/2); // Units
-						range rRGsatIy = [%H]1!col(Q); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
+						range rRGsatIy = [%H]1!(1,17); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
 						range rRGsatOy = [%H]1!col(T); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
-						Vtsat = RollingRegression(rRGsatIy, rRGsatOy, minRangeLength, slopewindowsat, offsetwindow); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						Vtsat = RollingRegression(rRGsatIy, rRGsatOy, minRangeLength, offsetsat, slopewindowsat); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
 						range rt=(1,20); // Define XYrange
@@ -788,7 +465,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						Layers = {1};
 						Columns = {12};
 						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
 						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
 						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
@@ -887,7 +564,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 							win -a %(previousworkbook$);  // activate the previous window (workbook)
 							window -ch 1; // hide the transfer workbook that was processed
 							continue; // if this is not the last measurement of its kind, then continue to the next iteration
-						};						
+						};
 						
 						
 						// Plot joint mobility graph
