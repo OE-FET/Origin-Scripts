@@ -410,6 +410,7 @@ function double RollingRegressionAO (range inputcols, range outputcol, int minRa
 	double Vt; // Threshold voltage (Temporary variable to be used in the Rolling Regression function)
 	double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
 	
+	type "-------------------------------------------";
 	type "Threshold voltage Linear Fit on Id/SQRT(Id)";
 	type "Regime: %(regime$)";
 	
@@ -446,10 +447,10 @@ function double RollingRegressionAO (range inputcols, range outputcol, int minRa
 	}
 	else
 		offset = offsetmanual;
-	type "The offset is $(offset)";
+	type "The total offset is $(offset)";
 	
 	// Linear fit
-	type "The left limit of the linear fit is $(wks.maxrows/2+offset)";
+	type "The left limit of the linear fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
 	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
 	{
 		fitLR iy:=inputcols[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
@@ -465,7 +466,7 @@ function double RollingRegressionAO (range inputcols, range outputcol, int minRa
 		//abs(firstfit - fitLR.b)/abs(firstfit)*100=;
 		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
 			{
-				type "The right limit of the linear fit is $(i)";
+				type "The right limit of the linear fit is row No $(i) (Vg = $(col(A)[i]))";
 				Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
 				Vt = round(Vt,1); // Round the threshold voltage
 				break;
