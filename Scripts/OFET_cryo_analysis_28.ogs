@@ -117,11 +117,11 @@
 		int minRangeLengthlin = 5; // The minimum range of voltages over which the linear fit will be applied (Linear)
 		int minRangeLengthsat = 2; // The minimum range of voltages over which the linear fit will be applied (Saturation)
 		
-		int autooffsetlin = 1 // Determines whether an automatic offset calculation will be performed (Linear)
-		int autooffsetsat = 1 // Determines whether an automatic offset calculation will be performed (Saturation)
+		int autooffsetlin = 1; // Determines whether an automatic offset calculation will be performed (Linear)
+		int autooffsetsat = 1; // Determines whether an automatic offset calculation will be performed (Saturation)
 		
-		double offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
-		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
+		int offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
+		int offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
 		
 		double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Linear)
 		double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Saturation)
