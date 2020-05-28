@@ -423,18 +423,21 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		// Rolling Regression function parameters
 		// Offset: If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
 		// minRangeLength: Usually 10 (between 7 and 20.) The minimum range of voltages over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
-		int minRangeLengthlin = 5; // minRangeLength (Linear)
-		int minRangeLengthsat = 2; // minRangeLength (Saturation)
+		int minRangeLengthlin = 5; // The minimum range of voltages over which the linear fit will be applied (Linear)
+		int minRangeLengthsat = 2; // The minimum range of voltages over which the linear fit will be applied (Saturation)
+		
+		int autooffsetlin = 1 // Determines whether an automatic offset calculation will be performed (Linear)
+		int autooffsetsat = 1 // Determines whether an automatic offset calculation will be performed (Saturation)
 		
 		double offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
 		double offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
 		
-		double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Linear)
-		double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for perfoming the rolling regression. (Saturation)
+		double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Linear)
+		double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Saturation)
 		
 		// Power Law Fitting function parameters
 		int minRangeLengthPLF = 20; // The minimum range of voltages over which the Power Law fit will be applied.
-		double slopewindowPLF = 20; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for perfoming the power law fit. (Saturation)
+		double slopewindowPLF = 20; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for performing the power law fit. (Saturation)
 		
 		double jmaxlin; // Max channel current density (Linear)
 		double jmaxsat; // Max channel current density (Saturation)
@@ -541,7 +544,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						range rRGlinIy = [%H]1!col(H); // Define the range variable (Vg column, d(Id(Vdlin))/dV column) for the input argument of the rolling regression function.
 						range rRGlinOy = [%H]1!col(N); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
 						range rRGlinGm = [%H]1!col(L); // Define the range variable (gm (Linear)) for the input argument of the rolling regression function.
-						Vtlin = RollingRegressionAO(rRGlinIy, rRGlinOy, minRangeLengthlin, slopewindowlin, 1, offsetlin, rRGlinGm, "Linear"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						Vtlin = RollingRegressionAO(rRGlinIy, rRGlinOy, minRangeLengthlin, slopewindowlin, autooffsetlin, offsetlin, rRGlinGm, "Linear"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
@@ -580,7 +583,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 						range rRGsatIy = [%H]1!col(Q); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
 						range rRGsatOy = [%H]1!col(T); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
 						range rRGsatGm = [%H]1!col(R); // Define the range variable (gm (Saturation)) for the input argument of the rolling regression function.
-						Vtsat = RollingRegressionAO(rRGsatIy, rRGsatOy, minRangeLengthsat, slopewindowsat, 1, offsetsat, rRGsatGm, "Saturation"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						Vtsat = RollingRegressionAO(rRGsatIy, rRGsatOy, minRangeLengthsat, slopewindowsat, autooffsetsat, offsetsat, rRGsatGm, "Saturation"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 						
 						// Linear extrapolation of the linear fit, to find the intercept with the X axis
 						range rt=(1,20); // Define XYrange
