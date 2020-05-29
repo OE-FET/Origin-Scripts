@@ -278,52 +278,44 @@ function string MakeTimeLegendBS (string timelength)
 
 function string RecalculateTime (string timelength, string TimeUnitsStabilityPlots)
 {
-	if (timelength$ != "initial")
-		{
-			timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
-			timeunits$ = timelength.GetToken(2,"-")$; // get the string, which shows the time units
+	timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
+	timeunits$ = timelength.GetToken(2,"-")$; // get the string, which shows the time units
+	
+	switch (%(TimeUnitsStabilityPlots$)) // Case study
+	{
+		case "Minutes":
+			if (timeunits$ == "min")
+				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
+			if (timeunits$ == "h")
+				RecalculatedTimeNo$ = $(%(timeNo$)*60); // Convert hours to minutes.
+			if (timeunits$ == "day" || timeunits$ == "days")
+				RecalculatedTimeNo$ = $(%(timeNo$)*1440); // Convert days to minutes.
+			break;
 			
-			switch (%(TimeUnitsStabilityPlots$)) // Case study
-			{
-				case "Minutes":
-					if (timeunits$ == "min")
-						RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
-					if (timeunits$ == "h")
-						RecalculatedTimeNo$ = $(%(timeNo$)*60); // Convert hours to minutes.
-					if (timeunits$ == "day" || timeunits$ == "days")
-						RecalculatedTimeNo$ = $(%(timeNo$)*1440); // Convert days to minutes.
-					break;
-					
-				case "Hours":
-					if (timeunits$ == "min")
-						RecalculatedTimeNo$ = $(%(timeNo$)/1440); // Convert minutes to hours.
-					if (timeunits$ == "h")
-						RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
-					if (timeunits$ == "day" || timeunits$ == "days")
-						RecalculatedTimeNo$ = $(%(timeNo$)*24); // Convert days to hours.
-					break;
-					
-				case "Days":
-					if (timeunits$ == "min")
-						RecalculatedTimeNo$ = $(%(timeNo$)/1440); // Convert minutes to days.
-					if (timeunits$ == "h")
-						RecalculatedTimeNo$ = $(%(timeNo$)/24); // Convert hours to days.
-					if (timeunits$ == "day" || timeunits$ == "days")
-						RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
-					break;
-					
-				default: // For all other strings, write the condition string in the comment field
-					RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
-					break;
-			};
+		case "Hours":
+			if (timeunits$ == "min")
+				RecalculatedTimeNo$ = $(%(timeNo$)/1440); // Convert minutes to hours.
+			if (timeunits$ == "h")
+				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
+			if (timeunits$ == "day" || timeunits$ == "days")
+				RecalculatedTimeNo$ = $(%(timeNo$)*24); // Convert days to hours.
+			break;
 			
+		case "Days":
+			if (timeunits$ == "min")
+				RecalculatedTimeNo$ = $(%(timeNo$)/1440); // Convert minutes to days.
+			if (timeunits$ == "h")
+				RecalculatedTimeNo$ = $(%(timeNo$)/24); // Convert hours to days.
+			if (timeunits$ == "day" || timeunits$ == "days")
+				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
+			break;
 			
-		};
-		else
-			//timegraphlegend$ = timelength$; // Legend
-			RecalculatedTime$ = "Initial"; // Legend
-			
-		return RecalculatedTimeNo$;
+		default: // For all other strings, write the condition string in the comment field
+			RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
+			break;
+	};
+		
+	return RecalculatedTimeNo$;
 }
 
 function string MakeMeasModeLegend (string mode)

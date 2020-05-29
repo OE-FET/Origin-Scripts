@@ -106,10 +106,10 @@
 		// Rolling Regression function parameters
 		// Offset: If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
 		// minRangeLength: Usually 10 (between 7 and 20.) The minimum range of voltages over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
-		int minRangeLengthlin = 5; // The minimum range of voltages over which the linear fit will be applied (Linear)
-		int minRangeLengthsat = 2; // The minimum range of voltages over which the linear fit will be applied (Saturation)
+		int minRangeLengthlin = 10; // The minimum range of voltages over which the linear fit will be applied (Linear)
+		int minRangeLengthsat = 10; // The minimum range of voltages over which the linear fit will be applied (Saturation)
 		
-		int autooffsetlin = 1; // Determines whether an automatic offset calculation will be performed (Linear)
+		int autooffsetlin = 0; // Determines whether an automatic offset calculation will be performed (Linear)
 		int autooffsetsat = 1; // Determines whether an automatic offset calculation will be performed (Saturation)
 		
 		int offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
@@ -166,7 +166,10 @@
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				// Case structures from filenames (used for legends).
 				
-				RecalculatedTimeNo$ = RecalculateTime(timelength$, TimeUnitsStabilityPlots$)$; // Note ending '$'
+				if (timelength$ != "initial")
+					RecalculatedTimeNo$ = RecalculateTime(timelength$, TimeUnitsStabilityPlots$)$; // Note ending '$'
+				else
+					RecalculatedTimeNo$ = "0";
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
@@ -456,14 +459,14 @@
 						Layers = {1, 1};
 						Columns = {8, 10};
 						LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 						
 						
 						// Plot saturation transfer curves for a single time point
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Transfer_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 						Columns = {9, 11};
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 						
 						
 						// Check if the measurement is the last measurement at a specific time point
@@ -500,14 +503,14 @@
 						Layers = {1, 1};
 						Columns = {8, 10};
 						LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 						
 						
 						// Plot saturation transfer curve for all time points
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Transfer_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						Columns = {9, 11};
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 						
 						
 						// Plot gm (Linear) for all time points
@@ -749,7 +752,7 @@
 							Layers = {1, 1};
 							Columns = {i+NoofVgs+1+2*NoofVgs, i+NoofVgs+1+3*NoofVgs};
 							LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 							
 							
 							win -a %(previousworkbook$);  // activate the previous window (workbook)
