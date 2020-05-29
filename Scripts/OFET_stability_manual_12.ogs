@@ -511,7 +511,7 @@
 						
 						
 						// Plot gm (Linear) for all time points
-						TemplateGeneric$ = "%(templatepath$)Generic_gm-lin.otpu";
+						TemplateGeneric$ = "%(templatepath$)Generic_Stab_gm-lin.otpu";
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_gm-lin_Vd=%(Vdlin$)V";
 						Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						Layers = {1};
@@ -521,7 +521,7 @@
 						
 						
 						// Plot gm (Saturation) for all time points
-						TemplateGeneric$ = "%(templatepath$)Generic_gm-sat.otpu";
+						TemplateGeneric$ = "%(templatepath$)Generic_Stab_gm-sat.otpu";
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_gm-sat_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						Columns = {18};
@@ -529,7 +529,7 @@
 						
 						
 						// Plot mobility (Linear) for all time points
-						TemplateGeneric$ = "%(templatepath$)Generic_u-lin.otpu";
+						TemplateGeneric$ = "%(templatepath$)Generic_Stab_u-lin.otpu";
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_u-lin_Vd=%(Vdlin$)V";
 						Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						Layers = {1};
@@ -539,7 +539,7 @@
 						
 						
 						// Plot mobility (Saturation) for all time points
-						TemplateGeneric$ = "%(templatepath$)Generic_u-sat.otpu";
+						TemplateGeneric$ = "%(templatepath$)Generic_Stab_u-sat.otpu";
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_u-sat_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						Columns = {19};
@@ -547,7 +547,7 @@
 						
 						
 						// Plot linear fit of Idlin and linear extrapolation (for Vt) for all time points
-						TemplateGeneric$ = "%(templatepath$)Generic_Vt-lin.otpu";
+						TemplateGeneric$ = "%(templatepath$)Generic_Stab_Vt-lin.otpu";
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Vt-lin_Vd=%(Vdlin$)V";
 						Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						Layers = {1, 1};
@@ -558,7 +558,7 @@
 						
 						
 						// Plot linear fit of SQRT(Idsat) and linear extrapolation (for Vt) for all time points
-						TemplateGeneric$ = "%(templatepath$)Generic_Vt-sat.otpu";
+						TemplateGeneric$ = "%(templatepath$)Generic_Stab_Vt-sat.otpu";
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Vt-sat_Vd=%(Vdsat$)V";
 						Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						Columns = {17, 20};
@@ -567,7 +567,7 @@
 						
 						
 						// Plot contact resistance (Linear) for all time points
-						TemplateGeneric$ = "%(templatepath$)Generic_Rc-lin.otpu";
+						TemplateGeneric$ = "%(templatepath$)Generic_Stab_Rc-lin.otpu";
 						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Rc-lin_Vd=%(Vdlin$)V";
 						Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						Layers = {1};
@@ -625,7 +625,7 @@
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
-								win -t p "%(templatepath$)Generic_Idon-Time.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_Stab_Idon-Time.otpu"; // create a graph window using a generic template
 							
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Idon-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
 							IdonTimeGraph$ = page.longname$;
@@ -639,7 +639,7 @@
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
-								win -t p "%(templatepath$)Generic_Uavg-Time.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_Stab_Uavg-Time.otpu"; // create a graph window using a generic template
 							
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
 							UavgTimeGraph$ = page.longname$;
@@ -653,7 +653,7 @@
 							if (exist(Template$)!=-1)// if the template exists
 								win -t p "%(Template$)"; // create a graph window using template
 							else
-								win -t p "%(templatepath$)Generic_Vt-Time.otpu"; // create a graph window using a generic template
+								win -t p "%(templatepath$)Generic_Stab_Vt-Time.otpu"; // create a graph window using a generic template
 							
 							page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
 							VtTimeGraph$ = page.longname$;
@@ -743,7 +743,7 @@
 							
 							
 							// Individual output plot with a single Id and Ig for all time points
-							TemplateGeneric$ = "%(templatepath$)Generic_Output_single.otpu";
+							TemplateGeneric$ = "%(templatepath$)Generic_Stab_Output_single.otpu";
 							graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Output_Vg=%(Vg$)V";
 							Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
 							Layers = {1, 1};
