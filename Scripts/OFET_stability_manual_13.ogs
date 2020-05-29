@@ -106,10 +106,10 @@
 		// Rolling Regression function parameters
 		// Offset: If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
 		// minRangeLength: Usually 10 (between 7 and 20.) The minimum range of voltages over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
-		int minRangeLengthlin = 10; // The minimum range of voltages over which the linear fit will be applied (Linear)
-		int minRangeLengthsat = 10; // The minimum range of voltages over which the linear fit will be applied (Saturation)
+		int minRangeLengthlin = 5; // The minimum range of voltages over which the linear fit will be applied (Linear)
+		int minRangeLengthsat = 2; // The minimum range of voltages over which the linear fit will be applied (Saturation)
 		
-		int autooffsetlin = 0; // Determines whether an automatic offset calculation will be performed (Linear)
+		int autooffsetlin = 1; // Determines whether an automatic offset calculation will be performed (Linear)
 		int autooffsetsat = 1; // Determines whether an automatic offset calculation will be performed (Saturation)
 		
 		int offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
