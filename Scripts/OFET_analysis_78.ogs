@@ -1,0 +1,697 @@
+// This script is used in transfer curves taken with the low noise rig in two drain voltages. It loops over all the workbooks in the folder and plots the transfer and output curves.
+// It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, and reliability factor.
+// NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
+
+// How to use:
+// 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
+// 2. Activate the very first workbook and hide the rest. If I hide all the workbooks, the script may start from the last workbook.
+// 3. Run the script.
+// 4. Check that the Vt linear fitting is correct. Otherwise adjust the slope window (difference between current fit slope and fit slope for Vgmax). Increase the window to relax the constraints for "flatness" of SQRT(Id). Then re-run the script.
+// 5. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
+
+// Author: Dimitrios Simatos
+// Version: 7.8
+// Current status: Works well.
+// Changes: Added range variables in Rolling Regression and Power Law Fit function.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
+
+	Library_3.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	string TemplateGeneric$;
+	string graphname$;
+	string Template$;
+	dataset Columns;
+	dataset LineTypes;
+
+	doc -ef LB { // loop over all workbooks in folder		
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+		
+		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+		
+		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+		
+		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+		
+		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+		
+		string dielectric$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric
+		string dielectricconc$ = sheetname.GetToken(9,"_")$; // Get the string that shows the dielectric concentration or ratio
+		
+		string sampleNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the sample number
+		
+		string deviceNo$ = sheetname.GetToken(11,"_")$; // Get the string that shows the device number
+		
+		string length$ = sheetname.GetToken(12,"_")$; // Get the string that shows the channel length
+		string lengthnumber$ = length.GetToken(1,"-")$; // Get the string that shows the length number
+		string lengthunits$ = length.GetToken(2,"-")$; // Get the string that shows the length units
+		
+		//string stepNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the step number in the cycling process
+		string condition$ = sheetname.GetToken(13,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string timelength$ = sheetname.GetToken(14,"_")$; // get the string, which shows the number of days
+		string minutesNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of minutes
+		string meastype$=sheetname.GetToken(15,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
+		string measNo$=sheetname.GetToken(16,"_")$; // Get the string that shows the measurement number
+		string mode$=sheetname.GetToken(17,"_")$; // Get the string that shows the measurement mode
+		string intime$=sheetname.GetToken(18,"_")$; // Get the string that shows the integration time
+		intime$=intime.GetToken(1,".")$; // Remove ".txt" from the integration time
+		
+		
+		// Transfer curve parameters
+		double W=1000; // Width [um]
+		//double L=20; // Length [um]
+		double L=%(lengthnumber$); // Length [um] (extracted from the file name)
+		double d=3; // Thickness of accumulation layer [nm]
+		double er=2.1; // Dielectric constant (CYTOP: 2.1, PMMA: 3.6, SiO2: 3.9)
+		double e0=8.854E-12; // Vacuum permittivity [F/m]
+		double dielectricthickness = DielectricThicknessCalc(dielectric$, dielectricconc$); // Dielectric thickness [nm]
+		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
+		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
+		
+		double beta; // Parameter for power law dependence of the mobility
+		double kappa; // The correction factor for the mobility
+		
+		// Rolling Regression function parameters
+		// Offset: If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
+		// minRangeLength: Usually 10 (between 7 and 20.) The minimum range of voltages over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
+		int minRangeLengthlin = 5; // The minimum range of voltages over which the linear fit will be applied (Linear)
+		int minRangeLengthsat = 10; // The minimum range of voltages over which the linear fit will be applied (Saturation)
+		
+		int autooffsetlin = 1; // Determines whether an automatic offset calculation will be performed (Linear)
+		int autooffsetsat = 0; // Determines whether an automatic offset calculation will be performed (Saturation)
+		
+		int offsetlin = 10; // (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
+		int offsetsat = 0; // Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
+		
+		double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Linear)
+		double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Saturation)
+		
+		// Power Law Fitting function parameters
+		int minRangeLengthPLF = 20; // The minimum range of voltages over which the Power Law fit will be applied.
+		double slopewindowPLF = 20; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for performing the power law fit. (Saturation)
+		
+		double jmaxlin; // Max channel current density (Linear)
+		double jmaxsat; // Max channel current density (Saturation)
+		double Pmaxlin; // Max channel power density (Linear)
+		double Pmaxsat; // Max channel power density (Saturation)
+		
+		string Vdlin$; // Vd in the linear regime
+		string Vdsat$; // Vd in the saturation regime
+		double Vtlin; // Threshold voltage (Linear)
+		double Vtsat; // Threshold voltage (Saturation)
+		double rlin; // Reliability factor (Linear)
+		double rsat; // Reliability factor (Saturation)
+		
+		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
+		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
+		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
+		string timegraphlegend$; // This string will depend on "minutesNo" and it will display the number of minutes for the graph legend
+		string modegraphlegend$; // This string will depend on "mode" and it will display the measurement mode for the graph legend
+		string intimegraphlegend$; // This string will depend on "intime" and it will display the integration time for the graph legend
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		// Check for NaN columns
+		range rb = [%H]1!wcol(2);  // data range of (Is) (Vd=Vdlin) column (col(B))
+		range rc = [%H]1!wcol(3);  // data range of (Is) (Vd=Vdsat) column (col(C))
+		
+		string NaNb$ = Lookup("NaN", rb)$;
+		string NaNc$ = Lookup("NaN", rc)$;
+		
+		if(Nanb$=="NaN" || Nanc$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted, they yield NaN values.
+			else
+			{
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Case structures from filenames (used for legends).
+				
+				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
+				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
+				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
+				timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
+				modegraphlegend$ = MakeMeasModeLegend(mode$)$; // Note ending '$'
+				intimegraphlegend$ = MakeInTimeLegend(intime$)$; // Note ending '$'
+				
+				//string legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(timegraphlegend$), %(minutesgraphlegend$), %(modegraphlegend$), %(intimegraphlegend$)"; // Legend
+				string legend$ = "%(condgraphlegend$), %(timegraphlegend$)"; // Legend
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
+				
+				if (meastype$ == "T") // if this is a transfer curve then
+				{
+						wks.name$=Transfer; // Change the sheet name to "Transfer"
+						wks.ncols=41; // set total column number to 41
+						wks.colwidth = 10;// set all col width to 10
+						
+						// Extract Vdlin and Vdsat
+						Vdlin$=col(D)[L]$;
+						Vdlin$=Vdlin.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+						Vdlin$=Vdlin.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+						if (Vdlin.Find('.')!=0 && Vdlin.GetToken(2,".")$ == "0")
+							Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
+						
+						
+						Vdsat$=col(E)[L]$;
+						Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+						Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+						if (Vdsat.Find('.')!=0 && Vdsat.GetToken(2,".")$ == "0")
+							Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
+						
+						
+						// Extract VgStart and VgStop
+						string VgStart$=$(col(A)[1]); // VgStart is the value of the first cell of col(A)
+						string VgStop$=$(col(A)[wks.maxrows/2]); // VgStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+						
+						
+						// Write long name, units, comments, and parameters of columns
+						col(H)[L]$ = col(D)[L]$; // Long name
+						col(H)[U]$ = col(D)[U]$; // Units
+						col(H)[O]$ = "abs(col(D))";
+						col(I)[L]$ = col(E)[L]$; // Long name
+						col(I)[U]$ = col(E)[U]$; // Units
+						col(I)[O]$ = "abs(col(E))";
+						col(J)[L]$ = col(F)[L]$; // Long name
+						col(J)[U]$ = col(F)[U]$; // Units
+						col(J)[O]$ = "abs(col(F))";
+						col(K)[L]$ = col(G)[L]$; // Long name
+						col(K)[U]$ = col(G)[U]$; // Units
+						col(K)[O]$ = "abs(col(G))";
+						
+						
+						
+						col(L)[L]$ = "gm (Linear)"; // Long name
+						col(L)[U]$ = S; // Units
+						differentiate iy:=Col(H) oy:=Col(L) order:=1;
+						col(L)[O]$ = "abs(col(L))";
+						col(L)[C]$ = "abs(d(Id (Vd=%(Vdlin$)V)/dV)";
+						
+						col(M)[L]$ = "Mobility (Linear)"; // Long name
+						col(M)[U]$ = cm^2/V*s; // Units
+						col(M) = 10000*L*col(L)/(W*Ci*abs(%(Vdlin$))); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+						
+						// The average mobilities are derived by using the linear fit of the slope of the Id (SQRT(Id)) in the Linear (Saturation) regime, instead of the point derivative.
+						
+						col(N)[L]$ = "Linear fit on Id (Vd=%(Vdlin$)V)"; // Long name
+						col(N)[U]$ = A; // Units
+						Vtlin = RollingRegressionAO(8, 14, minRangeLengthlin, slopewindowlin, autooffsetlin, offsetlin, 12, "Linear"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						
+						
+						// Linear extrapolation of the linear fit, to find the intercept with the X axis
+						range rn=(1,14); // Define XYrange
+						col(N)=rn(col(A)); // Extrapolate for new X axis (col(A))
+						
+						
+						// The average mobilities are derived by using the linear fit of the slope of the Id d(SQRT(Id(Vdsat)))/dV in the Linear (Saturation) regime, instead of the point derivative.
+						col(O)[L]$ = "Average mobility (Linear)"; // Long name
+						col(O)[U]$ = cm^2/V*s; // Units
+						col(O)[1] = 10000*L*abs(fitLR.b)/(W*Ci*abs(%(Vdlin$))); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+						ulinavg=col(O)[1];
+						
+						col(P)[L]$ = "Threshold voltage (Linear)"; // Long name
+						col(P)[U]$ = V; // Units
+						Col(P)[1]=Vtlin; // Threshold voltage (Linear)
+						
+						
+						
+						col(Q)[L]$ = "SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
+						col(Q)[U]$ = A^(1/2); // Units
+						col(Q)[O]$ = "sqrt(col(I))";
+						
+						col(R)[L]$ = "gm (Saturation)"; // Long name
+						col(R)[U]$ = S; // Units
+						differentiate iy:=Col(Q) oy:=Col(R) order:=1;
+						col(R)[O]$ = "abs(col(R))";
+						col(R)[C]$ = "abs(d(SQRT(Id (Vd=%(Vdsat$)V))/dV)";
+						
+						col(S)[L]$ = "Mobility (Saturation)"; // Long name
+						col(S)[U]$ = cm^2/V*s; // Units
+						col(S) = 10000*2*L*col(R)^2/(W*Ci); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+						
+						col(T)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
+						col(T)[U]$ = A^(1/2); // Units
+						Vtsat = RollingRegressionAO(17, 20, minRangeLengthsat, slopewindowsat, autooffsetsat, offsetsat, 18, "Saturation"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						
+						// Linear extrapolation of the linear fit, to find the intercept with the X axis
+						range rt=(1,20); // Define XYrange
+						col(T)=rt(col(A)); // Extrapolate for new X axis (col(A))
+						
+						
+						// The average mobilities are derived by using the linear fit of the slope of the Id (SQRT(Id)) in the Linear (Saturation) regime, instead of the point derivative.
+						col(U)[L]$ = "Average mobility (Saturation)"; // Long name
+						col(U)[U]$ = cm^2/V*s; // Units
+						col(U)[1] = 10000*2*L*fitLR.b^2/(W*Ci); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+						usatavg=col(U)[1];
+						
+						col(V)[L]$ = "Threshold voltage (Saturation)"; // Long name
+						col(V)[U]$ = V; // Units
+						Col(V)[1] = Vtsat; // Threshold voltage (Saturation)
+						
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Reliability factors
+						
+						// Find the average linear drain current for Vg=0V: Id,lin (Vd=0V)
+						col(W)[L]$ = "Row number for Vg=0"; // Long name
+						vfind ix:=col(A) value:=0 ox:=Col(W); // Find all indices for which Vg=0
+						
+						
+						
+						col(X)[L]$ = "Id,lin (Vg=0V)"; // Long name
+						col(X)[U]$ = A; // Units
+						col(X)[1]=col(H)[col(W)[1]];
+						col(X)[2]=col(H)[col(W)[2]];
+						double IdlinVg0=mean(col(X));
+						col(X)[3]=IdlinVg0; // The average Id,lin (Vg=0V)
+						wcellcolor col(X)[3] color(yellow); // Color the cell with the average value yellow
+						
+						
+						col(Y)[L]$ = "Id,sat (Vg=0V)"; // Long name
+						col(Y)[U]$ = A; // Units
+						col(Y)[1]=col(I)[col(W)[1]];
+						col(Y)[2]=col(I)[col(W)[2]];
+						double IdsatVg0=mean(col(Y));
+						col(Y)[3]=IdsatVg0; // The average Id,sat (Vg=0V)
+						wcellcolor col(Y)[3] color(yellow); // Color the cell with the average value yellow
+						
+						
+						// Reliability factor (Linear)
+						col(Z)[L]$ = "Reliability factor (Linear)"; // Long name
+						col(Z)[U]$ = %; // Units
+						rlin = 100*(max(col(H))-IdlinVg0)/max(abs(col(A)))/max(abs(col(L))); // Multiply by 100, since the units are %
+						rlin = round(rlin,1);
+						
+						// Write rlin on the first cell of col(Z)
+						col(Z)[1]=rlin;
+						
+						// Reliability factor (Saturation)
+						col(AA)[L]$ = "Reliability factor (Saturation)"; // Long name
+						col(AA)[U]$ = %; // Units
+						rsat = 100*((max(col(Q))-SQRT(IdsatVg0)))^2/max(abs(col(A)))^2/max(abs(col(R)))^2; // Multiply by 100, since the units are %
+						rsat = round(rsat,1);
+						
+						// Write rsat on the first cell of col(W)
+						col(AA)[1]=rsat;
+						
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Current density and power density
+						col(AB)[L]$ = "Max channel current density (Linear)"; // Long name
+						col(AB)[U]$ = A/cm^2; // Units
+						col(AB)[1] = max(col(H))/(W*10^(-4)*d*10^(-7)); // W is in um and d in nm. They are both converted to cm.
+						jmaxlin=col(AB)[1];
+						
+						col(AC)[L]$ = "Max channel current density (Saturation)"; // Long name
+						col(AC)[U]$ = A/cm^2; // Units
+						col(AC)[1] = max(col(I))/(W*10^(-4)*d*10^(-7)); // W is in um and d in nm. They are both converted to cm.
+						jmaxsat=col(AC)[1];
+						
+						col(AD)[L]$ = "Max channel power density (Linear)"; // Long name
+						col(AD)[U]$ = W/cm^2; // Units
+						col(AD)[1] = max(col(H))*abs(%(Vdlin$))/(W*10^(-4)*L*10^(-4)); // W and L are in um, and are both converted to cm.
+						Pmaxlin=col(AD)[1];
+						
+						col(AE)[L]$ = "Max channel power density (Saturation)"; // Long name
+						col(AE)[U]$ = W/cm^2; // Units
+						col(AE)[1] = max(col(I))*abs(%(Vdsat$))/(W*10^(-4)*L*10^(-4)); // W and L are in um, and are both converted to cm.
+						Pmaxsat=col(AE)[1];
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Max source-drain electric field (Saturation)
+						// NOTE: This should be smaller than 3*10^4 V/cm (DOI: 10.1038/nmat5035)
+						
+						col(AF)[L]$ = "Max source-drain electric field (Saturation)"; // Long name
+						col(AF)[U]$ = V/cm; // Units
+						col(AF)[1] = abs(%(Vdsat$))/(L*10^(-4)); // W and L are in um, and are both converted to cm.
+						Esd=col(AF)[1];
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Contact resistance (Riccardo di Pietro's model, DOI: 10.1063/1.4876057)
+						
+						col(AG)[L]$ = "Average linear current"; // Long name
+						col(AG)[U]$ = A; // Units
+						col(AG)[O]$ = "abs(col(B)-col(D))/2";
+						
+						col(AH)[L]$ = "Error"; // Long name
+						col(AH)[U]$ = A; // Units
+						col(AH)[O]$ = "col(F)/2 + col(AG)*0.01";
+						
+						col(AI)[L]$ = "Average saturation current"; // Long name
+						col(AI)[U]$ = A; // Units
+						col(AI)[O]$ = "abs(col(C)-col(E))/2";
+						
+						col(AJ)[L]$ = "Error"; // Long name
+						col(AJ)[U]$ = A; // Units
+						col(AJ)[O]$ = "col(G)/2 + col(AI)*0.01";
+						
+						//col(AG)[L]$ = "d(Id (Vd=%(Vdsat$)V)/dV"; // Long name
+						//col(AG)[U]$ = S; // Units
+						//differentiate iy:=Col(AE) oy:=Col(AG) order:=1;
+						
+						col(AK)[L]$ = "d(Id (Vd=%(Vdsat$)V)/dV"; // Long name
+						col(AK)[U]$ = S; // Units
+						differentiate iy:=Col(I) oy:=Col(AK) order:=1;
+						
+						col(AL)[L]$ = "Rc"; // Long name
+						col(AL)[U]$ = Ohm; // Units
+						col(AL)[O]$ = "abs(%(Vdlin$)/col(AG) - 1/col(AK))";
+						
+						//col(AL)[L]$ = "Contact resistance"; // Long name
+						//col(AL)[U]$ = Ohm; // Units
+						//col(AL)[O]$ = "abs(%(Vdlin$)/col(H) - 1/col(AK))";
+						
+						col(AM)[L]$ = "Error"; // Long name
+						col(AM)[U]$ = A; // Units
+						col(AM)[O]$ = "col(AL)*2*sqrt((col(AJ)/col(AI))^2+(col(AH)/col(AG))^2)";
+						
+						col(AN)[L]$ = "Channel voltage"; // Long name
+						col(AN)[U]$ = V; // Units
+						col(AN)[O]$ = "col(AG)/col(AK)";
+						
+						//col(AN)[L]$ = "Channel voltage"; // Long name
+						//col(AN)[U]$ = V; // Units
+						//col(AN)[O]$ = "col(H)/col(AK)";
+						
+						col(AO)[L]$ = "Error"; // Long name
+						col(AO)[U]$ = A; // Units
+						col(AO)[O]$ = "col(AN)*2*sqrt((col(AJ)/col(AI))^2+(col(AH)/col(AG))^2)";
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						
+						// Mobility correction (Riccardo di Pietro's model, DOI: 10.1063/1.4876057)
+						// NOTE: This tends to fail a lot when the mobility is not exponentially dependent on the gate voltage... It can produce an Origin C error (349) in X-Function code.
+						
+						col(AP)[L]$ = "Power law fit (Saturation mobility)"; // Long name
+						col(AP)[U]$ = cm^2/V*s; // Units
+						
+						beta = PowerLawFit(19, 42, minRangeLengthPLF, slopewindowPLF); // Power Law Fit function that returns the exponent beta. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						kappa = (beta + 2)/(2*(beta+1)); // The correction factor, kappa.
+						
+						col(AQ)[L]$ = "Beta"; // Long name
+						col(AQ)[1] = beta; // The exponent from the power law fitting.
+						
+						col(AR)[L]$ = "Correction factor"; // Long name
+						col(AR)[1] = kappa; // The calculated correction factor.
+						
+						col(AS)[L]$ = "Corrected mobility (Saturation)"; // Long name
+						col(AS)[U]$ = cm^2/V*s; // Units
+						col(AS) = col(S)/kappa; // The corrected mobility is the original mobility, divided by the correction factor.
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Column legends
+						
+						col(H)[C]$ = legend$;
+						col(I)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(J)[C]$ = col(H)[C]$ + ", Leakage"; // Comment field (graph legend)
+						col(K)[C]$ = col(H)[C]$ + ", Leakage"; // Comment field (graph legend)
+						col(L)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(M)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(N)[C]$ = col(H)[C]$ + ", Linear fit"; // Comment field (graph legend)
+						col(Q)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(R)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(S)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(T)[C]$ = col(Q)[C]$ + ", Linear fit"; // Comment field (graph legend)
+						col(V)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						col(AL)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						
+						col(AP)[C]$ = col(H)[C]$ + ", Power law fit"; // Comment field (graph legend)
+						col(AS)[C]$ = col(H)[C]$; // Comment field (graph legend)
+						
+						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+						// Plot graphs
+						
+						
+						// Plot linear transfer curve
+						TemplateGeneric$ = "%(templatepath$)Generic_Transfer_single.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Transfer_Vd=%(Vdlin$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Layers = {1, 1};
+						Columns = {8, 10};
+						LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						
+						
+						// Plot saturation transfer curve
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Transfer_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Columns = {9, 11};
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						
+						
+						// Plot gm (Linear)
+						TemplateGeneric$ = "%(templatepath$)Generic_gm-lin.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_gm-lin_Vd=%(Vdlin$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Layers = {1};
+						Columns = {12};
+						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
+						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
+						
+						
+						// Plot gm (Saturation)
+						TemplateGeneric$ = "%(templatepath$)Generic_gm-sat.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_gm-sat_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Columns = {18};
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
+						
+						
+						// Plot mobility (Linear)
+						TemplateGeneric$ = "%(templatepath$)Generic_u-lin.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-lin_Vd=%(Vdlin$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Layers = {1};
+						Columns = {13};
+						LineTypes = {2}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
+						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
+						
+						
+						// Plot mobility (Saturation)
+						TemplateGeneric$ = "%(templatepath$)Generic_u-sat.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Columns = {19};
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
+						
+						
+						// Plot corrected mobility (Saturation)
+						TemplateGeneric$ = "%(templatepath$)Generic_u-sat-cor.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat-cor_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat-cor_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Columns = {45};
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						if (exist(Text5,16)==16) Text5.text$ = \g(b)=$(beta, .2); // If the label exists, update it
+						if (exist(Text6,16)==16) Text6.text$ = \g(k)=$(kappa, .2); // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
+						
+						
+						// Plot linear fit of Idlin and linear extrapolation (for Vt)
+						TemplateGeneric$ = "%(templatepath$)Generic_Vt-lin.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Vt-lin_Vd=%(Vdlin$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Layers = {1, 1};
+						Columns = {8, 14};
+						LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+						if (exist(Text2,16)==16) Text2.text$ = V\-(t,lin) = $(Vtlin)V;
+						plot -c; // refresh the graph to update the labels
+						
+						
+						// Plot linear fit of SQRT(Idsat) and linear extrapolation (for Vt)
+						TemplateGeneric$ = "%(templatepath$)Generic_Vt-sat.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Vt-sat_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Columns = {17, 20};
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+						if (exist(Text2,16)==16) Text2.text$ = V\-(t,sat)= $(Vtsat)V;
+						plot -c; // refresh the graph to update the labels
+						
+						
+						// Plot contact resistance (Linear)
+						TemplateGeneric$ = "%(templatepath$)Generic_Rc-lin.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Rc-lin_Vd=%(Vdlin$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Rc-lin_Vd=%(Vdlin$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+						Layers = {1};
+						Columns = {38};
+						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+						
+						
+						// Check if the measurement is the last measurement of this device
+						string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
+						if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0){
+							win -a %(previousworkbook$);  // activate the previous window (workbook)
+							window -ch 1; // hide the transfer workbook that was processed
+							continue; // if this is not the last measurement of its kind, then continue to the next iteration
+						};
+						
+						
+						// Plot joint mobility graph
+						TemplateGeneric$ = "%(templatepath$)Generic_u-lin-sat.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-lin-sat_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-lin-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Layers = {1, 1};
+						Columns = {13, 19};
+						LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+						if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
+						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
+						if (exist(Text5,16)==16) Text5.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						if (exist(Text6,16)==16) Text6.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text7,16)==16) Text7.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
+						
+						
+						// Plot joint transfer curve - SQRT(Idsat) graph
+						TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Vt-sat.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Layers = {1, 1, 2, 2};
+						Columns = {8, 9, 17, 20};
+						LineTypes = {1, 1, 1, 1}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+						page.active = 1; // activate Layer 1
+						if (exist(Text3,16)==16) Text3.text$ = (V\-(d) = %(Vdlin$)V);
+						if (exist(Text4,16)==16) Text4.text$ = (V\-(d) = %(Vdsat$)V);
+						if (exist(Text5,16)==16) Text5.text$ = at V\-(d) = %(Vdsat$)V;
+						if (exist(Text,16)==16) Text.text$ = V\-(t,sat) = $(Vtsat)V; //(NOTE: The "Vt" label of the template is assumed to be on Layer 1.)
+						page.active = 2; // activate Layer 2
+						layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+						
+						
+						// Plot Power law fit (Saturation) for the last measurement of the sample
+						TemplateGeneric$ = "%(templatepath$)Generic_u-sat-PLF.otpu";
+						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat-PLF_Vd=%(Vdsat$)V";
+						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat-PLF_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+						Layers = {1, 1, 1};
+						Columns = {19, 42, 45};
+						LineTypes = {2, 1, 2}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 3, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+						if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
+						if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
+						if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
+						if (exist(Text5,16)==16) Text5.text$ = \g(b)=$(beta, .2); // If the label exists, update it
+						if (exist(Text6,16)==16) Text6.text$ = \g(k)=$(kappa, .2); // If the label exists, update it
+						plot -c; // refresh the graph to update the labels
+						
+				};
+				
+				win -a %(previousworkbook$);  // activate the previous window (workbook)
+				window -ch 1; // hide the transfer workbook that was processed
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				else // if this is an output curve
+				{						
+					wks.name$=Output; // Change the sheet name to "Output"
+					int NoofVgs = (wks.ncols-1)/3; // The number of different Vg voltages is going to be equal to the total No of columns, minus the gate voltage column, divided by 3 (as there are three currents for each Vg: Is, Id, Ig).
+					wks.ncols = wks.ncols + NoofVgs*2;  // The number of columns will be equal to the old one plus two new columns for each Vg (one for abs(Id) and one for abs(Ig)).						
+					wks.colwidth = 8;// set all col width to 8
+					
+					
+					// Extract VdStart and VdStop
+					string VdStart$= $(col(A)[1]); // VdStart is the value of the first cell of col(A)						
+					string VdStop$=$(col(A)[wks.maxrows/2]); // VdStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
+					
+					
+					loop(i,1,NoofVgs)
+						{
+							string previousworkbook$=%H; // Get the name of the previous window
+							
+							// Extract Vg							
+							string Vg$=wcol(i+1)[L]$; // Start from column 2
+							Vg$=Vg.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+							Vg$=Vg.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+							if (Vg.Find('.')!=0 && Vg.GetToken(2,".")$ == "0")
+								Vg$=Vg.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
+							
+							
+							// Create a new column for abs(Id)
+							wcol(i+NoofVgs+1+2*NoofVgs)[L]$ = col(%(i+NoofVgs+1))[L]$; // First Id column is i+NoofVgs+1. First empty column on the right is i+NoofVgs+1+2*NoofVgs. abs(Id(Vg)) and Id(Vg) will have a distance of 2*NoofVgs (e.g. col(N) will be ans(col(F)) if NoofVgs is 4)
+							wcol(i+NoofVgs+1+2*NoofVgs)[U]$ = A; // Units
+							wcol(i+NoofVgs+1+2*NoofVgs)[O]$ = "abs(col(%(i+NoofVgs+1)))";
+							wcol(i+NoofVgs+1+2*NoofVgs)[C]$ =  "Vg=%(Vg$)V, %(legend$)";
+							
+							
+							// Create a new column for abs(Ig)
+							wcol(i+NoofVgs+1+3*NoofVgs)[L]$ = col(%(i+2*NoofVgs+1))[L]$; // abs(Ig) column will be NoofVgs further away from abs(Id)
+							wcol(i+NoofVgs+1+3*NoofVgs)[U]$ = A; // Units
+							wcol(i+NoofVgs+1+3*NoofVgs)[O]$ = "abs(col(%(i+2*NoofVgs+1)))";
+							wcol(i+NoofVgs+1+3*NoofVgs)[C]$ =  "Vg=%(Vg$)V, %(legend$), Leakage";
+							
+							
+							// Plot output curve
+							range rId = [%H]1!wcol(i+NoofVgs+1+2*NoofVgs);  // data range of abs(Id) column
+							range rIg = [%H]1!wcol(i+NoofVgs+1+3*NoofVgs);  // data range of abs(Ig) column
+							
+							// Output plot with all the Id
+							TemplateGeneric$ = "%(templatepath$)Generic_Output.otpu";
+							graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Output";
+							Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Vd=%(VdStart$)V to %(VdStop$)V.otpu"; // This is the template path
+							Layers = {1};
+							Columns = {i+NoofVgs+1+2*NoofVgs};
+							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+							
+							
+							// Individual output plot with a single Id and Ig
+							TemplateGeneric$ = "%(templatepath$)Generic_Output_single.otpu";
+							graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Output_Vg=%(Vg$)V";
+							Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Output_Leakage_Vg=%(Vg$)V_Vd=%(VdStart$)V to %(VdStop$)V_single.otpu"; // This is the template path
+							Layers = {1, 1};
+							Columns = {i+NoofVgs+1+2*NoofVgs, i+NoofVgs+1+3*NoofVgs};
+							LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+							
+							
+							win -a %(previousworkbook$);  // activate the previous window (workbook)
+						};
+					window -ch 1; // hide the output workbook that was processed
+				};
+			};
+}
