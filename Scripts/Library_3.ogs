@@ -458,10 +458,8 @@ function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRan
 				//firstfit = ;
 				continue;
 			};
-		//i=; // Uncomment these three lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-		//fitLR.b=;
-		//firstfit - fitLR.b=;
-		//abs(firstfit - fitLR.b)/abs(firstfit)*100=;
+		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+		//type "For i=$(i), the slope is $(fitLR.b), the slope difference (firstfit - fitLR.b) is $(firstfit - fitLR.b), and the normalized slope difference abs(firstfit - fitLR.b)/abs(firstfit)*100 is $(abs(firstfit - fitLR.b)/abs(firstfit)*100)";
 		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
 			{
 				type "The right limit of the linear fit is row No $(i) (Vg = $(col(A)[i]))";
@@ -500,8 +498,8 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 				firsterror = ParamTree.rmse;
 				continue;
 			};
-		//i=; // Uncomment these two lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-		//100*abs(firsterror - ParamTree.rmse)/abs(firsterror)=;
+		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where abs(firsterror - ParamTree.rmse) varies. Then correct the window value, and comment the lines again.
+		//type "For i=$(i), the root mean square error is $(ParamTree.rmse), the error difference (firsterror - ParamTree.rmse) is $(firsterror - ParamTree.rmse), and the normalized slope difference abs(firsterror - ParamTree.rmse)/abs(firsterror)*100 is $(abs(firsterror - ParamTree.rmse)/abs(firsterror)*100)";
 		if ((abs(firsterror - ParamTree.rmse)/abs(firsterror))*100 > slopewindow) // Window for extracting the power law fit window error. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
 			{
 				type "The right limit of the power law fit is row No $(i) (Vg = $(col(A)[i]))";
