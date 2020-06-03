@@ -383,11 +383,9 @@ function double RollingRegression (int inputcolNo, int outputcolNo, int minRange
 				//firstfit = ;
 				continue;
 			};
-		//i=; // Uncomment these three lines if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-		//fitLR.b=;
-		//firstfit - fitLR.b=;
-		//abs(firstfit - fitLR.b)/abs(firstfit)*100=;
-		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
+		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+		//type "For i=$(i), the slope is $(fitLR.b), the slope difference (firstfit - fitLR.b) is $(firstfit - fitLR.b), and the normalized slope difference abs(firstfit - fitLR.b)/abs(firstfit)*100 is $(abs(firstfit - fitLR.b)/abs(firstfit)*100)";
+		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then multiplied by 100, to turn it into a percentage.
 			{
 				Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
 				Vt = round(Vt,1); // Round the threshold voltage
@@ -460,7 +458,7 @@ function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRan
 			};
 		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
 		//type "For i=$(i), the slope is $(fitLR.b), the slope difference (firstfit - fitLR.b) is $(firstfit - fitLR.b), and the normalized slope difference abs(firstfit - fitLR.b)/abs(firstfit)*100 is $(abs(firstfit - fitLR.b)/abs(firstfit)*100)";
-		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
+		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then multiplied by 100, to turn it into a percentage.
 			{
 				type "The right limit of the linear fit is row No $(i) (Vg = $(col(A)[i]))";
 				Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
@@ -499,8 +497,8 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 				continue;
 			};
 		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where abs(firsterror - ParamTree.rmse) varies. Then correct the window value, and comment the lines again.
-		//type "For i=$(i), the root mean square error is $(ParamTree.rmse), the error difference (firsterror - ParamTree.rmse) is $(firsterror - ParamTree.rmse), and the normalized slope difference abs(firsterror - ParamTree.rmse)/abs(firsterror)*100 is $(abs(firsterror - ParamTree.rmse)/abs(firsterror)*100)";
-		if ((abs(firsterror - ParamTree.rmse)/abs(firsterror))*100 > slopewindow) // Window for extracting the power law fit window error. The window is normalized with respect to the first slope, and then mupltiplied by 100, to turn it into a percentage.
+		//type "For i=$(i), the RMSE is $(ParamTree.rmse), the error difference (firsterror - ParamTree.rmse) is $(firsterror - ParamTree.rmse), and the normalized error difference abs(firsterror - ParamTree.rmse)/abs(firsterror)*100 is $(abs(firsterror - ParamTree.rmse)/abs(firsterror)*100)";
+		if ((abs(firsterror - ParamTree.rmse)/abs(firsterror))*100 > slopewindow) // Window for extracting the power law fit window error. The window is normalized with respect to the first error, and then multiplied by 100, to turn it into a percentage.
 			{
 				type "The right limit of the power law fit is row No $(i) (Vg = $(col(A)[i]))";
 				//outputcol = fit(col(A), col(S));
