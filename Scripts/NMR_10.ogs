@@ -1,0 +1,176 @@
+// This script is used on text files exported by TopSpin. It copies the fourth column to the first column, and then scales the intensity according to the scaling factor determined in TopSpin.
+// NOTE: First process the files in TopSpin, then save the scale in the filename (with comma instead of point for the precision digits e.g. 2,3 not 2.3), then import it in Origin and scale the spectra accordingly.
+
+// Author: Dimitrios Simatos
+// Version: 1.0
+// Current status: Works well.
+// Changes: Turned plotting code into functions.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+	
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
+
+	Library_4.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	string TemplateGeneric$;
+	string graphname$;
+	string Template$;
+	dataset Columns;
+	dataset LineTypes;
+	
+	string GraphNameSingle$; // The long name of the Graph for the plot of a single NMR spectrum
+	string TemplateNameSingle$; // The long name of the Graph Template for the plot of a single NMR spectrum
+
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string sampleNo$ = sheetname.GetToken(2,"_")$; // Get the string that shows the sample number
+		string method$ = sheetname.GetToken(3,"_")$; // Get the string that shows the experimental method (e.g. NMR, SSNMR)
+		string architecture$ = sheetname.GetToken(4,"_")$; // Get the string that shows the "architecture" (e.g. Film, solution, solvent)
+		// Film stands for re-dissolved film with a deuterated solvent.
+		// Solution stands for a material dissolved in a deuterated solvent.
+		// Solvent stands for a deuterated solvent exposed to different conditions (e.g. to trace contaminants).
+		
+		
+		switch (%(architecture$)) // Case study
+		{
+			case "Solvent": // If the string is "Solvent"
+				string solventD$ = sheetname.GetToken(5,"_")$; // Get the string that shows the deuterated solvent
+				string condition$ = sheetname.GetToken(6,"_")$; // Get the string that shows the conditions (air/type of liquid)
+				string timelength$ = sheetname.GetToken(7,"_")$; // get the string, which shows the time
+				string measNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the measurement number
+				string frequency$ = sheetname.GetToken(9,"_")$; // Get the string that shows the frequency
+				string frequencyNo$ = frequency.GetToken(1,"-")$; // Get the string that shows the frequency value
+				string frequencyUnits$ = frequency.GetToken(2,"-")$; // Get the string that shows the frequency units
+				string scale$ = sheetname.GetToken(10,"_")$; // get the scale, which I saved from the TopSpin processing
+				
+				GraphNameSingle$="%(batch$)_%(sampleNo$)_%(method$)_%(architecture$)_%(solventD$)_%(condition$)_%(timelength$)_%(measNo$)_%(frequency$)";
+				TemplateNameSingle$="%(templatepath$)%(method$)_%(solventD$)_%(frequency$)";
+				
+				break;
+			
+			case "Film": // If the string is "Film"
+				string material$ = sheetname.GetToken(5,"_")$; // Get the string that shows the material
+				string concentration$ = sheetname.GetToken(6,"_")$; // Get the string that shows the concentration
+				string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+				string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+				
+				string solvent$ = sheetname.GetToken(7,"_")$; // Get the string that shows the solvent content (of the material, NOT the deuterated solvent used to dissolve the film)
+				
+				string annealing$ = sheetname.GetToken(8,"_")$; // Get the string that shows the additive
+				
+				string additive$ = sheetname.GetToken(9,"_")$; // Get the string that shows the additive
+				string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+				//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+				//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+				
+				string solventD$ = sheetname.GetToken(10,"_")$; // Get the string that shows the deuterated solvent
+				
+				string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
+				string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the time
+				string measNo$ = sheetname.GetToken(13,"_")$; // Get the string that shows the measurement number
+				string frequency$ = sheetname.GetToken(14,"_")$; // Get the string that shows the frequency
+				string frequencyNo$ = frequency.GetToken(1,"-")$; // Get the string that shows the frequency value
+				string frequencyUnits$ = frequency.GetToken(2,"-")$; // Get the string that shows the frequency units
+				string scale$ = sheetname.GetToken(15,"_")$; // get the scale, which I saved from the TopSpin processing
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Case structures from filenames (used for legends).
+				
+				string conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
+				string additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+					
+				GraphNameSingle$="%(batch$)_%(sampleNo$)_%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(solventD$)_%(condition$)_%(timelength$)_%(measNo$)_%(frequency$)";
+				TemplateNameSingle$="%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(solventD$)_%(frequency$)";
+				
+				break;
+				
+				default: // For all other cases
+					type "Wrong file name structure.";
+					break;
+					
+		}
+			
+		scale$=scale.GetToken(1,".")$; // Remove ".txt" from the scale
+		scale.Replace(",", "."); // replace "," with "."
+		
+		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
+		string timegraphlegend$; // This string will depend on "timeNo" and it will display the type of liquid for the graph legend
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		// Case structures from filenames (used for legends).
+		
+		condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
+		timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
+		
+		string legend$ = "%(condgraphlegend$), %(timegraphlegend$)"; // Legend
+		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		
+		string previousworkbook$=%H; // Get the name of the previous window
+		
+		Col(A) = Col(D); // Copy Col(D) to Col(A)
+		wks.name$=method$; // Change the sheet name to the method used (e.g. NMR)
+		wks.ncols=4; // set total column number to 4
+		wks.colwidth = 12;// set all col width to 12
+		
+		
+		// Write long name, units, comments, and parameters of columns
+		col(A)[L]$ = "Chemical Shift"; // Long name
+		col(A)[U]$ = ppm; // Units
+		col(B)[L]$ = "Intensity"; // Long name
+		col(B)[U]$ = AU; // Units
+		col(C)[L]$ = "Frequency"; // Long name
+		col(C)[U]$ = Hz; // Units
+		col(D)[L]$ = "Normalized Intensity"; // Long name
+		col(D)[U]$ = AU; // Units
+		col(D)[O]$ = "Col(B)*%(scale$)"; // Units
+		
+		
+		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		// Column legends
+		
+		col(B)[C]$ = legend$;
+		col(D)[C]$ = col(B)[C]$; // Comment field (graph legend)
+		
+		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		// Plot graphs
+		
+		
+		// Plot NMR spectrum (global)
+		TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
+		graphname$ = "%(batch$)_comparison_%(method$)_%(architecture$)_%(solventD$)_%(frequency$)_all";
+		Template$ = "%(templatepath$)%(method$)_%(solventD$)_%(frequency$).otpu"; // This is the template path
+		Layers = {1};
+		Columns = {4};
+		LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+		PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 1);
+		
+		
+		// Plot NMR spectrum (single)
+		TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
+		graphname$ = GraphNameSingle$;
+		Template$ = "%(TemplateNameSingle$).otpu"; // This is the template path
+		Layers = {1};
+		Columns = {4};
+		LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+		PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 1);
+		
+		win -a %(previousworkbook$);  // activate the previous window (workbook)
+		window -ch 1; // hide the transfer workbook that was processed
+	};
+}
