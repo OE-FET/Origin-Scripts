@@ -548,7 +548,7 @@ function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRan
 		if (i == wks.maxrows/2 + minRangeLength + offset) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
 			{
 				firstfit = fitLR.b;
-				//firstfit = ;
+				//type "The first linear fit is $(firstfit)";
 				continue;
 			};
 		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
@@ -596,9 +596,13 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 		if ((abs(firsterror - ParamTree.rmse)/abs(firsterror))*100 > slopewindow) // Window for extracting the power law fit window error. The window is normalized with respect to the first error, and then multiplied by 100, to turn it into a percentage.
 			{
 				type "The right limit of the power law fit is row No $(i) (Vg = $(col(A)[i]))";
-				//outputcol = fit(col(A), col(S));
-				range yy = outputcol[wks.maxrows/2+offset:i];
-				yy = fit(col(A)[wks.maxrows/2+offset:i], wcol(inputcolNo)[wks.maxrows/2+offset:i]);
+				
+				// The following two lines will only plot the power law fit over the range that the fitting was performed.
+				//range yy = outputcol[wks.maxrows/2+offset:i];
+				//yy = fit(col(A)[wks.maxrows/2+offset:i], wcol(inputcolNo)[wks.maxrows/2+offset:i]);
+				
+				outputcol = fit(col(A), wcol(inputcolNo)); // This line will plot the power law fit over the entire X axis.
+				
 				beta = ParamTree.P; // The exponent beta, for the power law dependence of the mobility.
 				beta = round(beta,1); // Round beta
 				nlend;
@@ -607,7 +611,6 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 			else
 				continue;
 	}
-	
 	return beta;
 }
 
