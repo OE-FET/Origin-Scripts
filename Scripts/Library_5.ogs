@@ -510,7 +510,8 @@ function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRan
 		offset = offset1 + offset2;
 	}
 	else
-		offset = offsetmanual;
+		offset = offsetmanual*Vstep; // Convert the offset from Volts to No of rows.
+	
 	type "The total offset is $(offset) rows ($(offset/Vstep)V).";
 	
 	// Linear fit
