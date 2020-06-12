@@ -6,9 +6,9 @@
 // 3. Run the main script.
 
 // Author: Dimitrios Simatos
-// Version: 0.4
+// Version: 0.5
 // Current status: Works well.
-// Changes: Changed MakeConditionLegend and MakeTimeLegend functions.
+// Changes: Added conversion of minimum range length from Volts to number of rows.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -461,38 +461,6 @@ function string MakeInTimeLegend (string intime)
 // The index i shows the right limit of the voltage range for the linear fit. It starts from maxrows/2 (Id(Vgmax)) + minRangeLength (the min voltage range I want to fit on; if this is zero, then the left and right limits will overlap) + offset (correction factor in case Id plateaus at the left limit of the range (Vgmax). This happens in the linear regime.).
 // The loop extends from the minimum i value to the end of the voltage range (maxrows). Moving i to the right (via the loop) constitutes the rolling window.
 
-function double RollingRegression (int inputcolNo, int outputcolNo, int minRangeLength, int offset, double slopewindow)
-{
-	double Vt; // Threshold voltage (Temporary variable to be used in the Rolling Regression function)
-	double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
-	range inputcol = [%H]1!wcol(inputcolNo); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
-	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
-	range gm = [%H]1!wcol(gmcolNo); // Define the range variable (gm (Saturation)) for the input argument of the rolling regression function.
-	
-	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
-	{
-		fitLR iy:=inputcol[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
-		if (i == wks.maxrows/2 + minRangeLength + offset) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
-			{
-				firstfit = fitLR.b;
-				//firstfit = ;
-				continue;
-			};
-		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
-		//type "For i=$(i), the slope is $(fitLR.b), the slope difference (firstfit - fitLR.b) is $(firstfit - fitLR.b), and the normalized slope difference abs(firstfit - fitLR.b)/abs(firstfit)*100 is $(abs(firstfit - fitLR.b)/abs(firstfit)*100)";
-		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then multiplied by 100, to turn it into a percentage.
-			{
-				Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
-				Vt = round(Vt,1); // Round the threshold voltage
-				break;
-			};
-		else
-			continue;
-	}
-			
-	return Vt;
-}
-
 function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRangeLength, double slopewindow, int autooffset, int offsetmanual, int gmcolNo, string regime)
 {
 	double Vt; // Threshold voltage (Temporary variable to be used in the Rolling Regression function)
@@ -504,6 +472,11 @@ function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRan
 	type "-------------------------------------------";
 	type "Threshold voltage Linear Fit on Id/SQRT(Id)";
 	type "Regime: %(regime$)";
+	
+	// Calculate the voltage step and convert minRangeLength from Volts to No of rows.
+	double Vstep = abs(col(A)[2]-col(A)[1]); // Rows per Volt
+	type "For a voltage step of $(Vstep)V, the minimum integration range of $(minRangeLength)V is converted to $(round(minRangeLength/Vstep)) rows.";
+	minRangeLength = round(minRangeLength/Vstep);
 	
 	if (autooffset == 1) // Determines whether an automatic offset calculation will be performed.
 	{
@@ -524,7 +497,7 @@ function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRan
 		if (fitLR.b>0 || rowIdmax!=maxrows/2) // I will correct for an offset if 1) the slope of Id is positive - it will rise to infinity and not intercept the X-axis, resulting in a bad fit. 2) If Idmax and Vgmax do not coincide.
 		{
 			offset1 = rowIdmax - wks.maxrows/2;
-			type "The offset contribution due to Idmax not being at Vgmax is $(offset1)";
+			type "The offset contribution due to Idmax not being at Vgmax is $(offset1) rows ($(offset1/Vstep)V).";
 		};
 		
 		range rgmmax = gm[wks.maxrows/2:wks.maxrows];
@@ -532,13 +505,13 @@ function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRan
 		rowgmmax = $(sum.imax); // The row number of gm max.
 		type "The row No in which gm is max is $(rowgmmax)";
 		offset2 = rowgmmax - wks.maxrows/2;
-		type "The offset contribution due to gmmax not being at Vgmax is $(offset2)";
+		type "The offset contribution due to gmmax not being at Vgmax is $(offset2) rows ($(offset2/Vstep)V).";
 		
 		offset = offset1 + offset2;
 	}
 	else
 		offset = offsetmanual;
-	type "The total offset is $(offset)";
+	type "The total offset is $(offset) rows ($(offset/Vstep)V).";
 	
 	// Linear fit
 	type "The left limit of the linear fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
@@ -578,6 +551,11 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 	type "-------------------------------------------";
 	type "Power Law Fit on mobility";
 	type "Regime: Saturation";
+	
+	// Calculate the voltage step and convert minRangeLength from Volts to No of rows.
+	double Vstep = abs(col(A)[2]-col(A)[1]);
+	type "For a voltage step of $(Vstep)V, the minimum integration range of $(minRangeLength)V is converted to $(round(minRangeLength/Vstep)) rows.";
+	minRangeLength = round(minRangeLength/Vstep);
 	
 	type "The left limit of the power law fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
 	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
