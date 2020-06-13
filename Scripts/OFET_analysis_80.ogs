@@ -110,7 +110,7 @@
 		double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Saturation)
 		
 		// Power Law Fitting function parameters
-		int minRangeLengthPLF = 20; // The minimum range of voltages over which the Power Law fit will be applied.
+		int minRangeLengthPLF = 20; // [V] The minimum range of voltages over which the Power Law fit will be applied.
 		double slopewindowPLF = 20; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for performing the power law fit. (Saturation)
 		
 		double jmaxlin; // Max channel current density (Linear)
