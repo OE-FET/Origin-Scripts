@@ -541,11 +541,11 @@ function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRan
 	return Vt;
 }
 
-function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength, double slopewindow)
+function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLengthPLF, double errorwindowPLF)
 {
 	double beta; // Parameter for power law dependence of the mobility
 	double firsterror; // The error value of the power law fit (done between Id(Vgmax) and Id(Vg(i=0)).
-	int offset = 0; // Offset value in case the mobility function plateaus. The left limit of the voltage range will start from mu(Vgmax+offset) (Saturation)
+	int offsetPLF = 0; // Offset value in case the mobility function plateaus. The left limit of the voltage range will start from mu(Vgmax+offset) (Saturation)
 	range inputcol = [%H]1!wcol(inputcolNo); // Define the range variable (Vg column, usat column) for the input argument of the rolling regression function.
 	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable (power law fit output column) for the input argument of the rolling regression function.
 
@@ -553,26 +553,29 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 	type "Power Law Fit on mobility";
 	type "Regime: Saturation";
 	
-	// Calculate the voltage step and convert minRangeLength from Volts to No of rows.
+	// Calculate the voltage step and convert minRangeLengthPLF from Volts to No of rows.
 	double Vstep = abs(col(A)[2]-col(A)[1]);
-	type "For a voltage step of $(Vstep)V, the minimum integration range of $(minRangeLength)V is converted to $(round(minRangeLength/Vstep)) rows.";
-	minRangeLength = round(minRangeLength/Vstep);
+	type "For a voltage step of $(Vstep)V, the minimum integration range of $(minRangeLengthPLF)V is converted to $(round(minRangeLengthPLF/Vstep)) rows.";
+	minRangeLengthPLF = round(minRangeLengthPLF/Vstep);
 	
 	type "The left limit of the power law fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
-	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
+	loop(i,wks.maxrows/2 + minRangeLengthPLF + offsetPLF,wks.maxrows) // Start at least "minRangeLengthPLF" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
 	{
-		nlbegin iy:=inputcol[wks.maxrows/2+offset:i] func:=Power1 nltree:=ParamTree weight:=0; // Fit from u(Vgmax) to u(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
+		nlbegin iy:=inputcol[wks.maxrows/2+offsetPLF:i] func:=Power1 nltree:=ParamTree weight:=0; // Fit from u(Vgmax) to u(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
 		ParamTree.xc = 0;     // Assign the peak center an X-value of 0.
 		ParamTree.f_xc = 1;   // Fix the peak center (f_xc = 0 is unfixed).		
 		nlfit;
-		if (i == wks.maxrows/2 + minRangeLength) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
+		if (i == wks.maxrows/2 + minRangeLengthPLF) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
 			{
-				firsterror = ParamTree.rmse;
+				if (ParamTree.rmse != 0) // if the first RMSE is 0, I won't be able to divide by it.
+					firsterror = ParamTree.rmse;
+				else
+					firsterror = 0.001;
 				continue;
 			};
 		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where abs(firsterror - ParamTree.rmse) varies. Then correct the window value, and comment the lines again.
 		//type "For i=$(i), the RMSE is $(ParamTree.rmse), the error difference (firsterror - ParamTree.rmse) is $(firsterror - ParamTree.rmse), and the normalized error difference abs(firsterror - ParamTree.rmse)/abs(firsterror)*100 is $(abs(firsterror - ParamTree.rmse)/abs(firsterror)*100)";
-		if ((abs(firsterror - ParamTree.rmse)/abs(firsterror))*100 > slopewindow) // Window for extracting the power law fit window error. The window is normalized with respect to the first error, and then multiplied by 100, to turn it into a percentage.
+		if ((abs(firsterror - ParamTree.rmse)/abs(firsterror))*100 > errorwindowPLF) // Window for extracting the power law fit window error. The window is normalized with respect to the first error, and then multiplied by 100, to turn it into a percentage.
 			{
 				type "The right limit of the power law fit is row No $(i) (Vg = $(col(A)[i]))";
 				

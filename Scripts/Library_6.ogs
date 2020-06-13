@@ -1,0 +1,644 @@
+// This script is used as a library file that contains all the functions that other scripts call.
+
+// How to use:
+// 1. Place it in the folder with the other scripts.
+// 2. Add the following line to the main script: Library_1.Main; // Run Main section of Library file
+// 3. Run the main script.
+
+// Author: Dimitrios Simatos
+// Version: 0.5
+// Current status: Works well.
+// Changes: Added conversion of minimum range length from Volts to number of rows.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+@global=1;
+
+function double DielectricThicknessCalc (string dielectric, string dielectricconc)
+{
+	string dielectricinfo$ = dielectric$ + "_" + dielectricconc$;
+	double dielectricthickness;
+	
+	// Thickness
+	// CYTOP-M 100% (Caironi's recipe): The measured thickness is 310 nm. The thickness mentioned in the paper is 450 nm.
+	// CYTOP-S 100%: The measured thickness is 570 nm.
+	// CYTOP-M 3-1: 550 nm
+	// CYTOP-M 1-5: 25 nm
+	// CYTOP-S 3-1: 860 nm
+	// CYTOP-S 1.5-1: 490 nm
+	// CYTOP-S 1-1: 370 nm
+	// CYTOP-S 1-2: 140 nm
+	// CYTOP-S 1-3: 100 nm
+	// PMMA: 300 nm
+	
+	switch (%(dielectricinfo$)) // Case study
+		{
+			case "Cytop-M_100p": // If the string is "Cytop-M_100p", the dielectric thickness is 310 nm
+				dielectricthickness = 310; // Comment field (graph legend)
+				break;
+				
+			case "Cytop-M_3-1": // If the string is "Cytop-M_3-1", the dielectric thickness is 550 nm
+				dielectricthickness = 550; // Comment field (graph legend)
+				break;
+				
+			case "Cytop-M_1-5": // If the string is "Cytop-M_1-5", the dielectric thickness is 25 nm
+				dielectricthickness = 25; // Comment field (graph legend)
+				break;
+				
+			case "Cytop-S_100p": // If the string is "Cytop-S_100p", the dielectric thickness is 570 nm
+				dielectricthickness = 570; // Comment field (graph legend)
+				break;
+				
+			case "Cytop-S_3-1": // If the string is "Cytop-S_3-1", the dielectric thickness is 860 nm
+				dielectricthickness = 860; // Comment field (graph legend)
+				break;
+				
+			case "Cytop-S_1,5-1": // If the string is "Cytop-S_1.5-1", the dielectric thickness is 490 nm
+				dielectricthickness = 490; // Comment field (graph legend)
+				break;
+				
+			case "Cytop-S_1-1": // If the string is "Cytop-S_1-1", the dielectric thickness is 370 nm
+				dielectricthickness = 370; // Comment field (graph legend)
+				break;
+				
+			case "Cytop-S_1-2": // If the string is "Cytop-S_1-2", the dielectric thickness is 140 nm
+				dielectricthickness = 140; // Comment field (graph legend)
+				break;
+				
+			case "Cytop-S_1-3": // If the string is "Cytop-S_1-3", the dielectric thickness is 100 nm
+				dielectricthickness = 100; // Comment field (graph legend)
+				break;
+				
+			case "PMMA_50-gl": // If the string is "PMMA_50-gl", the dielectric thickness is 300 nm
+				dielectricthickness = 300; // Comment field (graph legend)
+				break;
+				
+			default: // For all other dielectrics, assume a thickness of 500 nm
+				dielectricthickness = 500; // Comment field (graph legend)
+				type -a "Unknown dielectric thickness for %(dielectric$). Assuming 500 nm."; // Comment field (graph legend)
+				break;
+		}
+		
+		//dielectricthickness=;
+		return dielectricthickness;
+}
+
+function string MakePressureLegend (string pressure)
+{
+	switch (%(pressure$)) // Case study
+		{
+			case "vac": // If the string is "vac", write "Vacuum" in the comment field
+				pressuregraphlegend$ = "Vacuum"; // Comment field (graph legend)
+				break;
+			
+			case "air": // If the string is "air", write "Air" in the comment field
+				pressuregraphlegend$ = "Air"; // Comment field (graph legend)
+				break;
+			
+			default: // For all other cases, write the pressure string in the comment field
+				pressuregraphlegend$ = pressure$; // Comment field (graph legend)
+				break;
+		}
+			
+		return pressuregraphlegend$;
+}
+
+function string MakeConcUnitsLegend (string concunits)
+{
+	switch (%(concunits$)) // Case study
+		{
+			case "gl": // If the string is "gl", write "g/l" in the comment field
+				conunitslegend$ = "g/l"; // Comment field (graph legend)
+				break;
+			
+			default: // For all other numbers, use plural form
+				conunitslegend$ = "mg/ml"; // Comment field (graph legend)
+				break;
+		}
+			
+		return conunitslegend$;
+}
+
+function string MakeAdditiveLegend (string additivetype)
+{
+	switch (%(additivetype$)) // Case study
+		{
+			case "Pristine": // If the string is "TCNQ", write "TCNQ" in the comment field
+				additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+				break;
+			
+			case "TCNQ": // If the string is "TCNQ", write "TCNQ" in the comment field
+				additivegraphlegend$ = "+ TCNQ"; // Comment field (graph legend)
+				break;
+			
+			case "F2TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
+				additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
+				break;
+			
+			case "F4TCNQ": // If the string is "F4TCNQ", write "F4TCNQ" in the comment field
+				additivegraphlegend$ = "+ F4TCNQ"; // Comment field (graph legend)
+				break;
+			
+			case "SAM-1OCT-v": // If the number is 1, use single form
+				additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
+				break;
+			
+			case "SAM-1OCT-i": // If the number is 1, use single form
+				additivegraphlegend$ = "+ 1-Octanethiol (immersion)"; // Comment field (graph legend)
+				break;
+			
+			case "SAM-TDF1OCT-v": // If the number is 1, use single form
+				additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)"; // Comment field (graph legend)
+				break;
+			
+			case "SAM-TDF1OCT-i": // If the number is 1, use single form
+				additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)"; // Comment field (graph legend)
+				break;
+			
+			default: // For all other strings, write "Pristine" in the comment field
+				additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+				break;
+		}
+			
+		return additivegraphlegend$;
+}
+
+function string MakeConditionLegend (string condition)
+{
+	switch (%(condition$)) // Case study
+	{
+		case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+			condgraphlegend$ = "DI water"; // Comment field (graph legend)
+			break;
+		
+		case "up-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
+			condgraphlegend$ = "Ultrapure water"; // Comment field (graph legend)
+			break;
+		
+		case "t-H2O": // If the string is "town", write "town water" in the comment field
+			condgraphlegend$ = "Town water"; // Comment field (graph legend)
+			break;
+		
+		case "ss": // If the string is "town", write "town water" in the comment field
+			condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
+			break;
+		
+		case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+			string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
+			pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
+			string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
+			string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
+			condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
+			break;
+			
+		case "bottle-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Bottle reference in N2"; // Comment field (graph legend)
+			break;
+			
+		case "bottle-air": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Bottle reference in air"; // Comment field (graph legend)
+			break;
+			
+		case "bottle-N2-washed-tube": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Bottle reference in N2 (washed NMR tube)"; // Comment field (graph legend)
+			break;
+			
+		case "bottle-N2-unwashed-tube": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Bottle reference in N2 (unwashed NMR tube)"; // Comment field (graph legend)
+			break;
+			
+		case "vial-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Vial reference in N2"; // Comment field (graph legend)
+			break;
+		
+		case "vial-air": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Vial reference in air"; // Comment field (graph legend)
+			break;
+		
+		case "glovebox-bubble-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Bubbled N2"; // Comment field (graph legend)
+			break;
+			
+		case "line-bubble-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Bubbled N2 (N2 line)"; // Comment field (graph legend)
+			break;
+		
+		case "gun-bubble-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Bubbled N2 (N2 gun)"; // Comment field (graph legend)
+			break;
+		
+		case "glovebox-substrate-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Deposited on substrate in N2"; // Comment field (graph legend)
+			break;
+		
+		case "substrate-air": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Deposited on substrate in air"; // Comment field (graph legend)
+			break;
+		
+		case "pipette-plastic-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Plastic pipette reference in N2"; // Comment field (graph legend)
+			break;
+			
+		case "syringe-glass-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Glass syringe reference in N2"; // Comment field (graph legend)
+			break;
+			
+		case "syringe-glass-air": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Glass syringe reference in air"; // Comment field (graph legend)
+			break;
+			
+		case "syringe-glass-vial-air": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Vial reference in air (glass syringe)"; // Comment field (graph legend)
+			break;
+			
+		case "syringe-plastic-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Plastic syringe reference in N2"; // Comment field (graph legend)
+			break;
+		
+		case "pipette-glass-vial-air": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Vial reference in air (glass pipette)"; // Comment field (graph legend)
+			break;
+		
+		case "oil-vacuum-pump": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Vacuum pump oil"; // Comment field (graph legend)
+			break;
+			
+		case "oil-vacuum-pump-waste": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Vacuum pump oil waste"; // Comment field (graph legend)
+			break;
+			
+		case "oil-overpressure-valve": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Overpressure pump oil"; // Comment field (graph legend)
+			break;
+			
+		default: // For all other strings, write the extracted field in the comment field
+			condgraphlegend$ = condition$; // Comment field (graph legend)
+			break;
+	}
+			
+		return condgraphlegend$;
+}
+
+function string MakeTimeLegend (string timelength)
+{
+	if (timelength$ != "initial")
+		{
+			timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
+			timeunits$ = timelength.GetToken(2,"-")$; // get the string, which shows the time units
+			
+			switch (%(timeunits$)) // Case study
+				{
+					case "sec": // If the units are "sec", change them to "seconds" for the legend
+						timeunits$ = "seconds"; // Comment field (graph legend)
+						break;
+						
+					case "min": // If the units are "min", change them to "minutes" for the legend
+						timeunits$ = "minutes"; // Comment field (graph legend)
+						break;
+						
+					case "h": // If the units are "h", change them to "hours" for the legend
+						timeunits$ = "hours"; // Comment field (graph legend)
+						break;
+					
+					default: // For all other strings, write the extracted field in the comment field
+						break;
+				}
+			
+			timegraphlegend$ = timeNo$ + " " + timeunits$; // Comment field (graph legend)
+			
+			if (timeNo$ == "1")
+				timegraphlegend.TrimRight("s"); // If the number is 1, use single form
+			
+		};
+		else
+			//timegraphlegend$ = timelength$; // Legend
+			timegraphlegend$ = "Initial"; // Legend
+			
+		return timegraphlegend$;
+}
+
+function string MakeTimeLegendBS (string timelength)
+{
+	if (timelength$ != "initial")
+		{
+			timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
+			timeunits$ = timelength.GetToken(2,"-")$; // get the string, which shows the time units
+			
+			switch (%(timeunits$)) // Case study
+				{
+					case "sec": // If the units are "sec", then
+						if (%(timeNo$) > 60 && %(timeNo$) < 3600)
+						{
+							timegraphlegend$ = "$(round(%(timeNo$)/60,1)) m";
+							break;
+						}
+						if (%(timeNo$) > 3600)
+						{
+							timegraphlegend$ = "$(round(%(timeNo$)/3600,1)) h";
+							break;
+						}
+						else
+							timegraphlegend$ = "%(timeNo$) s"; // Comment field (graph legend)
+							break;
+						
+					case "min": // If the units are "min", then
+						if (%(timeNo$) > 60)
+						{
+							timegraphlegend$ = "$(round(%(timeNo$)/60,1)) h";
+							break;
+						}
+						else
+							timegraphlegend$ = "%(timeNo$) m"; // Comment field (graph legend)
+							break;
+						
+					case "h": // If the units are "h", then
+						timegraphlegend$ = "%(timeNo$) h"; // Comment field (graph legend)
+						break;
+						
+					default: // For all other strings, write the extracted field in the comment field
+						timegraphlegend$ = timeNo$ + " " + timeunits$; // Comment field (graph legend)
+						break;
+				}
+			
+			//if (timeNo$ == "1")
+				//timegraphlegend.TrimRight("s"); // If the number is 1, use single form
+			
+		};
+		else
+			//timegraphlegend$ = timelength$; // Legend
+			timegraphlegend$ = "Initial"; // Legend
+			
+		return timegraphlegend$;
+}
+
+function string RecalculateTime (string timelength, string TimeUnitsStabilityPlots)
+{
+	timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
+	timeunits$ = timelength.GetToken(2,"-")$; // get the string, which shows the time units
+	
+	switch (%(TimeUnitsStabilityPlots$)) // Case study
+	{
+		case "Minutes":
+			if (timeunits$ == "min")
+				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
+			if (timeunits$ == "h")
+				RecalculatedTimeNo$ = $(%(timeNo$)*60); // Convert hours to minutes.
+			if (timeunits$ == "day" || timeunits$ == "days")
+				RecalculatedTimeNo$ = $(%(timeNo$)*1440); // Convert days to minutes.
+			break;
+			
+		case "Hours":
+			if (timeunits$ == "min")
+				RecalculatedTimeNo$ = $(%(timeNo$)/1440); // Convert minutes to hours.
+			if (timeunits$ == "h")
+				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
+			if (timeunits$ == "day" || timeunits$ == "days")
+				RecalculatedTimeNo$ = $(%(timeNo$)*24); // Convert days to hours.
+			break;
+			
+		case "Days":
+			if (timeunits$ == "min")
+				RecalculatedTimeNo$ = $(%(timeNo$)/1440); // Convert minutes to days.
+			if (timeunits$ == "h")
+				RecalculatedTimeNo$ = $(%(timeNo$)/24); // Convert hours to days.
+			if (timeunits$ == "day" || timeunits$ == "days")
+				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
+			break;
+			
+		default: // For all other strings, write the condition string in the comment field
+			RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
+			break;
+	};
+		
+	return RecalculatedTimeNo$;
+}
+
+function string MakeMeasModeLegend (string mode)
+{
+	switch (%(mode$)) // Case study
+		{
+			case "P": // If the string is "P", write "Pulsed" in the comment field
+				modegraphlegend$ = "Pulsed"; // Comment field (graph legend)
+				break;
+			
+			case "C": // If the string is "C", write "Continuous" in the comment field
+				modegraphlegend$ = "Continuous"; // Comment field (graph legend)
+				break;
+			
+			default: // For all other cases, write "Continuous" in the comment field
+				modegraphlegend$ = "Continuous"; // Comment field (graph legend)
+				break;
+		}
+			
+		return modegraphlegend$;
+}
+
+function string MakeInTimeLegend (string intime)
+{
+	switch (%(intime$)) // Case study
+		{
+			case "S": // If the string is "S", write "Short" in the comment field
+				intimegraphlegend$ = "Short"; // Comment field (graph legend)
+				break;
+			
+			case "M": // If the string is "M", write "Medium" in the comment field
+				intimegraphlegend$ = "Medium"; // Comment field (graph legend)
+				break;
+			
+			case "L": // If the string is "L", write "Long" in the comment field
+				intimegraphlegend$ = "Long"; // Comment field (graph legend)
+				break;
+			
+			default: // For all other cases, write "Long" in the comment field
+				intimegraphlegend$ = "Long"; // Comment field (graph legend)
+				break;
+		}
+			
+		return intimegraphlegend$;
+}
+
+// The linear fitting is done from Id(Vgmax)+offset to the i. Id(Vgmax)+offset is the left limit of the voltage range for the linear fit.
+// The index i shows the right limit of the voltage range for the linear fit. It starts from maxrows/2 (Id(Vgmax)) + minRangeLength (the min voltage range I want to fit on; if this is zero, then the left and right limits will overlap) + offset (correction factor in case Id plateaus at the left limit of the range (Vgmax). This happens in the linear regime.).
+// The loop extends from the minimum i value to the end of the voltage range (maxrows). Moving i to the right (via the loop) constitutes the rolling window.
+
+function double RollingRegressionAO (int inputcolNo, int outputcolNo, int minRangeLength, double slopewindow, int autooffset, int offsetmanual, int gmcolNo, string regime)
+{
+	double Vt; // Threshold voltage (Temporary variable to be used in the Rolling Regression function)
+	double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
+	range inputcol = [%H]1!wcol(inputcolNo); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
+	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
+	range gm = [%H]1!wcol(gmcolNo); // Define the range variable (gm (Saturation)) for the input argument of the rolling regression function.
+	
+	type "-------------------------------------------";
+	type "Threshold voltage Linear Fit on Id/SQRT(Id)";
+	type "Regime: %(regime$)";
+	
+	// Calculate the voltage step and convert minRangeLength from Volts to No of rows.
+	double Vstep = abs(col(A)[2]-col(A)[1]); // Rows per Volt
+	type "For a voltage step of $(Vstep)V, the minimum integration range of $(minRangeLength)V is converted to $(round(minRangeLength/Vstep)) rows.";
+	minRangeLength = round(minRangeLength/Vstep);
+	
+	if (autooffset == 1) // Determines whether an automatic offset calculation will be performed.
+	{
+		int offset1 = 0; // The contribution of the offset due to Idmax not coinciding with Vgmax.
+		int offset2 = 0; // The contribution of the offset due to the max gm not coinciding with Vgmax.
+		int rowIdmax; // The row number of the max Id/SQRT(Id).
+		int rowgmmax; // The row number of the max gm.
+		
+		// Calculate the offset (distance between Vgmax and point of max slope of curve to be fitted - Id for linear regime or SQRT(Id) for saturation)
+		// If Idmax is not at Vgmax, I calculate offset1 = Vg(Idmax) - Vgmax. This is the first contribution to the offset.
+		// In addition, if the max slope of Id (gmmax) is not at Vgmax, I calculate a second contribution to the offset: offset2 = Vg(gmmax) - Vgmax. If I do not calculate offset1, then there is a chance that Vg(gmmax) is occuring before Idmax (see images with wrong fits).
+		range rIdmax = inputcol[wks.maxrows/2:wks.maxrows];
+		sum(rIdmax); // Generate statistics on input column
+		rowIdmax = $(sum.imax); // The row number of max Id/SQRT(Id).
+		type "The row No in which Id/SQRT(Id) is max is $(rowIdmax)";
+		
+		fitLR iy:=inputcol[wks.maxrows/2:wks.maxrows/2 + minRangeLength]; // Linear fit from Id(Vgmax) to Id(Vgmax)+minRangeLength (offset=0).
+		if (fitLR.b>0 || rowIdmax!=maxrows/2) // I will correct for an offset if 1) the slope of Id is positive - it will rise to infinity and not intercept the X-axis, resulting in a bad fit. 2) If Idmax and Vgmax do not coincide.
+		{
+			offset1 = rowIdmax - wks.maxrows/2;
+			type "The offset contribution due to Idmax not being at Vgmax is $(offset1) rows ($(offset1/Vstep)V).";
+		};
+		
+		range rgmmax = gm[wks.maxrows/2:wks.maxrows];
+		sum(rgmmax); // Generate statistics on input column
+		rowgmmax = $(sum.imax); // The row number of gm max.
+		type "The row No in which gm is max is $(rowgmmax)";
+		offset2 = rowgmmax - wks.maxrows/2;
+		type "The offset contribution due to gmmax not being at Vgmax is $(offset2) rows ($(offset2/Vstep)V).";
+		
+		offset = offset1 + offset2;
+	}
+	else
+		offset = offsetmanual*Vstep; // Convert the offset from Volts to No of rows.
+	
+	type "The total offset is $(offset) rows ($(offset/Vstep)V).";
+	
+	// Linear fit
+	type "The left limit of the linear fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
+	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
+	{
+		fitLR iy:=inputcol[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
+		if (i == wks.maxrows/2 + minRangeLength + offset) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
+			{
+				firstfit = fitLR.b;
+				//type "The first linear fit is $(firstfit)";
+				continue;
+			};
+		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where abs(firstfit - fitLR.b) varies. Then correct the window value, and comment the lines again.
+		//type "For i=$(i), the slope is $(fitLR.b), the slope difference (firstfit - fitLR.b) is $(firstfit - fitLR.b), and the normalized slope difference abs(firstfit - fitLR.b)/abs(firstfit)*100 is $(abs(firstfit - fitLR.b)/abs(firstfit)*100)";
+		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then multiplied by 100, to turn it into a percentage.
+			{
+				type "The right limit of the linear fit is row No $(i) (Vg = $(col(A)[i]))";
+				Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
+				Vt = round(Vt,1); // Round the threshold voltage
+				break;
+			};
+		else
+			continue;
+	}
+			
+	return Vt;
+}
+
+function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLengthPLF, double errorwindowPLF)
+{
+	double beta; // Parameter for power law dependence of the mobility
+	double firsterror; // The error value of the power law fit (done between Id(Vgmax) and Id(Vg(i=0)).
+	int offsetPLF = 0; // Offset value in case the mobility function plateaus. The left limit of the voltage range will start from mu(Vgmax+offset) (Saturation)
+	range inputcol = [%H]1!wcol(inputcolNo); // Define the range variable (Vg column, usat column) for the input argument of the rolling regression function.
+	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable (power law fit output column) for the input argument of the rolling regression function.
+
+	type "-------------------------------------------";
+	type "Power Law Fit on mobility";
+	type "Regime: Saturation";
+	
+	// Calculate the voltage step and convert minRangeLengthPLF from Volts to No of rows.
+	double Vstep = abs(col(A)[2]-col(A)[1]);
+	type "For a voltage step of $(Vstep)V, the minimum integration range of $(minRangeLengthPLF)V is converted to $(round(minRangeLengthPLF/Vstep)) rows.";
+	minRangeLengthPLF = round(minRangeLengthPLF/Vstep);
+	
+	type "The left limit of the power law fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
+	loop(i,wks.maxrows/2 + minRangeLengthPLF + offsetPLF,wks.maxrows) // Start at least "minRangeLengthPLF" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
+	{
+		nlbegin iy:=inputcol[wks.maxrows/2+offsetPLF:i] func:=Power1 nltree:=ParamTree weight:=0; // Fit from u(Vgmax) to u(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
+		ParamTree.xc = 0;     // Assign the peak center an X-value of 0.
+		ParamTree.f_xc = 1;   // Fix the peak center (f_xc = 0 is unfixed).		
+		nlfit;
+		// Uncomment the line below if the slope window is out of bounds. Then look at the console and see where ParamTree.rmse varies. Then correct the window value, and comment the lines again.
+		//type "For i=$(i), the RMSE is $(ParamTree.rmse)";
+		if (ParamTree.rmse > errorwindowPLF) // Window for extracting the power law fit window error.
+			{
+				type "The right limit of the power law fit is row No $(i) (Vg = $(col(A)[i]))";
+				
+				// The following two lines will only plot the power law fit over the range that the fitting was performed.
+				//range yy = outputcol[wks.maxrows/2+offset:i];
+				//yy = fit(col(A)[wks.maxrows/2+offset:i], wcol(inputcolNo)[wks.maxrows/2+offset:i]);
+				
+				outputcol = fit(col(A), wcol(inputcolNo)); // This line will plot the power law fit over the entire X axis.
+				
+				beta = ParamTree.P; // The exponent beta, for the power law dependence of the mobility.
+				beta = round(beta,1); // Round beta
+				nlend;
+				break;
+			};
+			else
+				continue;
+	}
+	return beta;
+}
+
+function PlotSingle (string graphname, string Template, string TemplateGeneric, dataset Layers, int ColumnsNo, dataset Columns, dataset LineTypes, string previousworkbook, int LegendUpdate, int ReColor, int ReScale)
+{
+	if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
+	{
+		// Check if the template exists, otherwise, use a generic one
+		if (exist(Template$)!=-1)// if the template exists
+			win -t p "%(Template$)"; // create a graph window using template
+		else
+			win -t p "%(TemplateGeneric$)"; // create a graph window using a generic template
+		
+		page.longname$ = graphname$; //this renames the active window (long name)
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	};
+	else
+		win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+		
+
+	loop(j, 1, ColumnsNo)
+	{
+		win -a %(uid2name(range2uid(["%(previousworkbook$)"]))$); // Note that I cannot use "win -a %(previousworkbook$);" inside the function.
+		range rI = [%H]1!wcol(Columns[j]); // range variable
+		
+		win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+		page.active = Layers[j]; // activate Layer i
+		switch (LineTypes(j)) // Case study
+		{
+			case 1: // If the string is "1", plot in the active layer as line plot
+				layer.include(rI);  // plot in the active layer as line plot
+				break;
+			
+			case 2: // If the string is "2", plot in the active layer as scatter plot
+				layer -i201 rI;  // plot in the active layer as scatter plot
+				break;
+			
+			default: // For all other cases, plot in the active layer as line plot
+				layer.include(rI);  // plot in the active layer as line plot
+				break;
+		}
+		
+	};
+
+	if (LegendUpdate == 1)
+		legend; // Update the legend
+
+	if (ReColor == 1)
+	{
+		layer -g; // Group the datasets in the layer to auto-color increment
+		layer -gu; // Ungroup the datasets in the layer
+	};
+		
+	if (ReScale == 1)
+		layer -a;  // rescale the layer
+}
+}

@@ -111,7 +111,7 @@
 		
 		// Power Law Fitting function parameters
 		int minRangeLengthPLF = 20; // [V] The minimum range of voltages over which the Power Law fit will be applied.
-		double slopewindowPLF = 20; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for performing the power law fit. (Saturation)
+		double errorwindowPLF = 20; // [%] Percentage of error variation allowed before power law fit is performed. This is the "window" for performing the power law fit. (Saturation)
 		
 		double jmaxlin; // Max channel current density (Linear)
 		double jmaxsat; // Max channel current density (Saturation)
@@ -408,7 +408,7 @@
 						col(AP)[L]$ = "Power law fit (Saturation mobility)"; // Long name
 						col(AP)[U]$ = cm^2/V*s; // Units
 						
-						beta = PowerLawFit(19, 42, minRangeLengthPLF, slopewindowPLF); // Power Law Fit function that returns the exponent beta. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+						beta = PowerLawFit(19, 42, minRangeLengthPLF, errorwindowPLF); // Power Law Fit function that returns the exponent beta. Inputs arguments are (Vg column, Mobility (Saturation) column, minRangelengthPLF variable, error window variable).
 						kappa = (beta + 2)/(2*(beta+1)); // The correction factor, kappa.
 						
 						col(AQ)[L]$ = "Beta"; // Long name
