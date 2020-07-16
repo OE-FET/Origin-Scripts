@@ -6,7 +6,7 @@
 // 3. Run the main script.
 
 // Author: Dimitrios Simatos
-// Version: 0.5
+// Version: 0.6
 // Current status: Works well.
 // Changes: Added conversion of minimum range length from Volts to number of rows.
 
