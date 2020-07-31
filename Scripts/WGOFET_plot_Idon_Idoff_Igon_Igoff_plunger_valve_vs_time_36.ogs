@@ -49,6 +49,7 @@
 		string dayslength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
 		string daysNo$ = dayslength.GetToken(1,"-")$; // get the string, which shows the number of days
 		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
+		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
 
 		
 		// Parameters
