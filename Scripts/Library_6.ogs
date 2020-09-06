@@ -139,6 +139,10 @@ function string MakeAdditiveLegend (string additivetype)
 				additivegraphlegend$ = "+ F4TCNQ"; // Comment field (graph legend)
 				break;
 			
+			case "Guanine": // If the string is "Guanine", write "Guanine" in the comment field
+				additivegraphlegend$ = "+ Guanine"; // Comment field (graph legend)
+				break;
+			
 			case "SAM-1OCT-v": // If the number is 1, use single form
 				additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
 				break;
@@ -179,11 +183,15 @@ function string MakeConditionLegend (string condition)
 			condgraphlegend$ = "Town water"; // Comment field (graph legend)
 			break;
 		
-		case "ss": // If the string is "town", write "town water" in the comment field
+		case "ss": // If the string is "ss", write "Saline solution" in the comment field
 			condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
 			break;
 		
-		case "pbuffer": // If the string is "phosphatebuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+		case "1-x-PBS": // If the string is "1-x-PBS", write "1xPBS" in the comment field
+			condgraphlegend$ = "1xPBS"; // Comment field (graph legend)
+			break;
+		
+		case "pbuffer": // If the string is "pbuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
 			string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
 			pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
 			string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
