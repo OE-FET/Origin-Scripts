@@ -162,8 +162,8 @@
 				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
 				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
 				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
-				daysgraphlegend$ = MakeTimeLegend(daysgraphlegend$)$; // Note ending '$'
-				minutesgraphlegend$ = MakeTimeLegend(minutesgraphlegend$)$; // Note ending '$'
+				daysgraphlegend$ = MakeTimeLegend(dayslength$)$; // Note ending '$'
+				minutesgraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
 				modegraphlegend$ = MakeMeasModeLegend(mode$)$; // Note ending '$'
 				intimegraphlegend$ = MakeInTimeLegend(intime$)$; // Note ending '$'
 				
