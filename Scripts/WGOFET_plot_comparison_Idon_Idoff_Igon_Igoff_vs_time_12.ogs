@@ -533,7 +533,7 @@
 	
 	loop(i,8,wks.maxrows) // Start from row 8 (after water has been injected)
 	{
-		fitLR iy:=[%H]1!(1,7)[i:i+minRangeLength] oy:=col(H); // Linear fit of col(G) with respect to col(A), over 200 points (~200 minutes)
+		fitLR iy:=[%H]1!(1,7)[i:i+minRangeLengthTss] oy:=col(H); // Linear fit of col(G) with respect to col(A), over 200 points (~200 minutes)
 		if (abs(fitLR.b) <  Tsswindow) // Window for extracting the steady state time
 		{									
 			Tss = col(A)[i]; // The steady state time
