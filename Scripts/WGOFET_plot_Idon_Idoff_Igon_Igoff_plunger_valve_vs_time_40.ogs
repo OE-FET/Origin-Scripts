@@ -1,0 +1,301 @@
+// This script is used on WG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
+// Author: Dimitrios Simatos
+// Version: 4.0
+// Current status: Works well.
+// Changes: Turned stability metric calculation into a function.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
+
+	Library_6.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	string TemplateGeneric$;
+	string graphname$;
+	string Template$;
+	dataset Columns;
+	dataset LineTypes;
+
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		int i = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
+		if (i!=0) continue; // If the filename contains "script", then just continue to the next workbook.
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+
+		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+
+		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+
+		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+
+		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+		
+		string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
+
+		string stepNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the step number in the cycling process
+		string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
+		string daysNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of days
+		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
+		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
+
+		
+		// Parameters
+		string Vdsat$="-1";
+		string Rate$="40-ulmin"; // e.g. "40-ulmin" or "none"
+		string CycleLength$="900";
+		
+		int CalculateMetrics = 1; // If it is 1, the metrics will be calculated.
+		double Tsswindow = 1E-9; // Window for extracting the steady state time
+		int minRangeLengthTss = 200; // [min] The minimum range of minutes over which the linear fit will be applied.
+		int Twaterinjected = 8; // [min]  The time in which water has already been injected.
+		
+		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
+		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
+		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
+		string timegraphlegend$; // This string will depend on "minutesNo" and it will display the number of minutes for the graph legend
+		string legend$;  // This string will depend on all legend string and it will display the graph legend
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		// Check for NaN columns
+		range rb = [%H]1!wcol(2);  // data range of (Is max) column (col(B))
+		
+		string NaNb$ = Lookup("NaN", rb)$;
+		
+		if (Nanb$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted (they yield NaN values)
+			else
+			{
+				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
+				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
+				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
+				timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
+					
+				legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(timegraphlegend$)"; // Legend
+			};
+		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				string previousworkbook$=%H; // Get the name of the previous window
+				
+		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+			
+			// NOTE: If this is written with case structures instead of if-then structures, the program will crash due to Origin restrictions
+			
+			int j = sheetname.Find("I-vs-time"); // It will yield a value different than 0 if the filename contains "I-vs-time".
+			if (j!=0) // If the filename contains "I-vs-time", then
+			{
+				// Plot Imax, Imin, Ion, Ioff vs time
+				col(A)[L]$ = "Time"; // Long name
+				col(A)[U]$ = "Minutes"; // Units
+				
+				col(B)[L]$ = "Is max"; // Units
+				col(B)[U]$ = "A"; // Units
+				
+				col(C)[L]$ = "Is min"; // Units
+				col(D)[L]$ = "Id max"; // Units
+				col(E)[L]$ = "Id min"; // Units
+				col(F)[L]$ = "Ig max"; // Units
+				col(G)[L]$ = "Ig min"; // Units
+				col(H)[L]$ = "Is on"; // Units
+				col(I)[L]$ = "Is off"; // Units
+				col(J)[L]$ = "Id on"; // Units
+				col(K)[L]$ = "Id off"; // Units
+				col(L)[L]$ = "Ig on"; // Units
+				col(M)[L]$ = "Ig off"; // Units
+				
+				col(C)[U]$ = col(B)[U]$;
+				col(D)[U]$ = col(B)[U]$;
+				col(E)[U]$ = col(B)[U]$;
+				col(F)[U]$ = col(B)[U]$;
+				col(G)[U]$ = col(B)[U]$;
+				col(H)[U]$ = col(B)[U]$;
+				col(I)[U]$ = col(B)[U]$;
+				col(J)[U]$ = col(B)[U]$;
+				col(K)[U]$ = col(B)[U]$;
+				col(L)[U]$ = col(B)[U]$;
+				col(M)[U]$ = col(B)[U]$;
+				
+				//---------------------------------------------------------
+				
+				// Metrics
+				
+				// Steady state time (Tss), and Degradation slope (dIdon/dt)
+				
+				if (CalculateMetrics == 1)
+				{
+					StabilityMetrics(10, 14, Twaterinjected, minRangeLengthTss, Tsswindow);
+					col(N)[L]$ = "Linear fit on Id on (Saturation)"; // Long name
+					col(N)[C]$ = "Linear fit"; // Long name
+					
+					col(O)[L]$ = "Steady state time of Id on"; // Long name
+					col(O)[U]$ = min; // Units
+					col(O)[1] = Tss;
+					
+					col(P)[L]$ = "Degradation slope of Id on"; // Long name
+					col(P)[U]$ = A/min; // Units
+					col(P)[1] = slopeIdon;
+					
+					col(Q)[L]$ = "Mean Id on at steady state"; // Long name
+					col(Q)[U]$ = A; // Units
+					col(Q)[1] = IdonSSMean;
+					
+					col(R)[L]$ = "Standard deviation of Id on at steady state"; // Long name
+					col(R)[U]$ = A; // Units
+					col(R)[1] = IdonSSSD;
+					
+					col(S)[L]$ = "Range of Id on at steady state"; // Long name
+					col(S)[U]$ = A; // Units
+					col(S)[1] = IdonSSRange;
+				};
+				
+				
+				//---------------------------------------------------------
+				// Comment to prevent any changes to the graph legend
+				col(B)[C]$ = %(legend$), %(col(B)[L]$); // Comment
+				col(C)[C]$ = %(legend$), %(col(C)[L]$); // Comment
+				col(D)[C]$ = %(legend$), %(col(D)[L]$); // Comment
+				col(E)[C]$ = %(legend$), %(col(E)[L]$); // Comment
+				col(F)[C]$ = %(legend$), %(col(F)[L]$); // Comment
+				col(G)[C]$ = %(legend$), %(col(G)[L]$); // Comment
+				col(H)[C]$ = %(legend$), %(col(H)[L]$); // Comment
+				col(I)[C]$ = %(legend$), %(col(I)[L]$); // Comment
+				col(J)[C]$ = %(legend$), %(col(J)[L]$); // Comment
+				col(K)[C]$ = %(legend$), %(col(K)[L]$); // Comment
+				col(L)[C]$ = %(legend$), %(col(L)[L]$); // Comment
+				col(M)[C]$ = %(legend$), %(col(M)[L]$); // Comment
+				//----------------------------------------------------------
+				
+				window -ch 1; // hide the workbook that was processed
+				
+				// Plot columns
+				range Idon = [%(previousworkbook$)]1!wcol(10);  // data range of column (Id on)
+				range Idoff = [%(previousworkbook$)]1!wcol(11);  // data range of column (Id off)
+				range Igon = [%(previousworkbook$)]1!wcol(12);  // data range of column (Ig on)
+				range Igoff = [%(previousworkbook$)]1!wcol(13);  // data range of column (Ig off)
+				
+				// Idon, Idoff, Igon, Igoff graph
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				layer.include(Idon);  // plot in the active layer
+				layer.include(Idoff);  // plot in the active layer
+				layer.include(Igon);  // plot in the active layer
+				layer.include(Igoff);  // plot in the active layer
+					
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+				
+				
+				if (exist(Text3,16)==16) Text3.text$ = T\-(ss) = $(Tss) min; // If the label exists, update it
+				if (exist(Text4,16)==16) Text4.text$ = d(Id\-(on,SS))/dt = $(slopeIdon, P*2) A/min; // If the label exists, update it
+				if (exist(Text5,16)==16) Text5.text$ = Id\-(on,SS,mean) = $(IdonSSMean, P*2) A; // If the label exists, update it
+				if (exist(Text6,16)==16) Text6.text$ = Id\-(on,SS,SD) = $(IdonSSSD, P*2) A; // If the label exists, update it
+				if (exist(Text7,16)==16) Text7.text$ = Id\-(on,SS,Ran) = $(IdonSSRange, P*2) A; // If the label exists, update it
+				plot -c; // refresh the graph to update the labels							
+				
+				
+				// Idoff graph
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_Idoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				layer.include(Idoff);  // plot in the active layer
+				
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+				
+				
+				// Igon, Igoff graph
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				layer.include(Igon);  // plot in the active layer
+				layer.include(Igoff);  // plot in the active layer
+					
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Igon-Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+				
+				
+				// Igoff graph
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				layer.include(Igoff);  // plot in the active layer
+				
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
+				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+				break;
+			};
+				
+				
+			int k = sheetname.Find("plunger"); // It will yield a value different than 0 if the filename contains "plunger".
+			if (k!=0) // If the filename contains "plunger", then
+			{
+				// Plot Plunger position vs time								
+				col(A)[L]$ = "Time"; // Long name
+				col(A)[U]$ = "Minutes"; // Units
+				
+				col(B)[L]$ = "Absolute plunger position"; // Units
+				col(B)[U]$ = "Steps"; // Units
+				
+				col(C)[L]$ = "Volume of solution in syringe"; // Units
+				col(C)[U]$ = "ul"; // Units
+				col(C)[O]$ = "col(B)/3"; // Function
+				
+				// Plot columns
+				range PlungerPosition = [%(previousworkbook$)]1!wcol(2);  // data range of column
+				range SyringeVolume = [%(previousworkbook$)]1!wcol(3);  // data range of column
+				
+				
+				// Volume vs time graph
+				win -t p "%(templatepath$)Volume-Time.otpu";  // create a graph window using template
+				layer.include(SyringeVolume);  // plot in the active layer
+				
+				//layer -a;  // rescale the layer
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Volume-Time"; //this renames the active window (long name)
+				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+				
+				
+				// Volume vs time (0-30 minutes) graph
+				win -t p "%(templatepath$)Volume-Time_static_mode_0-30_min.otpu";  // create a graph window using template
+				layer.include(SyringeVolume);  // plot in the active layer
+				
+				//layer -a;  // rescale the layer
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Volume-Time_0-30_min"; //this renames the active window (long name)
+				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+			};
+				
+				
+			int l = sheetname.Find("valve"); // It will yield a value different than 0 if the filename contains "valve".
+			if (l!=0) // If the filename contains "valve", then
+			{
+				col(A)[L]$ = "Time"; // Long name
+				col(A)[U]$ = "Minutes"; // Units
+				
+				col(B)[L]$ = "Valve port"; // Units
+				col(B)[U]$ = "No"; // Units
+				
+				// Plot columns
+				range ValvePort = [%(previousworkbook$)]1!wcol(2);  // data range of column
+				
+				// Valve port vs time graph
+				win -t p "%(templatepath$)Valve-port-Time.otpu";  // create a graph window using template
+				layer.include(ValvePort);  // plot in the active layer
+				
+				layer -a;  // rescale the layer
+				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Valve-port-Time"; //this renames the active window (long name)
+				page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+			};
+	}
+}

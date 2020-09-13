@@ -555,7 +555,7 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 	double firsterror; // The error value of the power law fit (done between Id(Vgmax) and Id(Vg(i=0)).
 	int offsetPLF = 0; // Offset value in case the mobility function plateaus. The left limit of the voltage range will start from mu(Vgmax+offset) (Saturation)
 	range inputcol = [%H]1!wcol(inputcolNo); // Define the range variable (Vg column, usat column) for the input argument of the rolling regression function.
-	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable (power law fit output column) for the input argument of the rolling regression function.
+	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable (power law fit output column) for the output argument of the rolling regression function.
 
 	type "-------------------------------------------";
 	type "Power Law Fit on mobility";
@@ -648,5 +648,37 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 		
 	if (ReScale == 1)
 		layer -a;  // rescale the layer
+}
+
+function StabilityMetrics (int inputcolNo, int outputcolNo, int Twaterinjected, int minRangeLengthTss, double Tsswindow)
+{
+	range inputcol = [%H]1!wcol(inputcolNo); // Define the range variable for the input argument of the stability metrics function.
+	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable for the output argument of the stability metrics function.
+
+	// Calculate the time step and convert minRangeLength from minutes to No of rows.
+	double Tstep = abs(col(A)[2]-col(A)[1]); // Rows per minute
+	type "For a time step of $(Tstep)V, the minimum integration range of $(minRangeLengthTss) minutes is converted to $(round(minRangeLengthTss/Tstep)) rows.";
+	minRangeLengthTss = round(minRangeLengthTss/Tstep);
+	Twaterinjected = round(Twaterinjected/Tstep);
+	
+	loop(i,Twaterinjected,wks.maxrows) // Start from row Twaterinjected (after water has been injected)
+	{
+		//fitLR iy:=inputcol[i:i+minRangeLengthTss] oy:=outputcol; // Linear fit of Idon column with respect to the time axis, over a span of minRangeLength minutes
+		fitLR iy:=inputcol[i:wks.maxrows] oy:=outputcol; // Linear fit of Idon column with respect to the time axis, until the end of the time axis
+		if (abs(fitLR.b) <  Tsswindow) // Window for extracting the steady state time
+		{									
+			Tss = col(A)[i]; // The steady state time
+			Tssindex = i;
+			slopeIdon = abs(fitLR.b); // The degradation slope.
+			
+			// Mean Id on, Standard Deviation, and Range at the steady state
+			range Idonrange = inputcol[Tssindex:wks.maxrows];
+			IdonSSMean = mean(Idonrange);
+			IdonSSSD = StdDev(Idonrange);
+			IdonSSRange = max(Idonrange) - min(Idonrange);
+			break;
+		};
+		else continue;
+	};
 }
 }

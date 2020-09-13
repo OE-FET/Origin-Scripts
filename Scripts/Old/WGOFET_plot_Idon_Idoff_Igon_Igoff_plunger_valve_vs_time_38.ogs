@@ -63,7 +63,7 @@
 		
 		// Parameters
 		string Vdsat$="-1";
-		string Rate$="40-ulmin";
+		string Rate$="40-ulmin"; // e.g. "40-ulmin" or "none"
 		string CycleLength$="900";
 		
 		double slopeIdon; // The degradation slope of Id on
@@ -147,7 +147,7 @@
 				
 				loop(i,8,wks.maxrows) // Start from row 8 (after water has been injected)
 				{
-					fitLR iy:=[%H]1!(1,10)[i:i+minRangeLength] oy:=col(N); // Linear fit of col(J) with respect to col(A), over 200 points (~200 minutes)
+					fitLR iy:=[%H]1!(1,10)[i:i+minRangeLengthTss] oy:=col(N); // Linear fit of col(J) with respect to col(A), over 200 points (~200 minutes)
 					if (abs(fitLR.b) <  Tsswindow) // Window for extracting the steady state time
 					{									
 						Tss = col(A)[i]; // The steady state time
