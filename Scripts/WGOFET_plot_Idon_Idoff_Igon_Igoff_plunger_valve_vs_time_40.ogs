@@ -63,13 +63,13 @@
 		
 		// Parameters
 		string Vdsat$="-1";
-		string Rate$="40-ulmin"; // e.g. "40-ulmin" or "none"
-		string CycleLength$="900";
+		string Rate$="40-ulmin"; // The flow rate (e.g. "40-ulmin" or "none")
+		string Duration$="900"; // [min] The total duration of the measurement.
 		
 		int CalculateMetrics = 1; // If it is 1, the metrics will be calculated.
 		double Tsswindow = 1E-9; // Window for extracting the steady state time
 		int minRangeLengthTss = 200; // [min] The minimum range of minutes over which the linear fit will be applied.
-		int Twaterinjected = 8; // [min]  The time in which water has already been injected.
+		int Twaterinjected = 8; // [min] The time in which water has already been injected.
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
 		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
@@ -194,7 +194,7 @@
 				range Igoff = [%(previousworkbook$)]1!wcol(13);  // data range of column (Ig off)
 				
 				// Idon, Idoff, Igon, Igoff graph
-				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_step_%(stepNo$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 				layer.include(Idon);  // plot in the active layer
 				layer.include(Idoff);  // plot in the active layer
 				layer.include(Igon);  // plot in the active layer
@@ -213,7 +213,7 @@
 				
 				
 				// Idoff graph
-				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_Idoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_step_%(stepNo$)_Idoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 				layer.include(Idoff);  // plot in the active layer
 				
 				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
@@ -221,7 +221,7 @@
 				
 				
 				// Igon, Igoff graph
-				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_step_%(stepNo$)_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 				layer.include(Igon);  // plot in the active layer
 				layer.include(Igoff);  // plot in the active layer
 					
@@ -230,7 +230,7 @@
 				
 				
 				// Igoff graph
-				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min_step_%(stepNo$)_Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+				win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_step_%(stepNo$)_Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 				layer.include(Igoff);  // plot in the active layer
 				
 				page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)

@@ -655,13 +655,20 @@ function StabilityMetrics (int inputcolNo, int outputcolNo, int Twaterinjected, 
 	range inputcol = [%H]1!wcol(inputcolNo); // Define the range variable for the input argument of the stability metrics function.
 	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable for the output argument of the stability metrics function.
 
+	double slopeIdon; // The degradation slope of Id on
+	double Tss; // The steady state time
+	int Tssindex; // The row index of the steady state time
+	double IdonSSMean; // Mean Id on at steady state
+	double IdonSSSD; // Standard deviation of Id on at steady state
+	double IdonSSRange; // Range of Id on at steady state
+
 	// Calculate the time step and convert minRangeLength from minutes to No of rows.
 	double Tstep = abs(col(A)[2]-col(A)[1]); // Rows per minute
 	type "For a time step of $(Tstep)V, the minimum integration range of $(minRangeLengthTss) minutes is converted to $(round(minRangeLengthTss/Tstep)) rows.";
 	minRangeLengthTss = round(minRangeLengthTss/Tstep);
 	Twaterinjected = round(Twaterinjected/Tstep);
 	
-	loop(i,Twaterinjected,wks.maxrows) // Start from row Twaterinjected (after water has been injected)
+	loop(i,Twaterinjected,wks.maxrows) // Start from row Twaterinjected (after water has been injected). This is the duration of the first pumping cycle (from the SPM pump script).
 	{
 		//fitLR iy:=inputcol[i:i+minRangeLengthTss] oy:=outputcol; // Linear fit of Idon column with respect to the time axis, over a span of minRangeLength minutes
 		fitLR iy:=inputcol[i:wks.maxrows] oy:=outputcol; // Linear fit of Idon column with respect to the time axis, until the end of the time axis
