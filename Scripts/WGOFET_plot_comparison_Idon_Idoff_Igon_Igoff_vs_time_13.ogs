@@ -18,6 +18,7 @@
 	Library_6.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	// Set variables for all loops
 	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
 	string TemplateGeneric$;
 	string graphname$;
@@ -54,11 +55,16 @@
 	int minRangeLengthTss = 200; // [min] The minimum range of minutes over which the linear fit will be applied.
 	int Twaterinjected = 8; // [min] The time in which water has already been injected.
 	
+	double slopeIdon; // The degradation slope of Id on
+	double Tss; // The steady state time
+	int Tssindex; // The row index of the steady state time
+	double IdonSSMean; // Mean Id on at steady state
+	double IdonSSSD; // Standard deviation of Id on at steady state
+	double IdonSSRange; // Range of Id on at steady state
+	
 	// Define time points to plot
 	string t1$ = "300"; // NOTE: The time point needs to be edited also in line 378. The switch command does not work with string variables.
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
 
 	doc -e LB { // loop over all workbooks in project
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -525,7 +531,9 @@
 	col(G)[L]$ = "Moving slope of Id on (Saturation)"; // Long name
 	col(G) = abs(movslope(col(A),col(C),20)); // moving slope of col(C) with 20 points average. I do not use the point derivative because it is very sensitive to noise.
 	
-	StabilityMetrics(7, 8, Twaterinjected, minRangeLengthTss, Tsswindow);
+	Tssindex = StabilityMetrics(7, 8, Twaterinjected, minRangeLengthTss, Tsswindow);
+	Tss = col(A)[Tssindex]; // The steady state time
+	slopeIdon = abs(fitLR.b); // The degradation slope.
 	col(H)[L]$ = "Linear fit on Id on (Saturation)"; // Long name
 	col(H)[C]$ = "Linear fit"; // Long name
 	

@@ -1,0 +1,134 @@
+// This script is used on WG-OFETs and recalculates the metrics of the graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
+// Author: Dimitrios Simatos
+// Version: 0.2
+// Current status: Works well.
+// Changes: Converted Tss fitting range into a variable.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
+
+	Library_6.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	// Set variables for all loops
+	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	string TemplateGeneric$;
+	string graphname$;
+	
+	string IdonTimeGraph$; // The long name of the Idon-Time graph
+	string IdoffTimeGraph$; // The long name of the Idoff-Time graph
+	string IgonTimeGraph$; // The long name of the Igon-Time graph
+	string IgoffTimeGraph$; // The long name of the Igoff-Time graph
+	string TransferIgGraph$; // The long name of the Id-Ig-Time graph
+	
+	doc -ef LB { // loop over all workbooks in folder
+	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+	page.active = 1; // Switch to the first worksheet.
+	
+	string sheetname$=page.longname$; // Get the name of worksheet
+	
+	int j = sheetname.Find("I-vs-time"); // It will yield a value different than 0 if the filename contains "I-vs-time".
+	if (j!=0) // If the filename contains "I-vs-time", then
+	{
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+
+		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+
+		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+
+		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+
+		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+		
+		string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
+
+		string stepNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the step number in the cycling process
+		string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
+		string daysNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of days
+		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
+		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
+		break;
+	};
+};
+	
+	// Parameters
+	string Vdsat$="-1";
+	string Rate$="40-ulmin"; // The flow rate (e.g. "40-ulmin" or "none")
+	string Duration$="900"; // [min] The total duration of the measurement.
+	
+	int CalculateMetrics = 1; // If it is 1, the metrics will be calculated.
+	double Tsswindow = 1E-9; // Window for extracting the steady state time
+	int minRangeLengthTss = 200; // [min] The minimum range of minutes over which the linear fit will be applied.
+	int Twaterinjected = 8; // [min] The time in which water has already been injected.
+	
+	double slopeIdon; // The degradation slope of Id on
+	double Tss; // The steady state time
+	int Tssindex; // The row index of the steady state time
+	double IdonSSMean; // Mean Id on at steady state
+	double IdonSSSD; // Standard deviation of Id on at steady state
+	double IdonSSRange; // Range of Id on at steady state
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	// Metrics
+	
+	// Steady state time (Tss), and Degradation slope (dIdon/dt)
+	
+	Tssindex = StabilityMetrics(10, 14, Twaterinjected, minRangeLengthTss, Tsswindow);
+	Tss = col(A)[Tssindex]; // The steady state time
+	slopeIdon = abs(fitLR.b); // The degradation slope.
+	col(N)[L]$ = "Linear fit on Id on (Saturation)"; // Long name
+	col(N)[C]$ = "Linear fit"; // Long name
+	
+	col(O)[L]$ = "Steady state time of Id on"; // Long name
+	col(O)[U]$ = min; // Units
+	col(O)[1] = Tss;
+	
+	col(P)[L]$ = "Degradation slope of Id on"; // Long name
+	col(P)[U]$ = A/min; // Units
+	col(P)[1] = slopeIdon;
+	
+	// Mean Id on, Standard Deviation, and Range at the steady state
+	IdonSSMean = mean(col(J)[Tssindex:wks.maxrows]);
+	IdonSSSD = StdDev(col(J)[Tssindex:wks.maxrows]);
+	IdonSSRange = max(col(J)[Tssindex:wks.maxrows]) - min(col(J)[Tssindex:wks.maxrows]);
+	
+	col(Q)[L]$ = "Mean Id on at steady state"; // Long name
+	col(Q)[U]$ = A; // Units
+	col(Q)[1] = IdonSSMean;
+	
+	col(R)[L]$ = "Standard deviation of Id on at steady state"; // Long name
+	col(R)[U]$ = A; // Units
+	col(R)[1] = IdonSSSD;
+	
+	col(S)[L]$ = "Range of Id on at steady state"; // Long name
+	col(S)[U]$ = A; // Units
+	col(S)[1] = IdonSSRange;
+	
+	graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V";
+	win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
+	
+	if (exist(Text3,16)==16) Text3.text$ = T\-(ss) = $(Tss) min; // If the label exists, update it
+	if (exist(Text4,16)==16) Text4.text$ = d(Id\-(on,SS))/dt = $(slopeIdon, P*2) A/min; // If the label exists, update it
+	if (exist(Text5,16)==16) Text5.text$ = Id\-(on,SS,mean) = $(IdonSSMean, P*2) A; // If the label exists, update it
+	if (exist(Text6,16)==16) Text6.text$ = Id\-(on,SS,SD) = $(IdonSSSD, P*2) A; // If the label exists, update it
+	if (exist(Text7,16)==16) Text7.text$ = Id\-(on,SS,Ran) = $(IdonSSRange, P*2) A; // If the label exists, update it
+	plot -c; // refresh the graph to update the labels
+}
