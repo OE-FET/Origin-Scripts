@@ -23,49 +23,36 @@
 	string TemplateGeneric$;
 	string graphname$;
 	
-	string IdonTimeGraph$; // The long name of the Idon-Time graph
-	string IdoffTimeGraph$; // The long name of the Idoff-Time graph
-	string IgonTimeGraph$; // The long name of the Igon-Time graph
-	string IgoffTimeGraph$; // The long name of the Igoff-Time graph
-	string TransferIgGraph$; // The long name of the Id-Ig-Time graph
-	
-	doc -ef LB { // loop over all workbooks in folder
-	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-	page.active = 1; // Switch to the first worksheet.
+
 	
 	string sheetname$=page.longname$; // Get the name of worksheet
 	
-	int j = sheetname.Find("I-vs-time"); // It will yield a value different than 0 if the filename contains "I-vs-time".
-	if (j!=0) // If the filename contains "I-vs-time", then
-	{
-		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
-		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
-		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+	string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+	string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+	string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
 
-		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
-		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
-		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+	string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+	string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+	string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
 
-		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+	string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
 
-		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+	string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
 
-		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
-		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
-		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
-		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
-		
-		string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
+	string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+	string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+	//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+	//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+	
+	string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
 
-		string stepNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the step number in the cycling process
-		string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
-		string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
-		string daysNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of days
-		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
-		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
-		break;
-	};
-};
+	string stepNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the step number in the cycling process
+	string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
+	string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
+	string daysNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of days
+	string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
+	meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
+
 	
 	// Parameters
 	string Vdsat$="-1";
@@ -122,6 +109,8 @@
 	col(S)[U]$ = A; // Units
 	col(S)[1] = IdonSSRange;
 	
+	window -ch 1; // hide the transfer workbook that was processed
+
 	graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V";
 	win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
 	

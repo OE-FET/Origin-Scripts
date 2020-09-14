@@ -664,8 +664,8 @@ function int StabilityMetrics (int inputcolNo, int outputcolNo, int Twaterinject
 	
 	loop(i,Twaterinjected,wks.maxrows) // Start from row Twaterinjected (after water has been injected). This is the duration of the first pumping cycle (from the SPM pump script).
 	{
-		//fitLR iy:=inputcol[i:i+minRangeLengthTss] oy:=outputcol; // Linear fit of Idon column with respect to the time axis, over a span of minRangeLength minutes
-		fitLR iy:=inputcol[i:wks.maxrows] oy:=outputcol; // Linear fit of Idon column with respect to the time axis, until the end of the time axis
+		fitLR iy:=inputcol[i:i+minRangeLengthTss] oy:=outputcol; // Linear fit of Idon column with respect to the time axis, over a span of minRangeLength minutes
+		//fitLR iy:=inputcol[i:wks.maxrows] oy:=outputcol; // Linear fit of Idon column with respect to the time axis, until the end of the time axis
 		if (abs(fitLR.b) <  Tsswindow) // Window for extracting the steady state time
 		{									
 			Tssindex = i;
