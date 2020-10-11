@@ -578,7 +578,7 @@
 	win -a %(uid2name(range2uid(["%(IdonTimeAIOGraph$)"]))$); // activate the graph window
 	page.active = 1; // activate Layer 1
 	
-	layer -i201 rIdonsatTime;  // plot in the active layer as scatter plot
+	layer.include(rIdonsatTime);  // plot in the active layer ;
 	
 	if (exist(Text3,16)==16) Text3.text$ = T\-(ss) = $(Tss) min; // If the label exists, update it
 	if (exist(Text4,16)==16) Text4.text$ = d(Id\-(on,SS))/dt = $(slopeIdon, P*2) A/min; // If the label exists, update it
@@ -600,7 +600,7 @@
 	win -a %(uid2name(range2uid(["%(IdoffTimeAIOGraph$)"]))$); // activate the graph window
 	page.active = 1; // activate Layer 1
 	
-	layer -i201 rIdoffsatTime;  // plot in the active layer as scatter plot
+	layer.include(rIdoffsatTime);  // plot in the active layer ;
 		
 	//layer -a;  // rescale the layer
 	layer -g; // Group the datasets in the layer to auto-color increment
@@ -615,7 +615,7 @@
 	win -a %(uid2name(range2uid(["%(IgonTimeAIOGraph$)"]))$); // activate the graph window
 	page.active = 1; // activate Layer 1
 	
-	layer -i201 rIgonsatTime;  // plot in the active layer as scatter plot
+	layer.include(rIgonsatTime);  // plot in the active layer ;
 		
 	//layer -a;  // rescale the layer
 	layer -g; // Group the datasets in the layer to auto-color increment
@@ -630,7 +630,7 @@
 	win -a %(uid2name(range2uid(["%(IgoffTimeAIOGraph$)"]))$); // activate the graph window
 	page.active = 1; // activate Layer 1
 	
-	layer -i201 rIgoffsatTime;  // plot in the active layer as scatter plot
+	layer.include(rIgoffsatTime);  // plot in the active layer ;
 		
 	//layer -a;  // rescale the layer
 	layer -g; // Group the datasets in the layer to auto-color increment
