@@ -152,11 +152,11 @@ function string MakeAdditiveLegend (string additivetype)
 				break;
 			
 			case "SAM-TDF1OCT-v": // If the number is 1, use single form
-				additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (vapor)"; // Comment field (graph legend)
+				additivegraphlegend$ = "+ TDF-1-Octanethiol (vapor)"; // Comment field (graph legend)
 				break;
 			
 			case "SAM-TDF1OCT-i": // If the number is 1, use single form
-				additivegraphlegend$ = "+ 3,3,4,4,5,5,6,6,7,7,8,8,8-Tridecafluoro-1-octanethiol (immersion)"; // Comment field (graph legend)
+				additivegraphlegend$ = "+ TDF-1-Octanethiol (immersion)"; // Comment field (graph legend)
 				break;
 			
 			default: // For all other strings, write "Pristine" in the comment field
