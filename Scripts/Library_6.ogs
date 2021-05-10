@@ -262,17 +262,25 @@ function string MakeConditionLegend (string condition)
 		case "syringe-plastic-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Plastic syringe reference in N2"; // Comment field (graph legend)
 			break;
-		
+			
 		case "pipette-glass-vial-air": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Vial reference in air (glass pipette)"; // Comment field (graph legend)
 			break;
-		
-		case "oil-vacuum-pump": // If the string is "N2", write "N2" in the comment field
-			condgraphlegend$ = "Vacuum pump oil"; // Comment field (graph legend)
+			
+		case "oil-vacuum-pump-GBR60" "oil-vacuum-pump-GBR60-clean": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "GBR60 Vacuum pump oil"; // Comment field (graph legend)
 			break;
 			
-		case "oil-vacuum-pump-waste": // If the string is "N2", write "N2" in the comment field
-			condgraphlegend$ = "Vacuum pump oil waste"; // Comment field (graph legend)
+		case "oil-vacuum-pump-GBR60-waste": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "GBR60 Vacuum pump oil waste"; // Comment field (graph legend)
+			break;
+			
+		case "oil-vacuum-pump-GBR101" "oil-vacuum-pump-GBR101-clean": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "GBR101 Vacuum pump oil"; // Comment field (graph legend)
+			break;
+			
+		case "oil-vacuum-pump-GBR101-waste": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "GBR101 Vacuum pump oil waste"; // Comment field (graph legend)
 			break;
 			
 		case "oil-overpressure-valve": // If the string is "N2", write "N2" in the comment field
