@@ -92,7 +92,7 @@
 				// Case structures from filenames (used for legends).
 				
 				string conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
-				string additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
+				string additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 					
 				GraphNameSingle$="%(batch$)_%(sampleNo$)_%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(solventD$)_%(condition$)_%(timelength$)_%(measNo$)_%(frequency$)";

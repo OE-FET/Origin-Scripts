@@ -666,7 +666,7 @@ function int StabilityMetrics (int inputcolNo, int outputcolNo, int Twaterinject
 
 	// Calculate the time step and convert minRangeLength from minutes to No of rows.
 	double Tstep = abs(col(A)[2]-col(A)[1]); // Rows per minute
-	type "For a time step of $(Tstep)V, the minimum integration range of $(minRangeLengthTss) minutes is converted to $(round(minRangeLengthTss/Tstep)) rows.";
+	type "For a time step of $(Tstep) min, the minimum integration range of $(minRangeLengthTss) minutes is converted to $(round(minRangeLengthTss/Tstep)) rows.";
 	minRangeLengthTss = round(minRangeLengthTss/Tstep);
 	Twaterinjected = round(Twaterinjected/Tstep);
 	

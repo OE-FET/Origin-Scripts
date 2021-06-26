@@ -155,7 +155,7 @@
 				// Case structures from filenames (used for legends).
 				
 				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
-				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
+				additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
 				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
 				timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
 				modegraphlegend$ = MakeMeasModeLegend(mode$)$; // Note ending '$'

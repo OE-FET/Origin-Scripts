@@ -158,7 +158,7 @@
 			else
 			{
 				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
-				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
+				additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
 				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
 				daysgraphlegend$ = MakeTimeLegend(dayslength$)$; // Note ending '$'
 				minutesgraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
