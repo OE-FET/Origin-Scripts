@@ -1,4 +1,4 @@
-// This script is loops all the columns of all the workbooks and replaces a substring in the comment field.
+// This script loops all the columns of all the workbooks and replaces a substring in the comment field.
 // Author: Dimitrios Simatos
 // Version: 0.1
 // Current status: Works well

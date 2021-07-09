@@ -1,0 +1,16 @@
+// This script loops all folders and replaces a substring in the folder name.
+// Author: Dimitrios Simatos
+// Version: 0.1
+// Current status: Works well
+// Changes: First version.
+
+[Main]
+
+	doc -e W { // loop over all layers in project
+		string oldfoldername$=%@F; //get the current folder name
+		string newfoldername$ = oldfoldername$;
+		newfoldername.Replace("static mode - 1.5 hour intervals", "dynamic mode - 1.5 hour intervals"); // replace "static mode" with "dynamic mode"
+		pe_cd /; // go to the top level
+		pe_rename old:=oldfoldername$ newname:=newfoldername$;
+		}
+}
