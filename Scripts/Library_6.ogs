@@ -284,7 +284,7 @@ function string MakeConditionLegend (string condition)
 			break;
 			
 		case "oil-overpressure-valve": // If the string is "N2", write "N2" in the comment field
-			condgraphlegend$ = "Overpressure pump oil"; // Comment field (graph legend)
+			condgraphlegend$ = "Overpressure valve oil"; // Comment field (graph legend)
 			break;
 			
 		default: // For all other strings, write the extracted field in the comment field
