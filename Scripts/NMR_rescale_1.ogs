@@ -1,0 +1,116 @@
+// This script is used on processed NMR spectra, and rescales them so that the solvent peaks of all the bottle reference spectra have the same intensity.
+// NOTE: First plot all the bottle reference spectra in TopSpin, and rescale them, to see the rescaling factors that need to be used for each rescaling. Then run the script for each batch, after changing the rescaling factor.
+
+// Author: Dimitrios Simatos
+// Version: 0.1
+// Current status: Works well.
+// Changes: 
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+	
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
+
+	Library_6.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	string TemplateGeneric$;
+	string graphname$;
+	string Template$;
+	dataset Columns;
+	dataset LineTypes;
+	
+	string GraphNameSingle$; // The long name of the Graph for the plot of a single NMR spectrum
+	string TemplateNameSingle$; // The long name of the Graph Template for the plot of a single NMR spectrum
+
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$=page.longname$; // Get the name of worksheet
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string sampleNo$ = sheetname.GetToken(2,"_")$; // Get the string that shows the sample number
+		string method$ = sheetname.GetToken(3,"_")$; // Get the string that shows the experimental method (e.g. NMR, SSNMR)
+		string architecture$ = sheetname.GetToken(4,"_")$; // Get the string that shows the "architecture" (e.g. Film, solution, solvent)
+		// Film stands for re-dissolved film with a deuterated solvent.
+		// Solution stands for a material dissolved in a deuterated solvent.
+		// Solvent stands for a deuterated solvent exposed to different conditions (e.g. to trace contaminants).
+		
+		
+		switch (%(architecture$)) // Case study
+		{
+			case "Solvent": // If the string is "Solvent"
+				string solventD$ = sheetname.GetToken(5,"_")$; // Get the string that shows the deuterated solvent
+				string condition$ = sheetname.GetToken(6,"_")$; // Get the string that shows the conditions (air/type of liquid)
+				string timelength$ = sheetname.GetToken(7,"_")$; // get the string, which shows the time
+				string measNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the measurement number
+				string frequency$ = sheetname.GetToken(9,"_")$; // Get the string that shows the frequency
+				string frequencyNo$ = frequency.GetToken(1,"-")$; // Get the string that shows the frequency value
+				string frequencyUnits$ = frequency.GetToken(2,"-")$; // Get the string that shows the frequency units
+				string scale$ = sheetname.GetToken(10,"_")$; // get the scale, which I saved from the TopSpin processing
+				
+				GraphNameSingle$="%(batch$)_%(sampleNo$)_%(method$)_%(architecture$)_%(solventD$)_%(condition$)_%(timelength$)_%(measNo$)_%(frequency$)";
+				TemplateNameSingle$="%(templatepath$)%(method$)_%(solventD$)_%(frequency$)";
+				
+				break;
+			
+			case "Film": // If the string is "Film"
+				string material$ = sheetname.GetToken(5,"_")$; // Get the string that shows the material
+				string concentration$ = sheetname.GetToken(6,"_")$; // Get the string that shows the concentration
+				string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+				string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+				
+				string solvent$ = sheetname.GetToken(7,"_")$; // Get the string that shows the solvent content (of the material, NOT the deuterated solvent used to dissolve the film)
+				
+				string annealing$ = sheetname.GetToken(8,"_")$; // Get the string that shows the additive
+				
+				string additive$ = sheetname.GetToken(9,"_")$; // Get the string that shows the additive
+				string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+				//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+				//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+				
+				string solventD$ = sheetname.GetToken(10,"_")$; // Get the string that shows the deuterated solvent
+				
+				string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
+				string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the time
+				string measNo$ = sheetname.GetToken(13,"_")$; // Get the string that shows the measurement number
+				string frequency$ = sheetname.GetToken(14,"_")$; // Get the string that shows the frequency
+				string frequencyNo$ = frequency.GetToken(1,"-")$; // Get the string that shows the frequency value
+				string frequencyUnits$ = frequency.GetToken(2,"-")$; // Get the string that shows the frequency units
+				string scale$ = sheetname.GetToken(15,"_")$; // get the scale, which I saved from the TopSpin processing
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Case structures from filenames (used for legends).
+				
+				string conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
+				string additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+					
+				GraphNameSingle$="%(batch$)_%(sampleNo$)_%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(solventD$)_%(condition$)_%(timelength$)_%(measNo$)_%(frequency$)";
+				TemplateNameSingle$="%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(solventD$)_%(frequency$)";
+				
+				break;
+				
+				default: // For all other cases
+					type "Wrong file name structure.";
+					break;
+					
+		}
+			
+		scale$=scale.GetToken(1,".")$; // Remove ".txt" from the scale
+		scale.Replace(",", "."); // replace "," with "."
+		
+		string rescale$="0.71"; // The rescaling factor (get it from TopSpin)
+		
+		col(D)[O]$ = "Col(B)*%(scale$)*%(rescale$)"; // Units
+	};
+}
