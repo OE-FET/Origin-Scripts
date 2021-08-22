@@ -1,0 +1,28 @@
+// This script loops all workbooks and replaces a substring in the long name.
+// Author: Dimitrios Simatos
+// Version: 0.1
+// Current status: Works well
+// Changes: First version.
+
+[Main]
+
+	doc -e L { // loop over all layers in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		string sheetname$=page.longname$; //get the long name of worksheet
+		// Files
+		sheetname.Replace("Imax_Imin_Ion_Ioff_vs_time.txt", "I-vs-time.txt"); // replace
+		sheetname.Replace("plunger_vs_time.txt", "plunger.txt"); // replace
+		sheetname.Replace("serial_port_output.txt", "serial-port.txt"); // replace
+		sheetname.Replace("sample_vs_time.txt", "sample.txt"); // replace
+		sheetname.Replace("valve_port_vs_time.txt", "valve-port.txt"); // replace
+		// Graphs
+		sheetname.Replace("Idon_Idoff_Igon_Igoff_vs_time", "Idon-Idoff-Igon-Igoff-Time"); // replace
+		sheetname.Replace("Idoff_vs_time", "Idoff-Time"); // replace
+		sheetname.Replace("Igon_Igoff_vs_time", "Igon-Igoff-Time"); // replace
+		sheetname.Replace("Igoff_vs_time", "Igoff-Time"); // replace
+		sheetname.Replace("Valve_port_vs_time", "Valve-port-Time"); // replace
+		sheetname.Replace("Plunger_vs_time", "Plunger-Time"); // replace
+		sheetname.Replace("Volume_vs_time", "Volume-Time"); // replace
+		page.longname$ = sheetname$;
+		}
+}
