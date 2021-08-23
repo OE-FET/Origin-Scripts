@@ -15,8 +15,23 @@
 		sheetname.Replace("serial_port_output.txt", "serial-port.txt"); // replace
 		sheetname.Replace("sample_vs_time.txt", "sample.txt"); // replace
 		sheetname.Replace("valve_port_vs_time.txt", "valve-port.txt"); // replace
+		sheetname.Replace("ultrapure_H2O", "up-H2O"); // replace
+		sheetname.Replace("F4TCNQ_40_nm", "F4TCNQ-40-nm"); // replace
+		sheetname.Replace("F4TCNQ_20_nm", "F4TCNQ-20-nm"); // replace
+		sheetname.Replace("F2TCNQ_40_nm", "F2TCNQ-40-nm"); // replace
+		sheetname.Replace("F2TCNQ_20_nm", "F2TCNQ-20-nm"); // replace
+		sheetname.Replace("TCNQ_40_nm", "TCNQ-40-nm"); // replace
+		sheetname.Replace("TCNQ_20_nm", "TCNQ-20-nm"); // replace
+		sheetname.Replace("40_nm_F4TCNQ", "F4TCNQ-40-nm"); // replace
+		sheetname.Replace("20_nm_F4TCNQ", "F4TCNQ-20-nm"); // replace
+		sheetname.Replace("40_nm_F2TCNQ", "F2TCNQ-40-nm"); // replace
+		sheetname.Replace("20_nm_F2TCNQ", "F2TCNQ-20-nm"); // replace
+		sheetname.Replace("40_nm_TCNQ", "TCNQ-40-nm"); // replace
+		sheetname.Replace("20_nm_TCNQ", "TCNQ-20-nm"); // replace
 		// Graphs
 		sheetname.Replace("Idon_Idoff_Igon_Igoff_vs_time", "Idon-Idoff-Igon-Igoff-Time"); // replace
+		sheetname.Replace("Imax_Imin_Ion_Ioff_vs_time", "Idon-Idoff-Igon-Igoff-Time"); // replace
+		sheetname.Replace("Ion_Ioff_vs_time", "Idon-Idoff-Igon-Igoff-Time"); // replace
 		sheetname.Replace("Idon_vs_time", "Idon-Time"); // replace
 		sheetname.Replace("Idoff_vs_time", "Idoff-Time"); // replace
 		sheetname.Replace("Igon_Igoff_vs_time", "Igon-Igoff-Time"); // replace
