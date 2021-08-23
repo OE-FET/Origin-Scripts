@@ -17,8 +17,10 @@
 		sheetname.Replace("valve_port_vs_time.txt", "valve-port.txt"); // replace
 		// Graphs
 		sheetname.Replace("Idon_Idoff_Igon_Igoff_vs_time", "Idon-Idoff-Igon-Igoff-Time"); // replace
+		sheetname.Replace("Idon_vs_time", "Idon-Time"); // replace
 		sheetname.Replace("Idoff_vs_time", "Idoff-Time"); // replace
 		sheetname.Replace("Igon_Igoff_vs_time", "Igon-Igoff-Time"); // replace
+		sheetname.Replace("Igon_vs_time", "Igon-Time"); // replace
 		sheetname.Replace("Igoff_vs_time", "Igoff-Time"); // replace
 		sheetname.Replace("Valve_port_vs_time", "Valve-port-Time"); // replace
 		sheetname.Replace("Plunger_vs_time", "Plunger-Time"); // replace
