@@ -263,6 +263,10 @@ function string MakeConditionLegend (string condition)
 			condgraphlegend$ = "Plastic syringe reference in N2"; // Comment field (graph legend)
 			break;
 			
+		case "syringe-needle-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "Needle reference in N2"; // Comment field (graph legend)
+			break;
+			
 		case "pipette-glass-vial-air": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Vial reference in air (glass pipette)"; // Comment field (graph legend)
 			break;
