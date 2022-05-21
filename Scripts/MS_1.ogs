@@ -17,7 +17,7 @@
 	
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
 	string GraphNameSingle$; // The long name of the Graph for the plot of a single MS spectrum
 	string TemplateNameSingle$; // The long name of the Graph Template for the plot of a single MS spectrum
 

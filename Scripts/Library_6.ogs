@@ -73,6 +73,10 @@ function double DielectricThicknessCalc (string dielectric, string dielectriccon
 				dielectricthickness = 300; // Comment field (graph legend)
 				break;
 				
+			case "SiO2_300-nm": // If the string is "SiO2_300-nm", the dielectric thickness is 300 nm
+				dielectricthickness = 300; // Comment field (graph legend)
+				break;
+				
 			default: // For all other dielectrics, assume a thickness of 500 nm
 				dielectricthickness = 500; // Comment field (graph legend)
 				type -a "Unknown dielectric thickness for %(dielectric$). Assuming 500 nm."; // Comment field (graph legend)
@@ -289,6 +293,14 @@ function string MakeConditionLegend (string condition)
 			
 		case "oil-overpressure-valve": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Overpressure valve oil"; // Comment field (graph legend)
+			break;
+			
+		case "DCB-bottle-N2": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "DCB bottle reference in N2"; // Comment field (graph legend)
+			break;
+		
+		case "DCB-bottle-air": // If the string is "N2", write "N2" in the comment field
+			condgraphlegend$ = "DCB bottle reference in air"; // Comment field (graph legend)
 			break;
 			
 		default: // For all other strings, write the extracted field in the comment field

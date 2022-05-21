@@ -21,7 +21,7 @@
 	Library1.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
+	string templatepath$="C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
 	string IdonUavgTimeWorkbook$; // The long name of the Idon-Uavg-Time workbook
 	string IdonTimeGraph$; // The long name of the Idon-Time graph
 	//string UavgTimeGraph$; // The long name of the Uavg-Time graph
