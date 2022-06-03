@@ -191,7 +191,19 @@ function string MakeConditionLegend (string condition)
 			condgraphlegend$ = "Saline solution"; // Comment field (graph legend)
 			break;
 		
-		case "1-x-PBS": // If the string is "1-x-PBS", write "1xPBS" in the comment field
+		case "ss-1-M": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Saline solution, 1 M"; // Comment field (graph legend)
+			break;
+		
+		case "ss-1-mM": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Saline solution, 1 mM"; // Comment field (graph legend)
+			break;
+		
+		case "ss-1-uM": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Saline solution, 1 uM"; // Comment field (graph legend)
+			break;
+		
+			case "1-x-PBS": // If the string is "1-x-PBS", write "1xPBS" in the comment field
 			condgraphlegend$ = "1xPBS"; // Comment field (graph legend)
 			break;
 		
