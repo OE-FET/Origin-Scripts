@@ -190,7 +190,7 @@
 						// AIO graphs (unified time axis)
 						
 						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_comparison_Idon-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_comparison_Idon-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
@@ -202,7 +202,7 @@
 						
 						
 						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_comparison_Idoff-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_comparison_Idoff-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
@@ -214,7 +214,7 @@
 						
 						
 						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_comparison_Igon-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_comparison_Igon-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
@@ -226,7 +226,7 @@
 						
 						
 						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_comparison_Igoff-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_comparison_Igoff-Time-AIO_Vd=%(Vdsat$)V.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
@@ -238,7 +238,7 @@
 						
 						
 						// Graphs on time axis of a single experiment
-						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_comparison_Idon-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_comparison_Idon-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
@@ -249,7 +249,7 @@
 						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						
 						
-						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_comparison_Idoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_comparison_Idoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
@@ -260,7 +260,7 @@
 						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						
 						
-						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_comparison_Igon-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_comparison_Igon-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
@@ -271,7 +271,7 @@
 						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						
 						
-						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_comparison_Igoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_comparison_Igoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
@@ -282,7 +282,7 @@
 						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 						
 						
-						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_comparison_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_comparison_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else

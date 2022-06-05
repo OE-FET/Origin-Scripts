@@ -209,7 +209,7 @@
 			range Igoff = [%(previousworkbook$)]1!wcol(13);  // data range of column (Ig off)
 			
 			// Idon, Idoff, Igon, Igoff graph
-			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_step_%(stepNo$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_step_%(stepNo$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 			layer.include(Idon);  // plot in the active layer
 			layer.include(Idoff);  // plot in the active layer
 			layer.include(Igon);  // plot in the active layer
@@ -228,7 +228,7 @@
 			
 			
 			// Idoff graph
-			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_step_%(stepNo$)_Idoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_step_%(stepNo$)_Idoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 			layer.include(Idoff);  // plot in the active layer
 			
 			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
@@ -236,7 +236,7 @@
 			
 			
 			// Igon, Igoff graph
-			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_step_%(stepNo$)_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_step_%(stepNo$)_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 			layer.include(Igon);  // plot in the active layer
 			layer.include(Igoff);  // plot in the active layer
 				
@@ -245,7 +245,7 @@
 			
 			
 			// Igoff graph
-			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(Duration$)-min_step_%(stepNo$)_Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_step_%(stepNo$)_Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 			layer.include(Igoff);  // plot in the active layer
 			
 			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)

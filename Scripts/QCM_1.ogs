@@ -24,9 +24,8 @@
 	string graphname$;
 	string Template$;
 	dataset Columns;
-	dataset LineTypes;
+	dataset LineTypes;	
 	
-	int toffset = 145; // The time difference between the start of the QCM (which starts first) and the start of the SPM pump [sec]
 	string QCMGraph$; // The long name of the QCM graph
 	string QCMGraph5000$; // The long name of the QCM graph (0-5000 min)
 	string QCMGraph40000$; // The long name of the QCM graph (0-40000 min)
@@ -43,37 +42,41 @@
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
 		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
-
+		
 		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
 		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
 		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
-
+		
 		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
-
+		
 		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
-
+		
 		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
 		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
 		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
 		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
 		
 		string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
-
+		
 		string stepNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the step number in the cycling process
 		string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
 		string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
 		string daysNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of days
 		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
 		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
-
 		
-		// Parameters		
+		
+		// Parameters
+		string Rate$="30-mlmin"; // The flow rate (e.g. "40-ulmin" or "none")
+		int toffset = 0; // The time difference between the start of the QCM (which starts first) and the start of the SPM pump [sec]
+		
+		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
 		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
 		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
 		string timegraphlegend$; // This string will depend on "minutesNo" and it will display the number of minutes for the graph legend
 		string legend$;  // This string will depend on all legend string and it will display the graph legend
-
+		
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 		
@@ -99,7 +102,9 @@
 			
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = "Seconds"; // Long name
-			col(A)[O]$ = col(A)-toffset; // Subtract the offset
+			
+			if (toffset!=0) // If toffset is not zero
+				col(A)[O]$ = col(A)-toffset; // Subtract the offset
 			
 			col(B)[L]$ = "Absolute Time"; // Long name
 			
@@ -121,7 +126,7 @@
 			// Frequency, temperature graph
 			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time";
-			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_DFreq-Temp-Vol-Time.otpu"; // This is the template path
+			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_80000-sec_DFreq-Temp-Vol-Time.otpu"; // This is the template path
 			Layers = {1, 2};
 			Columns = {5, 4};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
@@ -132,7 +137,7 @@
 			// Frequency, temperature graph (0-5000 min.)
 			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time_0-5000_min.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time_0-5000_min";
-			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_DFreq-Temp-Vol-Time_0-5000_min.otpu"; // This is the template path
+			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_5000-sec_DFreq-Temp-Vol-Time_0-5000_min.otpu"; // This is the template path
 			Layers = {1, 2};
 			Columns = {5, 4};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
@@ -144,7 +149,7 @@
 			// Frequency, temperature graph (0-40000 min.)
 			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time_0-40000_min.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time_0-40000_min";
-			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_DFreq-Temp-Vol-Time_0-40000_min.otpu"; // This is the template path
+			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_40000-sec_DFreq-Temp-Vol-Time_0-40000_min.otpu"; // This is the template path
 			Layers = {1, 2};
 			Columns = {5, 4};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
