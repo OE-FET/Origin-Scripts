@@ -68,7 +68,7 @@
 		
 		// Parameters
 		string Rate$="30-mlmin"; // The flow rate (e.g. "40-ulmin" or "none")
-		int toffset = 0; // The time difference between the start of the QCM (which starts first) and the start of the SPM pump [sec]
+		int toffset = 3; // The time difference between the start of the QCM (which starts first) and the start of the SPM pump [sec]
 		
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
@@ -135,9 +135,9 @@
 			QCMGraph$ = graphname$;
 			
 			// Frequency, temperature graph (0-5000 min.)
-			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time_0-5000_min.otpu";
-			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time_0-5000_min";
-			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_5000-sec_DFreq-Temp-Vol-Time_0-5000_min.otpu"; // This is the template path
+			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time_0-5000_sec.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time_0-5000_sec";
+			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_5000-sec_DFreq-Temp-Vol-Time.otpu"; // This is the template path
 			Layers = {1, 2};
 			Columns = {5, 4};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
@@ -147,9 +147,9 @@
 			
 			
 			// Frequency, temperature graph (0-40000 min.)
-			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time_0-40000_min.otpu";
-			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time_0-40000_min";
-			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_40000-sec_DFreq-Temp-Vol-Time_0-40000_min.otpu"; // This is the template path
+			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time_0-40000_sec.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time_0-40000_sec";
+			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_40000-sec_DFreq-Temp-Vol-Time.otpu"; // This is the template path
 			Layers = {1, 2};
 			Columns = {5, 4};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
@@ -169,7 +169,6 @@
 			// Plot Plunger position vs time								
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = "Seconds"; // Units
-			col(A)[O]$ = col(A)*60; // Convert Minutes to Seconds
 			
 			col(B)[L]$ = "Absolute plunger position"; // Units
 			col(B)[U]$ = "Steps"; // Units
@@ -198,7 +197,6 @@
 		{
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = "Seconds"; // Units
-			col(A)[O]$ = col(A)*60; // Convert Minutes to Seconds
 			
 			col(B)[L]$ = "Valve port"; // Units
 			col(B)[U]$ = "No"; // Units
