@@ -1,8 +1,8 @@
 ﻿// This script is used on QCM data and plots the frequency, temperature, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 0.1
+// Version: 0.2
 // Current status: Works well.
-// Changes:
+// Changes: Added frecuency vs temperature graph
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -26,6 +26,7 @@
 	dataset Columns;
 	dataset LineTypes;	
 	
+	string PlungerWorkbook$;
 	string QCMGraph$; // The long name of the QCM graph
 	string QCMGraph5000$; // The long name of the QCM graph (0-5000 min)
 	string QCMGraph40000$; // The long name of the QCM graph (0-40000 min)
@@ -68,7 +69,7 @@
 		
 		// Parameters
 		string Rate$="30-mlmin"; // The flow rate (e.g. "40-ulmin" or "none")
-		int toffset = 3; // The time difference between the start of the QCM (which starts first) and the start of the SPM pump [sec]
+		int toffset = 0; // The time difference between the start of the QCM (which starts first) and the start of the SPM pump [sec]
 		
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
@@ -91,8 +92,7 @@
 		{
 			// Plot frequency, temperature, plunger, and valve port vs time
 			//colswap (1,2); // Swap the columns A and B, so that "Time" becomes column A and "Date" becomes column B.
-			//
-			//wks.col1.type=4; // Set column A as X
+			//			
 			//wks.col2.type=1; // Set column B as Y
 			
 			wks.col1.format = 1; // Set column A to numeric format
@@ -123,7 +123,7 @@
 			col(F)[1] = toffset; // Store the time offset for the particular measurement
 			
 			
-			// Frequency, temperature graph
+			// Frequency, temperature vs time graph
 			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time";
 			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_80000-sec_DFreq-Temp-Vol-Time.otpu"; // This is the template path
@@ -134,7 +134,7 @@
 			
 			QCMGraph$ = graphname$;
 			
-			// Frequency, temperature graph (0-5000 min.)
+			// Frequency, temperature vs time graph (0-5000 min.)
 			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time_0-5000_sec.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time_0-5000_sec";
 			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_5000-sec_DFreq-Temp-Vol-Time.otpu"; // This is the template path
@@ -146,7 +146,7 @@
 			QCMGraph5000$ = graphname$;
 			
 			
-			// Frequency, temperature graph (0-40000 min.)
+			// Frequency, temperature vs time graph (0-40000 min.)
 			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp-Vol-Time_0-40000_sec.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp-Vol-Time_0-40000_sec";
 			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_40000-sec_DFreq-Temp-Vol-Time.otpu"; // This is the template path
@@ -157,6 +157,19 @@
 			
 			QCMGraph40000$ = graphname$;
 			
+			
+			// Frequency vs temperature graph
+			win -a %(previousworkbook$);  // activate the previous window (workbook)
+			wks.col4.type=4; // Set column D (Temperature) as X
+			
+			TemplateGeneric$ = "%(templatepath$)Generic_QCM_DFreq-Temp.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_DFreq-Temp";
+			Template$ = "%(templatepath$)QCM_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_DFreq-Temp.otpu"; // This is the template path
+			Layers = {1};
+			Columns = {5};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);			
+			
 			win -a %(previousworkbook$);  // activate the previous window (workbook)
 			window -ch 1; // hide the workbook that was processed
 		};
@@ -165,7 +178,7 @@
 		int k = sheetname.Find("plunger"); // It will yield a value different than 0 if the filename contains "plunger".
 		if (k!=0) // If the filename contains "plunger", then
 		{
-			PlungerWorkbook$ = previousworkbook$;
+			PlungerWorkbook$=%H;
 			// Plot Plunger position vs time								
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = "Seconds"; // Units
@@ -188,7 +201,7 @@
 			
 			//layer -a;  // rescale the layer
 			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Volume-Time"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)			
+			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		};
 			
 			
