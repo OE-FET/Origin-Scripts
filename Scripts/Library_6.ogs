@@ -173,6 +173,26 @@ function string MakeAdditiveLegend (string additivetype)
 
 function string MakeConditionLegend (string condition)
 {
+	// Example: pbuffer-pH=4,07-50mM	
+	if (condition.Find("pbuffer")!=0){ // If the string "pbuffer" exists, write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+		string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH. Output: pH=4,07
+		pH$ = pH.GetToken(2,"=")$; // get the string, which shows the pH. Output: 4,07
+		pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
+		string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
+		condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$))"; // Comment field (graph legend)
+		return condgraphlegend$;
+	}
+		
+	// Example: NaP-pH=8,0-20mM
+	if (condition.Find("NaP")!=0){ // If the string "NaP" exists, write "NaP buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
+		string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH. Output: pH=8,0
+		pH$ = pH.GetToken(2,"=")$; // get the string, which shows the pH. Output: 8,0
+		pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
+		string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
+		condgraphlegend$ = "NaP buffer (pH= %(pH$), %(bufferconcentration$))"; // Comment field (graph legend)
+		return condgraphlegend$;
+	}
+		
 	switch (%(condition$)) // Case study
 	{
 		case "DI-H2O": // If the string is "ultrapure", write "ultrapure water" in the comment field
@@ -203,16 +223,8 @@ function string MakeConditionLegend (string condition)
 			condgraphlegend$ = "Saline solution, 1 uM"; // Comment field (graph legend)
 			break;
 		
-			case "1-x-PBS": // If the string is "1-x-PBS", write "1xPBS" in the comment field
+		case "1-x-PBS": // If the string is "1-x-PBS", write "1xPBS" in the comment field
 			condgraphlegend$ = "1xPBS"; // Comment field (graph legend)
-			break;
-		
-		case "pbuffer": // If the string is "pbuffer", write "Phosphate buffer (pH="pHValue", "buffer concentration" "buffer concentration units")" in the comment field
-			string pH$ = condition.GetToken(2,"-")$; // get the string, which shows the pH
-			pH$ = pH.Substitute(".", ",", 0)$; // Substitute comma with dot
-			string bufferconcentration$ = condition.GetToken(3,"-")$; // get the string, which shows the buffer concentration
-			string bufferconcunits$ = condition.GetToken(4,"-")$; // get the string, which shows the buffer concentration
-			condgraphlegend$ = "Phosphate buffer (pH= %(pH$), %(bufferconcentration$) %(bufferconcunits$)"; // Comment field (graph legend)
 			break;
 			
 		case "bottle-N2": // If the string is "N2", write "N2" in the comment field
