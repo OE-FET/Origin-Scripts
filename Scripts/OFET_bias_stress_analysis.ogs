@@ -25,7 +25,7 @@
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 // Call libraries.
 
-	Library_6.Main; // Run Main section of Library file
+	Library.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	string templatepath$="C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
