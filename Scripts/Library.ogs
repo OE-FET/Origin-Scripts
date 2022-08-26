@@ -230,23 +230,35 @@ function string MakeConditionLegend (string condition)
 		case "1-x-PBS": // If the string is "1-x-PBS", write "1xPBS" in the comment field
 			condgraphlegend$ = "1xPBS"; // Comment field (graph legend)
 			break;
-			
+		
+		case "Lys-0,1-gl": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Lysozyme, 0.1 g/l"; // Comment field (graph legend)
+			break;
+		
+		case "Lys-1-gl": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Lysozyme, 1 g/l"; // Comment field (graph legend)
+			break;
+		
+		case "Lys-10-gl": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Lysozyme, 10 g/l"; // Comment field (graph legend)
+			break;
+		
 		case "bottle-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Bottle reference in N2"; // Comment field (graph legend)
 			break;
-			
+		
 		case "bottle-air": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Bottle reference in air"; // Comment field (graph legend)
 			break;
-			
+		
 		case "bottle-N2-washed-tube": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Bottle reference in N2 (washed NMR tube)"; // Comment field (graph legend)
 			break;
-			
+		
 		case "bottle-N2-unwashed-tube": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Bottle reference in N2 (unwashed NMR tube)"; // Comment field (graph legend)
 			break;
-			
+		
 		case "vial-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Vial reference in N2"; // Comment field (graph legend)
 			break;
@@ -258,7 +270,7 @@ function string MakeConditionLegend (string condition)
 		case "glovebox-bubble-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Bubbled N2"; // Comment field (graph legend)
 			break;
-			
+		
 		case "line-bubble-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Bubbled N2 (N2 line)"; // Comment field (graph legend)
 			break;
@@ -278,51 +290,51 @@ function string MakeConditionLegend (string condition)
 		case "pipette-plastic-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Plastic pipette reference in N2"; // Comment field (graph legend)
 			break;
-			
+		
 		case "syringe-glass-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Glass syringe reference in N2"; // Comment field (graph legend)
 			break;
-			
+		
 		case "syringe-glass-air": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Glass syringe reference in air"; // Comment field (graph legend)
 			break;
-			
+		
 		case "syringe-glass-vial-air": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Vial reference in air (glass syringe)"; // Comment field (graph legend)
 			break;
-			
+		
 		case "syringe-plastic-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Plastic syringe reference in N2"; // Comment field (graph legend)
 			break;
-			
+		
 		case "syringe-needle-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Needle reference in N2"; // Comment field (graph legend)
 			break;
-			
+		
 		case "pipette-glass-vial-air": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Vial reference in air (glass pipette)"; // Comment field (graph legend)
 			break;
-			
+		
 		case "oil-vacuum-pump-GBR60" "oil-vacuum-pump-GBR60-clean": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "GBR60 Vacuum pump oil"; // Comment field (graph legend)
 			break;
-			
+		
 		case "oil-vacuum-pump-GBR60-waste": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "GBR60 Vacuum pump oil waste"; // Comment field (graph legend)
 			break;
-			
+		
 		case "oil-vacuum-pump-GBR101" "oil-vacuum-pump-GBR101-clean": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "GBR101 Vacuum pump oil"; // Comment field (graph legend)
 			break;
-			
+		
 		case "oil-vacuum-pump-GBR101-waste": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "GBR101 Vacuum pump oil waste"; // Comment field (graph legend)
 			break;
-			
+		
 		case "oil-overpressure-valve": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "Overpressure valve oil"; // Comment field (graph legend)
 			break;
-			
+		
 		case "DCB-bottle-N2": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "DCB bottle reference in N2"; // Comment field (graph legend)
 			break;
@@ -330,7 +342,7 @@ function string MakeConditionLegend (string condition)
 		case "DCB-bottle-air": // If the string is "N2", write "N2" in the comment field
 			condgraphlegend$ = "DCB bottle reference in air"; // Comment field (graph legend)
 			break;
-			
+		
 		default: // For all other strings, write the extracted field in the comment field
 			condgraphlegend$ = condition$; // Comment field (graph legend)
 			break;
