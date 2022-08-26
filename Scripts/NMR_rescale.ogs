@@ -109,7 +109,7 @@
 		scale$=scale.GetToken(1,".")$; // Remove ".txt" from the scale
 		scale.Replace(",", "."); // replace "," with "."
 		
-		string rescale$="0.9431"; // The rescaling factor (get it from TopSpin)
+		string rescale$="0.2204"; // The rescaling factor (get it from TopSpin)
 		
 		col(D)[O]$ = "Col(B)*%(scale$)*%(rescale$)"; // Units
 	};
