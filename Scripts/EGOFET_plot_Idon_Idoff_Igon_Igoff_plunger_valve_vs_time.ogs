@@ -1,8 +1,8 @@
 // This script is used on WG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 4.2
+// Version: 4.3
 // Current status: Works well.
-// Changes: Removed the step number from the template names.
+// Changes: Small correction in Igon-Igoff-Time graph.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -240,7 +240,7 @@
 			
 			
 			// Igon, Igoff graph
-			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_step_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
+			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
 			layer.include(Igon);  // plot in the active layer
 			layer.include(Igoff);  // plot in the active layer
 				
