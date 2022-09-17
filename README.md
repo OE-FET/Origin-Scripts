@@ -1,8 +1,13 @@
 # Origin-Scripts
 LabTalk Scripts for OFET and EG-OFET analysis. Compatible with Origin 2018 Pro or newer.
 
-## Filename templates:
+## Analysis of filename templates:
 - Each filename template consists of different *fields*, separated by an *underscore* (`_`).
+
+The different fields are:
+- `batchNo`: The number of the batch.
+
+## Filename templates:
 - **NOTE**: Units are separated by a dash (e.g. 20-nm).
 
 **OFET (Transfer/Output)**:
