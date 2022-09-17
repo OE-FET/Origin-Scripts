@@ -13,7 +13,7 @@ Some of the filename templates employ the `step` convention. This is simply a co
 
 Let's suppose that we have finished the 10 minute ultrapure water injection and are 2 minutes in the saline solution experiment: One method is to name the file e.g. `<transistor parameters>_up-H2O_10-min_ss_2-min_<measurement parameters>`. But with such a convention the filenames would get very big, once we injected more and more liquids.
 
-With the step convention, we would simply write step_2_ss_2-min. Step 2 means that this liquid (saline solution in this case) is the second liquid to be injected and the rest of the filename (2-min) represents the time of exposure.
+With the step convention, we would simply write `step_2_ss_2-min`. `Step 2` means that this liquid (saline solution in this case) is the **second** liquid to be injected and the rest of the filename (2-min) represents the **exposure time** in that specific liquid.
 
 Since we mentioned that our sequence consists of ultrapure water (10 minutes), then saline solution (5 hours), and then ultrapure water again (1 day). The overall measurements would look like this (if we assume one measurement per minute):
 - `<transistor parameters>_step_1_up-H2O_1-min_<measurement parameters>`
