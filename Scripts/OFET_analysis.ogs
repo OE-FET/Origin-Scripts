@@ -140,7 +140,7 @@
 		string NaNb$ = Lookup("NaN", rb)$;
 		string NaNc$ = Lookup("NaN", rc)$;
 		
-		if(Nanb$=="NaN" || Nanc$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted, they yield NaN values.
+		if (Nanb$=="NaN" || Nanc$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted, they yield NaN values.
 			else
 			{
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
