@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 0.2
+// Version: 0.3
 // Current status: Works well.
-// Changes: Added a control variable (called "Ladder") to choose between "ladder" templates (i.e. rising analyte concentration without intermediate washing steps) and regular sensing (liquid cycling) templates (which include washing steps)
+// Changes: Turned plotting code into functions
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -67,12 +67,12 @@
 		
 		// Parameters
 		string Vdsat$ = "-1";
-		string Steps$ = "7"; // The number of steps.
-		string Cycles$ = "14"; // The number of cycles (i.e. the total duration of the measurement).
-		string MinsCycle$ = "6"; // [min] The number of minutes per cycle.
-		string CyclesPeriod$ = "1"; // The number of cycles between pumping cycles - even of the same liquid.
-		string InjStep$ = "2"; // The number of injections per step.
-		int Ladder = 0; // If it is 1, the ladder templates will be used.
+		string Steps$ = "4"; // The number of steps.
+		string Cycles$ = "84"; // The number of cycles (i.e. the total duration of the measurement).
+		string MinsCycle$ = "10"; // [min] The number of minutes per cycle.
+		string CyclesPeriod$ = "7"; // The number of cycles between pumping cycles - even of the same liquid.
+		string InjStep$ = "3"; // The number of injections per step.
+		int Ladder = 1; // If it is 1, the ladder templates will be used.
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
 		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
@@ -255,14 +255,14 @@
 			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);
 			
 			
-			// Volume vs time graph
-			win -t p "%(templatepath$)Volume-Time.otpu";  // create a graph window using template
-			layer.include(SyringeVolume);  // plot in the active layer
-			
-			//layer -a;  // rescale the layer
-			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Volume-Time"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-			
+			// Volume vs time graph			
+			TemplateGeneric$ = "%(templatepath$)Volume-Time.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Volume-Time";
+			Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Volume-Time.otpu"; // This is the template path
+			Layers = {1};
+			Columns = {3};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);			
 			
 			win -a %(previousworkbook$);  // activate the previous window (workbook)
 			window -ch 1; // hide the transfer workbook that was processed	
@@ -278,16 +278,16 @@
 			col(B)[L]$ = "Valve port"; // Units
 			col(B)[U]$ = "No"; // Units
 			
-			// Plot columns
-			range ValvePort = [%(previousworkbook$)]1!wcol(2);  // data range of column
+			TemplateGeneric$ = "%(templatepath$)Valve-port-Time.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Valve-port-Time";
+			Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Valve-port-Time.otpu"; // This is the template path
+			Layers = {1};
+			Columns = {2};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);
 			
-			// Valve port vs time graph
-			win -t p "%(templatepath$)Valve-port-Time.otpu";  // create a graph window using template
-			layer.include(ValvePort);  // plot in the active layer
-			
-			layer -a;  // rescale the layer
-			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Valve-port-Time"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+			win -a %(previousworkbook$);  // activate the previous window (workbook)
+			window -ch 1; // hide the transfer workbook that was processed	
 		};
 	}
 }
