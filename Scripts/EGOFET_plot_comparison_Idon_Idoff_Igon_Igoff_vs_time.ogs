@@ -1,4 +1,4 @@
-// This script is used on WG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
+// This script is used on EG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
 // Version: 1.5
 // Current status: Works well.
@@ -523,7 +523,7 @@
 	}
 	win -a %(uid2name(range2uid(["%(IonIoffTimeAIOWorkbook$)"]))$); // activate the workbook
 	
-	// Fix col(A)
+	// Fill any gaps in col(A) (time axis)
 	col(A)[1] = 0;
 	
 	loop(i,2,wks.maxrows)
