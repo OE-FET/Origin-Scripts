@@ -1,4 +1,4 @@
-// This script is used on WG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
+// This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
 // Version: 4.3
 // Current status: Works well.
