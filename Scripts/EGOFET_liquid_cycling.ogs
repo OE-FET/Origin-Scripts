@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 0.3
+// Version: 0.5
 // Current status: Works well.
-// Changes: Turned plotting code into functions
+// Changes: Changed the variable used to extract the time units
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -61,17 +61,15 @@
 		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
 		
 		
-		string IdonTimeGraph$; // The long name of the Idon-Time graph
-		string IdoffTimeGraph$; // The long name of the Idoff-Time graph
-		string IgonIgoffTimeGraph$; // The long name of the Igon-Igoff-Time graph
+		string TimeUnits$ // Variable used to extract the time units
 		
 		// Parameters
 		string Vdsat$ = "-1";
 		string Steps$ = "4"; // The number of steps.
-		string Cycles$ = "84"; // The number of cycles (i.e. the total duration of the measurement).
-		string MinsCycle$ = "10"; // [min] The number of minutes per cycle.
-		string CyclesPeriod$ = "7"; // The number of cycles between pumping cycles - even of the same liquid.
-		string InjStep$ = "3"; // The number of injections per step.
+		string Cycles$ = "8"; // The number of cycles (i.e. the total duration of the measurement).
+		string MinsCycle$ = "6"; // [min] The number of minutes per cycle.
+		string Period$ = "1"; // The number of cycles between pumping cycles - even of the same liquid.
+		string InjStep$ = "2"; // The number of injections per step.
 		int Ladder = 1; // If it is 1, the ladder templates will be used.
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
@@ -108,12 +106,12 @@
 		if (j!=0) // If the filename contains "I-vs-time", then
 		{
 			// Plot Imax, Imin, Ion, Ioff vs time
-			string Units$ = col(A)[L]$;
-			Units$ = Units.GetToken(2,"(")$; // get the string, which shows the time units
-			Units$ = Units.GetToken(1,")")$; // get the string, which shows the time units
+			TimeUnits$ = col(A)[L]$;
+			TimeUnits$ = Units.GetToken(2,"(")$; // get the string, which shows the time units
+			TimeUnits$ = Units.GetToken(1,")")$; // get the string, which shows the time units
 			
 			col(A)[L]$ = "Time"; // Long name
-			col(A)[U]$ = Units$; // Units
+			col(A)[U]$ = TimeUnits$; // Units
 			
 			col(B)[L]$ = "Is max"; // Units
 			col(B)[U]$ = "A"; // Units
@@ -163,9 +161,9 @@
 			TemplateGeneric$ = "%(templatepath$)Generic_Idon-Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Idon-Time_Vd=%(Vdsat$)V";
 			if (Ladder == 1)
-				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
 			Layers = {1};
 			Columns = {10};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
@@ -176,9 +174,9 @@
 			TemplateGeneric$ = "%(templatepath$)Generic_Idoff-Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Idoff-Time_Vd=%(Vdsat$)V";
 			if (Ladder == 1)
-				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
 			Layers = {1};
 			Columns = {11};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
@@ -189,9 +187,9 @@
 			TemplateGeneric$ = "%(templatepath$)Generic_Igon-Igoff-Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Igon-Igoff-Time_Vd=%(Vdsat$)V";
 			if (Ladder == 1)
-				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
 			Layers = {1, 1};
 			Columns = {12, 13};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
@@ -207,7 +205,7 @@
 		{
 			// Plot Plunger position vs time								
 			col(A)[L]$ = "Time"; // Long name
-			col(A)[U]$ = "Minutes"; // Units
+			col(A)[U]$ = TimeUnits$; // Units
 			
 			col(B)[L]$ = "Absolute plunger position"; // Units
 			col(B)[U]$ = "Steps"; // Units
@@ -221,9 +219,9 @@
 			TemplateGeneric$ = "%(templatepath$)Generic_Idon-Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Idon-Time_Vd=%(Vdsat$)V";
 			if (Ladder == 1)
-				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
 			Layers = {2};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
@@ -233,9 +231,9 @@
 			TemplateGeneric$ = "%(templatepath$)Generic_Idoff-Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Idoff-Time_Vd=%(Vdsat$)V";
 			if (Ladder == 1)
-				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
 			Layers = {2};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
@@ -246,9 +244,9 @@
 			TemplateGeneric$ = "%(templatepath$)Generic_Igon-Igoff-Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Igon-Igoff-Time_Vd=%(Vdsat$)V";
 			if (Ladder == 1)
-				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
 			Layers = {2};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
@@ -258,7 +256,7 @@
 			// Volume vs time graph			
 			TemplateGeneric$ = "%(templatepath$)Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Volume-Time";
-			Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Volume-Time.otpu"; // This is the template path
+			Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Volume-Time.otpu"; // This is the template path
 			Layers = {1};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
@@ -273,14 +271,14 @@
 		if (l!=0) // If the filename contains "valve", then
 		{
 			col(A)[L]$ = "Time"; // Long name
-			col(A)[U]$ = "Minutes"; // Units
+			col(A)[U]$ = TimeUnits$; // Units
 			
 			col(B)[L]$ = "Valve port"; // Units
 			col(B)[U]$ = "No"; // Units
 			
 			TemplateGeneric$ = "%(templatepath$)Valve-port-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Valve-port-Time";
-			Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(CyclesPeriod$)-period_%(InjStep$)-inj-step_Valve-port-Time.otpu"; // This is the template path
+			Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Valve-port-Time.otpu"; // This is the template path
 			Layers = {1};
 			Columns = {2};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot

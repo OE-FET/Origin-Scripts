@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
-// Version: 1.5
+// Version: 1.6
 // Current status: Works well.
-// Changes: Added plotting of transfer curves at two time points.
+// Changes: Changed the variable used to extract the time units
 
 [Main]
 //uncomment following line to define functions using outside of this scope

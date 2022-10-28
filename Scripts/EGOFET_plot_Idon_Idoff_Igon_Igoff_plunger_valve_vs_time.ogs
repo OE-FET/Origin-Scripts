@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 4.3
+// Version: 4.4
 // Current status: Works well.
-// Changes: Small correction in Igon-Igoff-Time graph.
+// Changes: Changed the variable used to extract the time units
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -62,6 +62,8 @@
 		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
 		
 		
+		string TimeUnits$ // Variable used to extract the time units
+		
 		// Parameters
 		string Vdsat$="-1";
 		string Rate$="40-ulmin"; // The flow rate (e.g. "40-ulmin" or "none")
@@ -113,12 +115,12 @@
 		if (j!=0) // If the filename contains "I-vs-time", then
 		{
 			// Plot Imax, Imin, Ion, Ioff vs time
-			string Units$ = col(A)[L]$;
-			Units$ = Units.GetToken(2,"(")$; // get the string, which shows the time units
-			Units$ = Units.GetToken(1,")")$; // get the string, which shows the time units
+			TimeUnits$ = col(A)[L]$;
+			TimeUnits$ = Units.GetToken(2,"(")$; // get the string, which shows the time units
+			TimeUnits$ = Units.GetToken(1,")")$; // get the string, which shows the time units
 			
 			col(A)[L]$ = "Time"; // Long name
-			col(A)[U]$ = Units$; // Units
+			col(A)[U]$ = TimeUnits$; // Units
 			
 			col(B)[L]$ = "Is max"; // Units
 			col(B)[U]$ = "A"; // Units
@@ -263,7 +265,7 @@
 		{
 			// Plot Plunger position vs time								
 			col(A)[L]$ = "Time"; // Long name
-			col(A)[U]$ = "Minutes"; // Units
+			col(A)[U]$ = TimeUnits$; // Units
 			
 			col(B)[L]$ = "Absolute plunger position"; // Units
 			col(B)[U]$ = "Steps"; // Units
@@ -300,7 +302,7 @@
 		if (l!=0) // If the filename contains "valve", then
 		{
 			col(A)[L]$ = "Time"; // Long name
-			col(A)[U]$ = "Minutes"; // Units
+			col(A)[U]$ = TimeUnits$; // Units
 			
 			col(B)[L]$ = "Valve port"; // Units
 			col(B)[U]$ = "No"; // Units
