@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 0.5
+// Version: 0.6
 // Current status: Works well.
-// Changes: Changed the variable used to extract the time units
+// Changes: Fixed bugs (missing semicolon, time units)
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -61,15 +61,15 @@
 		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
 		
 		
-		string TimeUnits$ // Variable used to extract the time units
+		string TimeUnits$; // Variable used to extract the time units
 		
 		// Parameters
 		string Vdsat$ = "-1";
 		string Steps$ = "4"; // The number of steps.
-		string Cycles$ = "8"; // The number of cycles (i.e. the total duration of the measurement).
-		string MinsCycle$ = "6"; // [min] The number of minutes per cycle.
-		string Period$ = "1"; // The number of cycles between pumping cycles - even of the same liquid.
-		string InjStep$ = "2"; // The number of injections per step.
+		string Cycles$ = "112"; // The number of cycles (i.e. the total duration of the measurement).
+		string MinsCycle$ = "10"; // [min] The number of minutes per cycle.
+		string Period$ = "7"; // The number of cycles between pumping cycles - even of the same liquid.
+		string InjStep$ = "4"; // The number of injections per step.
 		int Ladder = 1; // If it is 1, the ladder templates will be used.
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
@@ -107,8 +107,8 @@
 		{
 			// Plot Imax, Imin, Ion, Ioff vs time
 			TimeUnits$ = col(A)[L]$;
-			TimeUnits$ = Units.GetToken(2,"(")$; // get the string, which shows the time units
-			TimeUnits$ = Units.GetToken(1,")")$; // get the string, which shows the time units
+			TimeUnits$ = TimeUnits.GetToken(2,"(")$; // get the string, which shows the time units
+			TimeUnits$ = TimeUnits.GetToken(1,")")$; // get the string, which shows the time units
 			
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = TimeUnits$; // Units
