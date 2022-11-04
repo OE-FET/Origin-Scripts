@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 0.6
+// Version: 0.7
 // Current status: Works well.
-// Changes: Fixed bugs (missing semicolon, time units)
+// Changes: Fixed bug in TimeUnits variable, which prevented the time units from being shown in the plunger and valve port graphs.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -25,6 +25,8 @@
 	string Template$;
 	dataset Columns;
 	dataset LineTypes;
+	
+	string TimeUnits$; // Variable used to extract the time units
 
 	doc -ef LB { // loop over all workbooks in folder
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -61,16 +63,14 @@
 		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
 		
 		
-		string TimeUnits$; // Variable used to extract the time units
-		
 		// Parameters
 		string Vdsat$ = "-1";
-		string Steps$ = "4"; // The number of steps.
-		string Cycles$ = "112"; // The number of cycles (i.e. the total duration of the measurement).
+		string Steps$ = "7"; // The number of steps.
+		string Cycles$ = "196"; // The number of cycles (i.e. the total duration of the measurement).
 		string MinsCycle$ = "10"; // [min] The number of minutes per cycle.
 		string Period$ = "7"; // The number of cycles between pumping cycles - even of the same liquid.
 		string InjStep$ = "4"; // The number of injections per step.
-		int Ladder = 1; // If it is 1, the ladder templates will be used.
+		int Ladder = 0; // If it is 1, the ladder templates will be used.
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
 		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
@@ -163,11 +163,11 @@
 			if (Ladder == 1)
 				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time_2.otpu"; // This is the template path
 			Layers = {1};
 			Columns = {10};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 			
 			
 			// Joint Idoff - Volume graph
@@ -176,11 +176,11 @@
 			if (Ladder == 1)
 				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time_2.otpu"; // This is the template path
 			Layers = {1};
 			Columns = {11};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 			
 			
 			// Joint Igon - Igoff - Volume graph
@@ -189,11 +189,11 @@
 			if (Ladder == 1)
 				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(MinsCycle$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time_2.otpu"; // This is the template path
 			Layers = {1, 1};
 			Columns = {12, 13};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 1);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 			
 			win -a %(previousworkbook$);  // activate the previous window (workbook)
 			window -ch 1; // hide the transfer workbook that was processed
@@ -225,7 +225,7 @@
 			Layers = {2};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 			
 			// Joint Idoff - Volume graph
 			TemplateGeneric$ = "%(templatepath$)Generic_Idoff-Volume-Time.otpu";
@@ -237,7 +237,7 @@
 			Layers = {2};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 			
 			
 			// Joint Igon - Igoff - Volume graph
@@ -250,7 +250,7 @@
 			Layers = {2};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
 			
 			
 			// Volume vs time graph			

@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 4.5
+// Version: 4.6
 // Current status: Works well.
-// Changes: Fixed bugs (missing semicolon, time units)
+// Changes: Fixed bug in TimeUnits variable, which prevented the time units from being shown in the plunger and valve port graphs.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -25,6 +25,8 @@
 	string Template$;
 	dataset Columns;
 	dataset LineTypes;
+	
+	string TimeUnits$; // Variable used to extract the time units
 
 	doc -ef LB { // loop over all workbooks in folder
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -61,8 +63,6 @@
 		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
 		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
 		
-		
-		string TimeUnits$; // Variable used to extract the time units
 		
 		// Parameters
 		string Vdsat$="-1";
