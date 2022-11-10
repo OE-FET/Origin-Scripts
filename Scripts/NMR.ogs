@@ -2,9 +2,9 @@
 // NOTE: First process the files in TopSpin, then save the scale in the filename (with comma instead of point for the precision digits e.g. 2,3 not 2.3), then import it in Origin and scale the spectra accordingly.
 
 // Author: Dimitrios Simatos
-// Version: 1.0
+// Version: 1.1
 // Current status: Works well.
-// Changes: Updated library file.
+// Changes: Placed the variables for all scripts in the Library file.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -21,13 +21,8 @@
 	Library.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
-	string TemplateGeneric$;
-	string graphname$;
-	string Template$;
-	dataset Columns;
-	dataset LineTypes;
 	
+	// Set variables for all loops
 	string GraphNameSingle$; // The long name of the Graph for the plot of a single NMR spectrum
 	string TemplateNameSingle$; // The long name of the Graph Template for the plot of a single NMR spectrum
 

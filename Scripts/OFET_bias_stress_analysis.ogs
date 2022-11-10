@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 3.1
+// Version: 3.2
 // Current status: Works well.
-// Changes: Updated library file.
+// Changes: Placed the variables for all scripts in the Library file.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -28,13 +28,8 @@
 	Library.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
-	string TemplateGeneric$;
-	string graphname$;
-	string Template$;
-	dataset Columns;
-	dataset LineTypes;
 	
+	// Set variables for all loops
 	string UavgTimeWorkbook$; // The long name of the Uavg-Time workbook
 	string UavgTimeGraph$; // The long name of the Uavg-Time graph
 	string VtTimeGraph$; // The long name of the Vt-Time graph

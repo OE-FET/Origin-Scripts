@@ -2,9 +2,9 @@
 // NOTE: If the curves are not plotted in the right order, open the workbook to be plotted first before running the script.
 
 // Author: Dimitrios Simatos
-// Version: 2.7
+// Version: 2.8
 // Current status: Works well.
-// Changes: Added functions instead of case structures.
+// Changes: Placed the variables for all scripts in the Library file.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -21,16 +21,8 @@
 	Library.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-	// Set variables for all loops
-	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
-	string TemplateGeneric$;
-	string graphname$;
-	string Template$;
-	dataset Columns;
-	dataset LineTypes;
 	
 	// Set variables for all loops
-	
 	int firstloop=1;
 	
 	string Transfer$;

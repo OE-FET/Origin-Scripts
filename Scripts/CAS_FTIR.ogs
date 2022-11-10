@@ -3,9 +3,9 @@
 // NOTE: First process the files in OPUS (atmospheric compensation, cutting, baseline correction), then export them as data point tables, then import them in Origin.
 
 // Author: Dimitrios Simatos
-// Version: 0.1
+// Version: 0.2
 // Current status: Works well.
-// Changes: Merged OFET and WG-OFET scripts.
+// Changes: Placed the variables for all scripts in the Library file.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -17,9 +17,8 @@
 	del -al *;// Delete all the local and session variables
 	
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
 	
+	// Set variables for all loops
 	string GraphNameAbs$; // The long name of the Graph for the Absorbance plot of all FTIR spectra
 	string TemplateNameAbs$; // The long name of the Graph Template for the Absorbance plot of all FTIR spectra
 	string GraphNameSingleAbs$; // The long name of the Graph for the Absorbance plot of a single FTIR spectrum

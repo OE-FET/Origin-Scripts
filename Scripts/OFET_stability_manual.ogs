@@ -11,9 +11,9 @@
 // 6. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 1.6
+// Version: 1.7
 // Current status: Works well.
-// Changes: Updated library file.
+// Changes: Placed the variables for all scripts in the Library file.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -29,13 +29,8 @@
 	Library.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
-	string TemplateGeneric$;
-	string graphname$;
-	string Template$;
-	dataset Columns;
-	dataset LineTypes;
 	
+	// Set variables for all loops
 	string IdonUavgTimeWorkbook$; // The long name of the Idon-Uavg-Time workbook
 	string IdonTimeGraph$; // The long name of the Idon-Time graph
 	string UavgTimeGraph$; // The long name of the Uavg-Time graph

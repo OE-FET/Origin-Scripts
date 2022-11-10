@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
-// Version: 1.6
+// Version: 1.7
 // Current status: Works well.
-// Changes: Changed the variable used to extract the time units
+// Changes: Placed the variables for all scripts in the Library file.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -18,13 +18,6 @@
 	Library.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-	// Set variables for all loops
-	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
-	string TemplateGeneric$;
-	string graphname$;
-	string Template$;
-	dataset Columns;
-	dataset LineTypes;
 	
 	// Set variables for all loops
 	

@@ -2,9 +2,9 @@
 // NOTE: First plot all the bottle reference spectra in TopSpin, and rescale them, to see the rescaling factors that need to be used for each rescaling. Then run the script for each batch, after changing the rescaling factor.
 
 // Author: Dimitrios Simatos
-// Version: 0.1
+// Version: 0.2
 // Current status: Works well.
-// Changes: 
+// Changes: Placed the variables for all scripts in the Library file.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -21,13 +21,8 @@
 	Library.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
-	string TemplateGeneric$;
-	string graphname$;
-	string Template$;
-	dataset Columns;
-	dataset LineTypes;
 	
+	// Set variables for all loops
 	string GraphNameSingle$; // The long name of the Graph for the plot of a single NMR spectrum
 	string TemplateNameSingle$; // The long name of the Graph Template for the plot of a single NMR spectrum
 

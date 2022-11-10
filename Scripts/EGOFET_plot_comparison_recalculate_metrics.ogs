@@ -1,4 +1,4 @@
-// This script is used on WG-OFETs and recalculates the metrics of the graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
+// This script is used on EG-OFETs and recalculates the metrics of the graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
 // Version: 0.3
 // Current status: Works well.
@@ -13,8 +13,7 @@
 	del -al *;// Delete all the local and session variables
 	
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-	// Set variables for all loops
-		
+	// Set variables for all loops		
 	string IonIoffTimeAIOWorkbook$; // The long name of the Ion/Ioff-Time (AIO) workbook
 	string IdonTimeAIOGraph$; // The long name of the Idon-Time (AIO) graph
 	string IdoffTimeAIOGraph$; // The long name of the Idoff-Time (AIO) graph
