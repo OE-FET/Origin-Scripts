@@ -6,9 +6,9 @@
 // 3. Run the main script.
 
 // Author: Dimitrios Simatos
-// Version: 0.7
+// Version: 0.8
 // Current status: Works well.
-// Changes: Added variables for all scripts.
+// Changes: Added MakeCASFTIRMeasTypeLegend and MakeMassSpecIonModeLegend function.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -239,8 +239,24 @@ function string MakeConditionLegend (string condition)
 			condgraphlegend$ = "1xPBS"; // Comment field (graph legend)
 			break;
 		
+		case "Lys-0,0125-gl": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Lysozyme, 0.0125 g/l"; // Comment field (graph legend)
+			break;
+		
+		case "Lys-0,025-gl": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Lysozyme, 0.025 g/l"; // Comment field (graph legend)
+			break;
+		
+		case "Lys-0,05-gl": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Lysozyme, 0.05 g/l"; // Comment field (graph legend)
+			break;
+		
 		case "Lys-0,1-gl": // If the string is "ss", write "Saline solution" in the comment field
 			condgraphlegend$ = "Lysozyme, 0.1 g/l"; // Comment field (graph legend)
+			break;
+		
+		case "Lys-0,2-gl": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "Lysozyme, 0.2 g/l"; // Comment field (graph legend)
 			break;
 		
 		case "Lys-1-gl": // If the string is "ss", write "Saline solution" in the comment field
@@ -535,6 +551,46 @@ function string MakeInTimeLegend (string intime)
 		}
 			
 		return intimegraphlegend$;
+}
+
+function string MakeCASFTIRMeasTypeLegend (string meastype)
+{
+	switch (%(meastype$)) // Case study
+		{
+			case "S": // If the string is "S", write "Sample" in the comment field
+				meastypegraphlegend$ = "Sample"; // Comment field (graph legend)
+				break;
+			
+			case "B": // If the string is "B", write "Background" in the comment field
+				meastypegraphlegend$ = "Background"; // Comment field (graph legend)
+				break;
+			
+			default: // For all other cases, write "Sample" in the comment field
+				meastypegraphlegend$ = "Sample"; // Comment field (graph legend)
+				break;
+		}
+			
+		return meastypegraphlegend$;
+}
+
+function string MakeMassSpecIonModeLegend (string IonMode)
+{
+	switch (%(IonMode$)) // Case study
+		{
+			case "P": // If the string is "P", write "Positive" in the comment field
+				ionmodegraphlegend$ = "Positive"; // Comment field (graph legend)
+				break;
+			
+			case "N": // If the string is "N", write "Negative" in the comment field
+				ionmodegraphlegend$ = "Negative"; // Comment field (graph legend)
+				break;
+			
+			default: // For all other cases, write "Positive" in the comment field
+				ionmodegraphlegend$ = "Positive"; // Comment field (graph legend)
+				break;
+		}	
+			
+		return ionmodegraphlegend$;
 }
 
 // The linear fitting is done from Id(Vgmax)+offset to the i. Id(Vgmax)+offset is the left limit of the voltage range for the linear fit.
