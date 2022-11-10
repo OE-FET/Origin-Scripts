@@ -13,6 +13,11 @@
 	del -al *;// Delete all the local and session variables
 	
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
+
+	Library.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	// Set variables for all loops		
 	string IonIoffTimeAIOWorkbook$; // The long name of the Ion/Ioff-Time (AIO) workbook
 	string IdonTimeAIOGraph$; // The long name of the Idon-Time (AIO) graph
@@ -45,10 +50,6 @@
 	double IdonSSSD; // Standard deviation of Id on at steady state
 	double IdonSSRange; // Range of Id on at steady state
 	
-
-//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\2018\User Files\Templates\"; // define the template path
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 

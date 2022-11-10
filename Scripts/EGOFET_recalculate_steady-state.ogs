@@ -24,13 +24,8 @@
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	// Set variables for all loops
-	string templatepath$ = "C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
-	string TemplateGeneric$;
-	string graphname$;
 	
-
-	
-	string sheetname$=page.longname$; // Get the name of worksheet
+	string sheetname$ = page.longname$; // Get the name of worksheet
 	
 	string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 	string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
@@ -56,7 +51,7 @@
 	string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
 	string daysNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of days
 	string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
-	meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
+	meastype$ = meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
 
 	
 	// Parameters
