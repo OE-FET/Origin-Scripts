@@ -1,7 +1,8 @@
 // This script is used to perform all the PLQE calculations. It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
-// Dimitrios Simatos v0.7
+// Author: Dimitrios Simatos
+// Version: 0.8
 // Current status: Does not work.
-// Changes: Eliminated string registes.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 
 [Main]
@@ -62,7 +63,7 @@
 	string acc$ = sheetname.GetToken(20,"_")$; // get the string, which shows the number of accumulations
 	string slit$ = sheetname.GetToken(22,"_")$; // get the string, which shows the slit size
 
-	string previousworkbook$=%H; // Get the name of the previous window
+	string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 
 
 	newbook name:="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(gas$)_%(detector$)_meas_%(measNo$)_Analysis" option:=lsname sheet:=2; //Add new workbook with two names
@@ -110,7 +111,7 @@
 	col(J)[U]$ = AU; // Units
 	col(J)[C]$ = "Laser directly (calibrated)"; // Comments
 
-	win -a %(previousworkbook$);  // activate the previous window (workbook)
+	win -a %(activeworkbook$);  // activate the previous window (workbook)
 
 	
 doc -ef LB { // loop over all workbooks in folder

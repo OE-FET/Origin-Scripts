@@ -9,11 +9,16 @@
 //uncomment following line to define functions using outside of this scope
 //@global=1;
 
-	del -al *;// Delete all the local and session variables
-
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
+
+	Library.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	
 	string sheetname$=page.longname$; //get the name of worksheet
 	sheetname$ = sheetname.Substitute(".", ",", 0)$; // Substitute comma with dot

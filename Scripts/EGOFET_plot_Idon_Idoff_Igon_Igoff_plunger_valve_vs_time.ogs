@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 4.8
+// Version: 4.9
 // Current status: Works well.
-// Changes: Placed the variables for all scripts in the Library file.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -97,7 +97,7 @@
 			};
 		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			
-			string previousworkbook$=%H; // Get the name of the previous window
+			string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 			
 		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			
@@ -198,10 +198,10 @@
 			window -ch 1; // hide the workbook that was processed
 			
 			// Plot columns
-			range Idon = [%(previousworkbook$)]1!wcol(10);  // data range of column (Id on)
-			range Idoff = [%(previousworkbook$)]1!wcol(11);  // data range of column (Id off)
-			range Igon = [%(previousworkbook$)]1!wcol(12);  // data range of column (Ig on)
-			range Igoff = [%(previousworkbook$)]1!wcol(13);  // data range of column (Ig off)
+			range Idon = [%(activeworkbook$)]1!wcol(10);  // data range of column (Id on)
+			range Idoff = [%(activeworkbook$)]1!wcol(11);  // data range of column (Id off)
+			range Igon = [%(activeworkbook$)]1!wcol(12);  // data range of column (Ig on)
+			range Igoff = [%(activeworkbook$)]1!wcol(13);  // data range of column (Ig off)
 			
 			// Idon, Idoff, Igon, Igoff graph
 			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
@@ -264,8 +264,8 @@
 			col(C)[O]$ = "col(B)/3"; // Function
 			
 			// Plot columns
-			range PlungerPosition = [%(previousworkbook$)]1!wcol(2);  // data range of column
-			range SyringeVolume = [%(previousworkbook$)]1!wcol(3);  // data range of column
+			range PlungerPosition = [%(activeworkbook$)]1!wcol(2);  // data range of column
+			range SyringeVolume = [%(activeworkbook$)]1!wcol(3);  // data range of column
 			
 			
 			// Volume vs time graph
@@ -297,7 +297,7 @@
 			col(B)[U]$ = "No"; // Units
 			
 			// Plot columns
-			range ValvePort = [%(previousworkbook$)]1!wcol(2);  // data range of column
+			range ValvePort = [%(activeworkbook$)]1!wcol(2);  // data range of column
 			
 			// Valve port vs time graph
 			win -t p "%(templatepath$)Valve-port-Time.otpu";  // create a graph window using template

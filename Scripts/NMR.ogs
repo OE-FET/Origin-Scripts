@@ -2,9 +2,9 @@
 // NOTE: First process the files in TopSpin, then save the scale in the filename (with comma instead of point for the precision digits e.g. 2,3 not 2.3), then import it in Origin and scale the spectra accordingly.
 
 // Author: Dimitrios Simatos
-// Version: 1.1
+// Version: 1.2
 // Current status: Works well.
-// Changes: Placed the variables for all scripts in the Library file.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -116,7 +116,7 @@
 		string legend$ = "%(condgraphlegend$), %(timegraphlegend$)"; // Legend
 		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 		
-		string previousworkbook$=%H; // Get the name of the previous window
+		string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 		
 		Col(A) = Col(D); // Copy Col(D) to Col(A)
 		wks.name$=method$; // Change the sheet name to the method used (e.g. NMR)
@@ -153,7 +153,7 @@
 		Layers = {1};
 		Columns = {4};
 		LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-		PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 1);
+		PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
 		
 		
 		// Plot NMR spectrum (single)
@@ -163,9 +163,9 @@
 		Layers = {1};
 		Columns = {4};
 		LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-		PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 1);
+		PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
 		
-		win -a %(previousworkbook$);  // activate the previous window (workbook)
+		win -a %(activeworkbook$);  // activate the previous window (workbook)
 		window -ch 1; // hide the transfer workbook that was processed
 	};
 }

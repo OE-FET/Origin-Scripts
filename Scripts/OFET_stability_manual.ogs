@@ -11,9 +11,9 @@
 // 6. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 1.7
+// Version: 1.8
 // Current status: Works well.
-// Changes: Placed the variables for all scripts in the Library file.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -168,7 +168,7 @@
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
+				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 				
 				
 				if (meastype$ == "T") // if this is an transfer curve then
@@ -446,20 +446,20 @@
 					Layers = {1, 1};
 					Columns = {8, 10};
 					LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 					
 					
 					// Plot saturation transfer curves for a single time point
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Transfer_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 					Columns = {9, 11};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 					
 					
 					// Check if the measurement is the last measurement at a specific time point
 					string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_%(timelength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
 					if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0){
-						win -a %(previousworkbook$);  // activate the previous window (workbook)
+						win -a %(activeworkbook$);  // activate the previous window (workbook)
 						window -ch 1; // hide the transfer workbook that was processed
 						continue; // if this is not the last measurement of its kind, then continue to the next iteration
 					};
@@ -472,7 +472,7 @@
 					Layers = {1, 1, 2, 2};
 					Columns = {8, 9, 17, 20};
 					LineTypes = {1, 1, 1, 1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 					page.active = 1; // activate Layer 1
 					if (exist(Text3,16)==16) Text3.text$ = (V\-(d) = %(Vdlin$)V);
 					if (exist(Text4,16)==16) Text4.text$ = (V\-(d) = %(Vdsat$)V);
@@ -490,14 +490,14 @@
 					Layers = {1, 1};
 					Columns = {8, 10};
 					LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 					
 					
 					// Plot saturation transfer curve for all time points
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Transfer_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 					Columns = {9, 11};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 					
 					
 					// Plot gm (Linear) for all time points
@@ -507,7 +507,7 @@
 					Layers = {1};
 					Columns = {12};
 					LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					
 					
 					// Plot gm (Saturation) for all time points
@@ -515,7 +515,7 @@
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_gm-sat_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 					Columns = {18};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					
 					
 					// Plot mobility (Linear) for all time points
@@ -525,7 +525,7 @@
 					Layers = {1};
 					Columns = {13};
 					LineTypes = {2}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					
 					
 					// Plot mobility (Saturation) for all time points
@@ -533,7 +533,7 @@
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_u-sat_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 					Columns = {19};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					
 					
 					// Plot linear fit of Idlin and linear extrapolation (for Vt) for all time points
@@ -543,7 +543,7 @@
 					Layers = {1, 1};
 					Columns = {8, 14};
 					LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
@@ -552,7 +552,7 @@
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Vt-sat_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 					Columns = {17, 20};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
@@ -563,10 +563,10 @@
 					Layers = {1};
 					Columns = {38};
 					LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					
 					
-					win -a %(previousworkbook$);  // activate the previous window (workbook)
+					win -a %(activeworkbook$);  // activate the previous window (workbook)
 					
 					
 					// Copy Idon, mobility (Linear and Saturation) and Vt values for all time points
@@ -663,7 +663,7 @@
 					col(F)[wks.maxrows] = Vtlin; // Rows have already increased, so there's no need to add 1.
 					col(G)[wks.maxrows] = Vtsat; // Rows have already increased, so there's no need to add 1.
 					
-					win -a %(previousworkbook$);  // activate the previous window (workbook)
+					win -a %(activeworkbook$);  // activate the previous window (workbook)
 					window -ch 1; // hide the workbook that was processed
 					continue;
 					
@@ -685,7 +685,7 @@
 					
 					loop(i,1,NoofVgs)
 						{
-							string previousworkbook$=%H; // Get the name of the previous window
+							string activeworkbook$=%H; // Get the name of the previous window
 							
 							// Extract Vg							
 							string Vg$=wcol(i+1)[L]$; // Start from column 2
@@ -727,7 +727,7 @@
 							Layers = {1};
 							Columns = {i+NoofVgs+1+2*NoofVgs};
 							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 							
 							
 							// Individual output plot with a single Id and Ig for all time points
@@ -737,10 +737,10 @@
 							Layers = {1, 1};
 							Columns = {i+NoofVgs+1+2*NoofVgs, i+NoofVgs+1+3*NoofVgs};
 							LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 							
 							
-							win -a %(previousworkbook$);  // activate the previous window (workbook)
+							win -a %(activeworkbook$);  // activate the previous window (workbook)
 						};
 					window -ch 1; // hide the output workbook that was processed
 				};

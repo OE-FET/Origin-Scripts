@@ -1,8 +1,8 @@
 // This script is used on CAS data directly out of the ADL Shell. It processes them so that they end up having the transmission data at column C, the energy at column B, and also fixes the longnames.
 // Author: Dimitrios Simatos
-// Version: 0.4
+// Version: 0.5
 // Current status: Untested.
-// Changes: Changed file names.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 
@@ -109,7 +109,7 @@ doc -ef LB { // loop over all workbooks in folder
 		string voltage$ = sheetname.GetToken(20,"_")$; // get the string, which shows the gate voltage
 
 		
-		string previousworkbook$=%H; // Get the name of the previous window
+		string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 
 		if(exist(%H,2)==0) continue; //not a workbook, must be a matrix
 			else
@@ -130,7 +130,7 @@ doc -ef LB { // loop over all workbooks in folder
 								//win -r Transfer T_%(material$)_%(additive$)_%(nostep)_%(daysNo$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
 								////layer -gu; // Ungroup the datasets in the layer
 								
-								win -a %(previousworkbook$);  // activate the previous window (workbook)
+								win -a %(activeworkbook$);  // activate the previous window (workbook)
 
 					};
 						else continue;

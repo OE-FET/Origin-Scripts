@@ -1,7 +1,8 @@
 // This script is used to plot the CAS transmission vs energy curves for a single measurement.
-// Dimitrios Simatos v0.2
+// Author: Dimitrios Simatos
+// Version: 0.3
 // Current status: Works well but maybe too much trouble. Best done by hand.
-// Changes: Eliminated string registers.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -55,39 +56,39 @@
 		wks.colwidth = 8;// set all col width to 8
 		wks.col1.type=1;	// set col(A) as Y
 		wks.col2.type=4;	// set col(B) as X
-
+		
 		string sheetname$=page.longname$; // Get the name of worksheet
 		string graphlegend$; // This string will show the graph legend
-
+		
 		string workbooktype$ = sheetname.GetToken(19,"_")$; // get the string, which shows the type of workbook
 		string voltage$ = sheetname.GetToken(20,"_")$; // get the string, which shows the gate voltage
-
 		
-		string previousworkbook$=%H; // Get the name of the previous window
-
+		
+		string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
+		
 		if(exist(%H,2)==0) continue; //not a workbook, must be a matrix
 			else
 				if (workbooktype$=="CMS")
 					{
-								// Set range variables
-								range r1 = [%H]1!wcol(3);  // data range of DT column
-								
-								// CAS graph (for a single measurement)
-								//page.active = nActive;  // activate the layer for plot
-								win -a DT_E_%(liquid$)_%(daysNo$)_%(measNo$);  // activate the graph window
-								layer.include(r1);  // plot in the active layer
-									
-								//layer -a;  // rescale the layer
-								////layer -g; // Group the datasets in the layer to auto-color increment
-								//page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(additiveinfo$)_step_%(nostep$)_%(liquid1$)_%(liquid2$)_%(daysNo$)_Transfer_Vd=-1V"; //this renames the active window (long name)
-								//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-								//win -r Transfer T_%(material$)_%(additive$)_%(nostep)_%(daysNo$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
-								////layer -gu; // Ungroup the datasets in the layer
-								
-								win -a %(previousworkbook$);  // activate the previous window (workbook)
-
+						// Set range variables
+						range r1 = [%H]1!wcol(3);  // data range of DT column
+						
+						// CAS graph (for a single measurement)
+						//page.active = nActive;  // activate the layer for plot
+						win -a DT_E_%(liquid$)_%(daysNo$)_%(measNo$);  // activate the graph window
+						layer.include(r1);  // plot in the active layer
+							
+						//layer -a;  // rescale the layer
+						////layer -g; // Group the datasets in the layer to auto-color increment
+						//page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_%(additiveinfo$)_step_%(nostep$)_%(liquid1$)_%(liquid2$)_%(daysNo$)_Transfer_Vd=-1V"; //this renames the active window (long name)
+						//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+						//win -r Transfer T_%(material$)_%(additive$)_%(nostep)_%(daysNo$)_%(nominutes$); //this renames the active window (short name); //this renames the active window (short name)
+						////layer -gu; // Ungroup the datasets in the layer
+						
+						win -a %(activeworkbook$);  // activate the previous window (workbook)
 					};
-						else continue;
+				else
+					continue;
 	}
 	
 	// Rename the graphs

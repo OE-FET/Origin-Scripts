@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
 // Author: Dimitrios Simatos
-// Version: 0.9
+// Version: 1.0
 // Current status: Works well.
-// Changes: Placed the variables for all scripts in the Library file.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -88,7 +88,7 @@
 			};
 		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			
-			string previousworkbook$=%H; // Get the name of the previous window
+			string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 			
 		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 			
@@ -156,7 +156,7 @@
 			Layers = {1};
 			Columns = {10};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
 			
 			// Joint Idoff - Volume graph
@@ -169,7 +169,7 @@
 			Layers = {1};
 			Columns = {11};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
 			
 			// Joint Igon - Igoff - Volume graph
@@ -182,9 +182,9 @@
 			Layers = {1, 1};
 			Columns = {12, 13};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
-			win -a %(previousworkbook$);  // activate the previous window (workbook)
+			win -a %(activeworkbook$);  // activate the previous window (workbook)
 			window -ch 1; // hide the transfer workbook that was processed
 		};
 			
@@ -214,7 +214,7 @@
 			Layers = {2};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
 			// Joint Idoff - Volume graph
 			TemplateGeneric$ = "%(templatepath$)Generic_Idoff-Volume-Time.otpu";
@@ -226,7 +226,7 @@
 			Layers = {2};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
 			
 			// Joint Igon - Igoff - Volume graph
@@ -239,7 +239,7 @@
 			Layers = {2};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
 			
 			// Volume vs time graph			
@@ -249,9 +249,9 @@
 			Layers = {1};
 			Columns = {3};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);			
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 1);			
 			
-			win -a %(previousworkbook$);  // activate the previous window (workbook)
+			win -a %(activeworkbook$);  // activate the previous window (workbook)
 			window -ch 1; // hide the transfer workbook that was processed	
 		};
 			
@@ -271,9 +271,9 @@
 			Layers = {1};
 			Columns = {2};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 0, 0, 1);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 1);
 			
-			win -a %(previousworkbook$);  // activate the previous window (workbook)
+			win -a %(activeworkbook$);  // activate the previous window (workbook)
 			window -ch 1; // hide the transfer workbook that was processed	
 		};
 	}

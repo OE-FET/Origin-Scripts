@@ -10,9 +10,9 @@
 // 5. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 8.2
+// Version: 8.3
 // Current status: Works well.
-// Changes: Placed the variables for all scripts in the Library file.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -151,7 +151,7 @@
 				string legend$ = "%(condgraphlegend$), %(timegraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
+				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 				
 				if (meastype$ == "T") // if this is a transfer curve then
 				{
@@ -446,14 +446,14 @@
 					Layers = {1, 1};
 					Columns = {8, 10};
 					LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
 					
 					
 					// Plot saturation transfer curve
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Transfer_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 					Columns = {9, 11};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
 					
 					
 					// Plot gm (Linear)
@@ -463,7 +463,7 @@
 					Layers = {1};
 					Columns = {12};
 					LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 					if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
 					if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
@@ -475,7 +475,7 @@
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_gm-sat_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_gm-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 					Columns = {18};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
 					if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
 					if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
@@ -489,7 +489,7 @@
 					Layers = {1};
 					Columns = {13};
 					LineTypes = {2}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 					if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
 					if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
@@ -501,7 +501,7 @@
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 					Columns = {19};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
 					if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
 					if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
@@ -513,7 +513,7 @@
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_u-sat-cor_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_u-sat-cor_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 					Columns = {45};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
 					if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
 					if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
@@ -529,7 +529,7 @@
 					Layers = {1, 1};
 					Columns = {8, 14};
 					LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
 					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					if (exist(Text2,16)==16) Text2.text$ = V\-(t,lin) = $(Vtlin)V;
 					plot -c; // refresh the graph to update the labels
@@ -540,7 +540,7 @@
 					graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Vt-sat_Vd=%(Vdsat$)V";
 					Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 					Columns = {17, 20};
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
 					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					if (exist(Text2,16)==16) Text2.text$ = V\-(t,sat)= $(Vtsat)V;
 					plot -c; // refresh the graph to update the labels
@@ -553,13 +553,13 @@
 					Layers = {1};
 					Columns = {38};
 					LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					
 					
 					// Check if the measurement is the last measurement of this device
 					string nextmeassheetname$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_%(meastype$)_$(%(measNo$)+1)_%(mode$)_%(intime$).txt";
 					if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0){
-						win -a %(previousworkbook$);  // activate the previous window (workbook)
+						win -a %(activeworkbook$);  // activate the previous window (workbook)
 						window -ch 1; // hide the transfer workbook that was processed
 						continue; // if this is not the last measurement of its kind, then continue to the next iteration
 					};
@@ -572,7 +572,7 @@
 					Layers = {1, 1};
 					Columns = {13, 19};
 					LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 					if (exist(Text2,16)==16) Text2.text$ = r\-(lin)=$(rlin) %; // If the label exists, update it
 					if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,lin)=$(jmaxlin, .1) A/cm\+(2); // If the label exists, update it
 					if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,lin)=$(Pmaxlin, .1) W/cm\+(2); // If the label exists, update it
@@ -589,7 +589,7 @@
 					Layers = {1, 1, 2, 2};
 					Columns = {8, 9, 17, 20};
 					LineTypes = {1, 1, 1, 1}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, previousworkbook$, 0, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 					page.active = 1; // activate Layer 1
 					if (exist(Text3,16)==16) Text3.text$ = (V\-(d) = %(Vdlin$)V);
 					if (exist(Text4,16)==16) Text4.text$ = (V\-(d) = %(Vdsat$)V);
@@ -606,7 +606,7 @@
 					Layers = {1, 1, 1};
 					Columns = {19, 42, 45};
 					LineTypes = {2, 1, 2}; // 1 for line plot, 2 for scatter plot
-					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 3, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 3, Columns, LineTypes, activeworkbook$, 1, 0, 0);
 					if (exist(Text2,16)==16) Text2.text$ = r\-(sat)=$(rsat) %; // If the label exists, update it
 					if (exist(Text3,16)==16) Text3.text$ = J\-(ch,max,sat)=$(jmaxsat, .1) A/cm\+(2); // If the label exists, update it
 					if (exist(Text4,16)==16) Text4.text$ = P\-(ch,max,sat)=$(Pmaxsat, .1) W/cm\+(2); // If the label exists, update it
@@ -616,7 +616,7 @@
 						
 				};
 				
-				win -a %(previousworkbook$);  // activate the previous window (workbook)
+				win -a %(activeworkbook$);  // activate the previous window (workbook)
 				window -ch 1; // hide the transfer workbook that was processed
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -635,7 +635,7 @@
 					
 					loop(i,1,NoofVgs)
 						{
-							string previousworkbook$=%H; // Get the name of the previous window
+							string activeworkbook$=%H; // Get the name of the previous window
 							
 							// Extract Vg							
 							string Vg$=wcol(i+1)[L]$; // Start from column 2
@@ -670,7 +670,7 @@
 							Layers = {1};
 							Columns = {i+NoofVgs+1+2*NoofVgs};
 							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, previousworkbook$, 1, 1, 0);
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 							
 							
 							// Individual output plot with a single Id and Ig
@@ -680,10 +680,10 @@
 							Layers = {1, 1};
 							Columns = {i+NoofVgs+1+2*NoofVgs, i+NoofVgs+1+3*NoofVgs};
 							LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, previousworkbook$, 1, 0, 0);
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
 							
 							
-							win -a %(previousworkbook$);  // activate the previous window (workbook)
+							win -a %(activeworkbook$);  // activate the previous window (workbook)
 						};
 					window -ch 1; // hide the output workbook that was processed
 				};

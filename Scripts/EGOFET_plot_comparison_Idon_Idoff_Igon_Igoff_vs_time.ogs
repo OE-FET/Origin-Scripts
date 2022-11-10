@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
-// Version: 1.7
+// Version: 1.8
 // Current status: Works well.
-// Changes: Placed the variables for all scripts in the Library file.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -20,7 +20,6 @@
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	
 	// Set variables for all loops
-	
 	int firstloop=1;
 	int k = 0; // k is 0 if the "volume vs time graph" has NOT been plotted, and something else (usually 1) if it has been plotted.
 		
@@ -77,19 +76,19 @@
 		if (p!=0 || s!=0 || c!=0 || d!=0) continue; // If the filename contains "Priming", "script", "sample", or "comparison" then just continue to the next workbook.
 		//if (i==0 && j==0) continue; // If the filename does not contain "I-vs-time" and does not contain "plunger", then just continue to the next workbook.
 		if (j!=0 && k==1) continue; // If the filename contains "plunger" and the "volume vs time graph" has been plotted, then just continue to the next workbook.
-
+		
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
 		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
-
+		
 		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
 		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
 		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
-
+		
 		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
-
+		
 		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
-
+		
 		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
 		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
 		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
@@ -97,18 +96,18 @@
 		
 		//string dielectric$ = sheetname.GetToken(7,"_")$; // Get the string that shows the dielectric
 		//string dielectricconc$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric concentration or ratio
-
+		
 		string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
-
+		
 		string stepNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the step number in the cycling process
 		string condition$ = sheetname.GetToken(11,"_")$; // Get the string that shows the conditions (air/type of liquid)
 		string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
 		string daysNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of days
 		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
 		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
-
 		
-
+		
+		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
 		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
 		string condgraphlegend$; // This string will depend on "condition" and it will display the type of liquid for the graph legend
@@ -135,10 +134,10 @@
 				legendAIO$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$)"; // Legend
 		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string previousworkbook$=%H; // Get the name of the previous window
-
+				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
+				
 		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-
+		
 				// Copy Idon values for all time points
 				IonIoffTimeAIOWorkbook$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_comparison_Ion-Ioff-Time-AIO_Vd=%(Vdsat$)V.txt";
 				if(exist(%(uid2name(range2uid(["%(IonIoffTimeAIOWorkbook$)"]))$))==0) // if there is no workbook for this type of measurement then create a new workbook
@@ -289,7 +288,7 @@
 						plot -c; // refresh the graph to update the labels
 						
 						firstloop = 0;
-						win -a %(previousworkbook$);  // activate the previous window (workbook)
+						win -a %(activeworkbook$);  // activate the previous window (workbook)
 					};
 					
 					if (meastype$ == "1-min")
@@ -318,7 +317,7 @@
 							t1exists$ = "1";
 						else t1exists$ = "0";
 							
-						////win -a %(previousworkbook$);  // activate the previous window (workbook)
+						////win -a %(activeworkbook$);  // activate the previous window (workbook)
 						break;
 					}
 						
@@ -326,12 +325,12 @@
 					{
 						case "I-vs-time": // If the string is "I-vs-time", process and plot the Imax, Imin, Ion, Ioff vs time data
 							
-							win -a %(previousworkbook$);
-							range TimeRange = [%(previousworkbook$)]1!wcol(1);  // data range of column (Time)
-							range Idon = [%(previousworkbook$)]1!wcol(10);  // data range of column (Id on)
-							range Idoff = [%(previousworkbook$)]1!wcol(11);  // data range of column (Id off)
-							range Igon = [%(previousworkbook$)]1!wcol(12);  // data range of column (Ig on)
-							range Igoff = [%(previousworkbook$)]1!wcol(13);  // data range of column (Ig off)
+							win -a %(activeworkbook$);
+							range TimeRange = [%(activeworkbook$)]1!wcol(1);  // data range of column (Time)
+							range Idon = [%(activeworkbook$)]1!wcol(10);  // data range of column (Id on)
+							range Idoff = [%(activeworkbook$)]1!wcol(11);  // data range of column (Id off)
+							range Igon = [%(activeworkbook$)]1!wcol(12);  // data range of column (Ig on)
+							range Igoff = [%(activeworkbook$)]1!wcol(13);  // data range of column (Ig off)
 							int rowsNo = wks.maxrows;  // the number of rows of the workbook
 							
 							window -ch 1; // hide the workbook that was processed
@@ -364,7 +363,7 @@
 								
 							};
 							
-							//win -a %(previousworkbook$);  // activate the previous window (workbook)
+							//win -a %(activeworkbook$);  // activate the previous window (workbook)
 							window -ch 1; // hide the workbook that was processed
 							
 							
@@ -381,7 +380,7 @@
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
-							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							
 							
 							// Idoff graph
@@ -395,7 +394,7 @@
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
-							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							
 							
 							// Igon graph
@@ -409,7 +408,7 @@
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
-							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							
 							
 							// Igoff graph
@@ -423,7 +422,7 @@
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
-							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							break;
 							
 							
@@ -443,7 +442,7 @@
 							col(C)[O]$ = "col(B)/3"; // Function
 							
 							// Plot columns
-							range SyringeVolume = [%(previousworkbook$)]1!wcol(3);  // data range of column
+							range SyringeVolume = [%(activeworkbook$)]1!wcol(3);  // data range of column
 							
 							
 							// Volume vs time graph
@@ -461,7 +460,7 @@
 							layer -gu; // Ungroup the datasets in the layer
 							//legend; // Update the legend
 							
-							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							
 							
 							// Idoff graph
@@ -475,7 +474,7 @@
 							layer -gu; // Ungroup the datasets in the layer
 							//legend; // Update the legend
 							
-							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							
 							
 							// Igon graph
@@ -489,7 +488,7 @@
 							layer -gu; // Ungroup the datasets in the layer
 							//legend; // Update the legend
 							
-							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							
 							
 							// Igoff graph
@@ -503,7 +502,7 @@
 							layer -gu; // Ungroup the datasets in the layer
 							//legend; // Update the legend
 							
-							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							
 							k = 1; // "volume vs time graph" has been plotted
 							break;
@@ -596,7 +595,7 @@
 	layer -gu; // Ungroup the datasets in the layer
 	legend; // Update the legend
 	
-	////win -a %(previousworkbook$);  // activate the previous window (workbook)
+	////win -a %(activeworkbook$);  // activate the previous window (workbook)
 	
 	
 	// Idoff graph
@@ -611,7 +610,7 @@
 	layer -gu; // Ungroup the datasets in the layer
 	legend; // Update the legend
 	
-	////win -a %(previousworkbook$);  // activate the previous window (workbook)
+	////win -a %(activeworkbook$);  // activate the previous window (workbook)
 	
 	
 	// Igon graph
@@ -626,7 +625,7 @@
 	layer -gu; // Ungroup the datasets in the layer
 	legend; // Update the legend
 	
-	////win -a %(previousworkbook$);  // activate the previous window (workbook)
+	////win -a %(activeworkbook$);  // activate the previous window (workbook)
 	
 	
 	// Igoff graph
@@ -641,5 +640,5 @@
 	layer -gu; // Ungroup the datasets in the layer
 	legend; // Update the legend
 	
-	////win -a %(previousworkbook$);  // activate the previous window (workbook)
+	////win -a %(activeworkbook$);  // activate the previous window (workbook)
 }

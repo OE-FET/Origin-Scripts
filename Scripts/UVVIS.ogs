@@ -1,15 +1,23 @@
 // This script is used to plot UV-VIS spectra. It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
 // Author: Dimitrios Simatos
-// Version: 0.5
+// Version: 0.6
 // Current status: Untested.
 // Changes: Changed win -t p command to look for templates in a specified folder.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
 //@global=1;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 	del -al *;// Delete all the local and session variables
 	
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
+
+	Library.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 	wks.colwidth = 12;// set all col width to 12
@@ -39,9 +47,9 @@
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	// Create the UV-VIS graph
-	string previousworkbook$=%H; // Get the name of the previous window
+	string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 	win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(additive$)_UV-VIS.otpu" UVVIS;  // create a graph window using template
-	win -a %(previousworkbook$);  // activate the previous window (workbook)
+	win -a %(activeworkbook$);  // activate the previous window (workbook)
 	
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -158,7 +166,7 @@ doc -ef LB { // loop over all workbooks in folder
 
 			layer -a;  // rescale the layer
 			layer -g; // Group the datasets in the layer to %(we$)to-color increment
-			win -a %(previousworkbook$);  // activate the previous window (workbook)
+			win -a %(activeworkbook$);  // activate the previous window (workbook)
 
 	}
 	

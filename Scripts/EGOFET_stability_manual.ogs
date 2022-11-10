@@ -2,10 +2,9 @@
 // NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
 
 // Author: Dimitrios Simatos
-// Version: 0.4
+// Version: 0.5
 // Current status: Works well.
-// Changes: Placed all functions into a library file.
-
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -140,7 +139,7 @@
 				string legend$ = "%(condgraphlegend$), %(timegraphlegend$), %(modegraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string previousworkbook$=%H; // Get the name of the current window and store it in previousworkbook$
+				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 				
 				
 				if (meastype$ == "T") // if this is an transfer curve then
@@ -675,7 +674,7 @@
 							//col(G)[wks.maxrows] = Vtsat; // Rows have already increased, so there's no need to add 1.
 						};
 						
-						win -a %(previousworkbook$);  // activate the previous window (workbook)
+						win -a %(activeworkbook$);  // activate the previous window (workbook)
 						window -ch 1; // hide the workbook that was processed
 						continue;
 						
@@ -697,7 +696,7 @@
 					
 					loop(i,1,NoofVgs)
 						{
-							string previousworkbook$=%H; // Get the name of the previous window
+							string activeworkbook$=%H; // Get the name of the previous window
 							
 							// Extract Vg							
 							string Vg$=wcol(i+1)[L]$; // Start from column 2
@@ -782,7 +781,7 @@
 							//layer -gu; // Ungroup the datasets in the layer
 							//legend; // Update the legend
 							
-							win -a %(previousworkbook$);  // activate the previous window (workbook)
+							win -a %(activeworkbook$);  // activate the previous window (workbook)
 						};
 					window -ch 1; // hide the output workbook that was processed
 				};

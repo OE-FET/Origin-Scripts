@@ -2,9 +2,9 @@
 // NOTE: Place each file in an individual folder and run the script twice on it. If you only run it once, the smart labels will not show up.
 
 // Author: Dimitrios Simatos
-// Version: 0.1
+// Version: 0.2
 // Current status: Untested.
-// Changes: 
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -16,8 +16,13 @@
 	del -al *;// Delete all the local and session variables
 	
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
 
-	string templatepath$="C:\Users\Administrator\Documents\OriginLab\User Files\Templates\"; // define the template path
+	Library.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	// Set variables for all loops
 	string GraphNameSingle$; // The long name of the Graph for the plot of a single MS spectrum
 	string TemplateNameSingle$; // The long name of the Graph Template for the plot of a single MS spectrum
 
@@ -191,7 +196,7 @@
 				string legend$ = "%(condgraphlegend$), %(daysgraphlegend$)"; // Legend				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string previousworkbook$=%H; // Get the name of the previous window
+				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 				
 				wks.name$=method$; // Change the sheet name to the method used (e.g. LCMS)
 				wks.ncols=5; // set total column number to 5
@@ -275,7 +280,7 @@
 				set %c -qc 17; // Set label form as pink
 				set %c -ql 1; // Set label leader line as straight
 				set %c -qm 1; // Set label form as X
-				set %C -qmi [previousworkbook$]1!col(C); // Label only the peaks, NOT all data points
+				set %C -qmi [activeworkbook$]1!col(C); // Label only the peaks, NOT all data points
 				set %C -qr 90; // Set label rotation to 90 degrees
 				set %C -qs 16; // Set label font size to 16
 			};

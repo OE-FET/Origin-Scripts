@@ -2,9 +2,9 @@
 // NOTE: If the curves are not plotted in the right order, open the workbook to be plotted first before running the script.
 
 // Author: Dimitrios Simatos
-// Version: 2.8
+// Version: 2.9
 // Current status: Works well.
-// Changes: Placed the variables for all scripts in the Library file.
+// Changes: Replaced the misleading "previous workbook" variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -369,7 +369,7 @@
 					
 					if (firstloop == 1) // if this is the first loop (i.e. if the "Transfer" graph exists)
 					{
-						string previousworkbook$=%H; // Get the name of the previous window
+						string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 						
 						// create a graph window using template
 						win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu";
@@ -417,7 +417,7 @@
 						TransferIg400$=page.longname$;
 						
 						firstloop = 0;
-						win -a %(previousworkbook$);  // activate the previous window (workbook)
+						win -a %(activeworkbook$);  // activate the previous window (workbook)
 						window -ch 1; // hide the workbook that was processed
 						
 					};
@@ -436,7 +436,7 @@
 							layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
-							////win -a %(previousworkbook$);  // activate the previous window (workbook)
+							////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							
 							// Ig graph
 							//page.active = nActive;  // activate the layer for plot
@@ -450,7 +450,7 @@
 							////layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
-							//win -a %(previousworkbook$);  // activate the previous window (workbook)
+							//win -a %(activeworkbook$);  // activate the previous window (workbook)
 					
 					
 						// Plot the "10-200 minutes" graphs
@@ -468,7 +468,7 @@
 								////layer -gu; // Ungroup the datasets in the layer
 								legend; // Update the legend
 								
-								////win -a %(previousworkbook$);  // activate the previous window (workbook)
+								////win -a %(activeworkbook$);  // activate the previous window (workbook)
 								
 								// Ig graph
 								//page.active = nActive;  // activate the layer for plot
@@ -483,7 +483,7 @@
 								////layer -gu; // Ungroup the datasets in the layer
 								legend; // Update the legend
 								
-								//win -a %(previousworkbook$);  // activate the previous window (workbook)
+								//win -a %(activeworkbook$);  // activate the previous window (workbook)
 							};		
 							
 						// Plot the "200-750 minutes" graphs
@@ -501,7 +501,7 @@
 								////layer -gu; // Ungroup the datasets in the layer
 								legend; // Update the legend
 								
-								////win -a %(previousworkbook$);  // activate the previous window (workbook)
+								////win -a %(activeworkbook$);  // activate the previous window (workbook)
 								
 								// Ig graph
 								//page.active = nActive;  // activate the layer for plot
@@ -516,7 +516,7 @@
 								////layer -gu; // Ungroup the datasets in the layer
 								legend; // Update the legend
 								
-								//win -a %(previousworkbook$);  // activate the previous window (workbook)
+								//win -a %(activeworkbook$);  // activate the previous window (workbook)
 							};
 						
 						// Plot the "100-600 minutes" graph
@@ -535,7 +535,7 @@
 								////layer -gu; // Ungroup the datasets in the layer
 								legend; // Update the legend
 								
-								////win -a %(previousworkbook$);  // activate the previous window (workbook)
+								////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							};
 						
 						// Plot the "100th minute" graph
@@ -554,7 +554,7 @@
 								////layer -gu; // Ungroup the datasets in the layer
 								legend; // Update the legend
 								
-								////win -a %(previousworkbook$);  // activate the previous window (workbook)
+								////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							};
 							
 						// Plot the "400th minute" graph
@@ -573,7 +573,7 @@
 								////layer -gu; // Ungroup the datasets in the layer
 								legend; // Update the legend
 								
-								////win -a %(previousworkbook$);  // activate the previous window (workbook)
+								////win -a %(activeworkbook$);  // activate the previous window (workbook)
 							};
 					};
 						
@@ -857,7 +857,7 @@
 					
 					loop(i,1,NoofVgs)
 						{
-							string previousworkbook$=%H; // Get the name of the previous window
+							string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
 							
 							// Extract Vg							
 							string Vg$=wcol(i+1)[L]$; // Start from column 2
@@ -937,7 +937,7 @@
 							//layer -gu; // Ungroup the datasets in the layer
 							legend; // Update the legend
 							
-							win -a %(previousworkbook$);  // activate the previous window (workbook)
+							win -a %(activeworkbook$);  // activate the previous window (workbook)
 						};
 					window -ch 1; // hide the output workbook that was processed
 				};
