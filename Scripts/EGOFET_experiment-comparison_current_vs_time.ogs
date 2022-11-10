@@ -1,8 +1,11 @@
-// This script is used on EG-OFETs and plots the comparison graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
+// This script is used to analyze EG-OFET operational stability experiments. It is meant to analyze data measured with the "stability test" SPM scripts.
+// The script operates on the "I-vs-time", "plunger" and "valve-port" files. It plots the current, plunger and the valve port vs time.
+// The "experiment-comparison" script compares and plots the current vs time for multiple experiments in the same graph, to give an overview of the entire batch.
+
 // Author: Dimitrios Simatos
-// Version: 1.8
-// Current status: Works well.
-// Changes: Replaced the misleading "previous workbook" variable.
+// Version: 1.9
+// Current status: Untested.
+// Changes: Turned plotting into functions.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -20,10 +23,10 @@
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	
 	// Set variables for all loops
-	int firstloop=1;
+	int firstloop = 1;
 	int k = 0; // k is 0 if the "volume vs time graph" has NOT been plotted, and something else (usually 1) if it has been plotted.
-		
-		
+	
+	
 	string IonIoffTimeAIOWorkbook$; // The long name of the Ion/Ioff-Time (AIO) workbook
 	string IdonTimeAIOGraph$; // The long name of the Idon-Time (AIO) graph
 	string IdoffTimeAIOGraph$; // The long name of the Idoff-Time (AIO) graph
@@ -35,7 +38,7 @@
 	string IgonTimeGraph$; // The long name of the Igon-Time graph
 	string IgoffTimeGraph$; // The long name of the Igoff-Time graph
 	string TransferIgGraph$; // The long name of the Id-Ig-Time graph
-		
+	
 	
 	// Parameters
 	string Vdsat$="-1";
@@ -57,14 +60,14 @@
 	// Define time points to plot
 	string t1$ = "300";
 	string t2$ = "301";
-	string t1exists = "0";
+	string t1exists = "0"; // Variable to check if a transfer curve at time t1 exists
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 	doc -e LB { // loop over all workbooks in project
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		page.active = 1; // Switch to the first worksheet.
 		
-		string sheetname$=page.longname$; // Get the name of worksheet
+		string sheetname$ = page.longname$; // Get the name of worksheet
 		
 		int s = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
 		int d = sheetname.Find("sample"); // It will yield a value different than 0 if the filename contains "script".
@@ -104,9 +107,7 @@
 		string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
 		string daysNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of days
 		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
-		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
-		
-		
+		meastype$ = meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement		
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
 		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
@@ -129,12 +130,12 @@
 				additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
 				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
 				timegraphlegend$ = MakeTimeLegend(timegraphlegend$)$; // Note ending '$'
-					
+				
 				legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(timegraphlegend$)"; // Legend
 				legendAIO$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$)"; // Legend
 		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
+				string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
 				
 		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 		
@@ -296,22 +297,12 @@
 						
 					if ((meastype$ == "%(t1$)-min") || (meastype$ == "%(t2$)-min" && t1exists$ == "0")) // If the string is "t1-min" or "t2-min", process and plot the transfer curve data at the t1th or t2th minute. Do not add this inside the case structure, as it cannot handle the t1$ string variable.
 					{
-						// Plot columns
-						range Id = [%H]1!col(E);  // data range of abs(Id) column (col(E))
-						range Ig = [%H]1!col(F);  // data range of abs(Ig) column (col(F))
-						
 						// Id graph (Transfer curves)
-						//page.active = nActive;  // activate the layer for plot
 						win -a %(uid2name(range2uid(["%(TransferIgGraph$)"]))$); // activate the graph window
-						page.active = 1; // activate Layer 1
-						layer.include(Id);  // plot in the active layer
-						layer.include(Ig);  // plot in the active layer
-						
-						//layer -a;  // rescale the layer
-						////layer -g; // Group the datasets in the layer to auto-color increment
-						//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						////layer -gu; // Ungroup the datasets in the layer
-						legend; // Update the legend
+						Layers = {1, 1};
+						Columns = {5, 6};
+						LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
+						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
 						
 						if (meastype$ == "%(t1$)-min")
 							t1exists$ = "1";
@@ -441,81 +432,50 @@
 							col(C)[U]$ = "ul"; // Units
 							col(C)[O]$ = "col(B)/3"; // Function
 							
-							// Plot columns
-							range SyringeVolume = [%(activeworkbook$)]1!wcol(3);  // data range of column
-							
-							
-							// Volume vs time graph
-							
 							// Plot Syringe Volume columns in all graphs, in Layer 2.
 							
 							// Idon graph
 							win -a %(uid2name(range2uid(["%(IdonTimeGraph$)"]))$); // activate the graph window
-							page.active = 2; // activate Layer 2
-							layer.include(SyringeVolume);  // plot in the active layer
-								
-							//layer -a;  // rescale the layer
-							layer -g; // Group the datasets in the layer to auto-color increment
-							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-							layer -gu; // Ungroup the datasets in the layer
-							//legend; // Update the legend
-							
-							////win -a %(activeworkbook$);  // activate the previous window (workbook)
-							
+							Layers = {2};
+							Columns = {3};
+							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 1, 0);							
 							
 							// Idoff graph
 							win -a %(uid2name(range2uid(["%(IdoffTimeGraph$)"]))$); // activate the graph window
-							page.active = 2; // activate Layer 2
-							layer.include(SyringeVolume);  // plot in the active layer
-								
-							//layer -a;  // rescale the layer
-							layer -g; // Group the datasets in the layer to auto-color increment
-							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-							layer -gu; // Ungroup the datasets in the layer
-							//legend; // Update the legend
-							
-							////win -a %(activeworkbook$);  // activate the previous window (workbook)
-							
+							Layers = {2};
+							Columns = {3};
+							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 1, 0);
 							
 							// Igon graph
 							win -a %(uid2name(range2uid(["%(IgonTimeGraph$)"]))$); // activate the graph window
-							page.active = 2; // activate Layer 2
-							layer.include(SyringeVolume);  // plot in the active layer
-								
-							//layer -a;  // rescale the layer
-							layer -g; // Group the datasets in the layer to auto-color increment
-							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-							layer -gu; // Ungroup the datasets in the layer
-							//legend; // Update the legend
-							
-							////win -a %(activeworkbook$);  // activate the previous window (workbook)
-							
+							Layers = {2};
+							Columns = {3};
+							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 1, 0);
 							
 							// Igoff graph
 							win -a %(uid2name(range2uid(["%(IgoffTimeGraph$)"]))$); // activate the graph window
-							page.active = 2; // activate Layer 2
-							layer.include(SyringeVolume);  // plot in the active layer
-								
-							//layer -a;  // rescale the layer
-							layer -g; // Group the datasets in the layer to auto-color increment
-							//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-							layer -gu; // Ungroup the datasets in the layer
-							//legend; // Update the legend
-							
-							////win -a %(activeworkbook$);  // activate the previous window (workbook)
+							Layers = {2};
+							Columns = {3};
+							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 1, 0);
 							
 							k = 1; // "volume vs time graph" has been plotted
 							break;
-						
-						
+							
+							
 						default: // For all other cases, break
 							break;
 					}
 			};
 	}
+	
 	win -a %(uid2name(range2uid(["%(IonIoffTimeAIOWorkbook$)"]))$); // activate the workbook
 	
-	// Fill any gaps in col(A) (time axis)
+	
+	// Fill any missing values in col(A), so that the time axis is continuous
 	col(A)[1] = 0;
 	
 	loop(i,2,wks.maxrows)
@@ -569,76 +529,41 @@
 	//col(M)[1] = IdonSSRange;
 	cell(1,13) = IdonSSRange;
 	
-	range rIdonsatTime = [%H]1!col(C);  // data range of Id on (Saturation) column
-	range rIdoffsatTime = [%H]1!col(D);  // data range of Id off (Saturation) column
-	range rIgonsatTime = [%H]1!col(E);  // data range of Ig on (Saturation) column
-	range rIgoffsatTime = [%H]1!col(F);  // data range of Ig off (Saturation) column
-	
 	window -ch 1; // hide the workbook that was processed
+	
 	
 	// Idon graph
 	win -a %(uid2name(range2uid(["%(IdonTimeAIOGraph$)"]))$); // activate the graph window
-	page.active = 1; // activate Layer 1
-	
-	layer.include(rIdonsatTime);  // plot in the active layer ;
+	Layers = {1};
+	Columns = {3};
+	LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 	
 	if (exist(Text3,16)==16) Text3.text$ = T\-(ss) = $(Tss) min; // If the label exists, update it
 	if (exist(Text4,16)==16) Text4.text$ = d(Id\-(on,SS))/dt = $(slopeIdon, P*2) A/min; // If the label exists, update it
 	if (exist(Text5,16)==16) Text5.text$ = Id\-(on,SS,mean) = $(IdonSSMean, P*2) A; // If the label exists, update it
 	if (exist(Text6,16)==16) Text6.text$ = Id\-(on,SS,SD) = $(IdonSSSD, P*2) A; // If the label exists, update it
 	if (exist(Text7,16)==16) Text7.text$ = Id\-(on,SS,Ran) = $(IdonSSRange, P*2) A; // If the label exists, update it
-	plot -c; // refresh the graph to update the labels
-		
-	//layer -a;  // rescale the layer
-	layer -g; // Group the datasets in the layer to auto-color increment
-	//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-	layer -gu; // Ungroup the datasets in the layer
-	legend; // Update the legend
-	
-	////win -a %(activeworkbook$);  // activate the previous window (workbook)
-	
+	plot -c; // refresh the graph to update the labels	
 	
 	// Idoff graph
 	win -a %(uid2name(range2uid(["%(IdoffTimeAIOGraph$)"]))$); // activate the graph window
-	page.active = 1; // activate Layer 1
-	
-	layer.include(rIdoffsatTime);  // plot in the active layer ;
-		
-	//layer -a;  // rescale the layer
-	layer -g; // Group the datasets in the layer to auto-color increment
-	//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-	layer -gu; // Ungroup the datasets in the layer
-	legend; // Update the legend
-	
-	////win -a %(activeworkbook$);  // activate the previous window (workbook)
-	
+	Layers = {1};
+	Columns = {4};
+	LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 	
 	// Igon graph
 	win -a %(uid2name(range2uid(["%(IgonTimeAIOGraph$)"]))$); // activate the graph window
-	page.active = 1; // activate Layer 1
-	
-	layer.include(rIgonsatTime);  // plot in the active layer ;
-		
-	//layer -a;  // rescale the layer
-	layer -g; // Group the datasets in the layer to auto-color increment
-	//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-	layer -gu; // Ungroup the datasets in the layer
-	legend; // Update the legend
-	
-	////win -a %(activeworkbook$);  // activate the previous window (workbook)
-	
+	Layers = {1};
+	Columns = {5};
+	LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 	
 	// Igoff graph
 	win -a %(uid2name(range2uid(["%(IgoffTimeAIOGraph$)"]))$); // activate the graph window
-	page.active = 1; // activate Layer 1
-	
-	layer.include(rIgoffsatTime);  // plot in the active layer ;
-		
-	//layer -a;  // rescale the layer
-	layer -g; // Group the datasets in the layer to auto-color increment
-	//page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-	layer -gu; // Ungroup the datasets in the layer
-	legend; // Update the legend
-	
-	////win -a %(activeworkbook$);  // activate the previous window (workbook)
+	Layers = {1};
+	Columns = {6};
+	LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 }

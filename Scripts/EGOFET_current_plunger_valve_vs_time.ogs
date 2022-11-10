@@ -1,8 +1,10 @@
-// This script is used on EG-OFETs and plots the Idon, Idoff, Igon, Igoff, plunger, and valve port vs time.
+// This script is used to analyze EG-OFET operational stability experiments. It is meant to analyze data measured with the "stability test" SPM scripts.
+// The script operates on the "I-vs-time", "plunger" and "valve-port" files. It plots the current, plunger and the valve port vs time.
+
 // Author: Dimitrios Simatos
-// Version: 4.9
-// Current status: Works well.
-// Changes: Replaced the misleading "previous workbook" variable.
+// Version: 5.0
+// Current status: Untested.
+// Changes: Turned plotting into functions.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -23,7 +25,7 @@
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		page.active = 1; // Switch to the first worksheet.
 		
-		string sheetname$=page.longname$; // Get the name of worksheet
+		string sheetname$ = page.longname$; // Get the name of worksheet
 		
 		int i = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
 		if (i!=0) continue; // If the filename contains "script", then just continue to the next workbook.
@@ -52,7 +54,7 @@
 		string timelength$ = sheetname.GetToken(12,"_")$; // get the string, which shows the number of days
 		string daysNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of days
 		string meastype$ = sheetname.GetToken(13,"_")$; // get the string, which shows the type of measurement
-		meastype$=meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
+		meastype$ = meastype.GetToken(1,".")$; // Remove ".txt" from the type of measurement
 		
 		
 		// Parameters
@@ -105,9 +107,7 @@
 			
 		int j = sheetname.Find("I-vs-time"); // It will yield a value different than 0 if the filename contains "I-vs-time".
 		if (j!=0) // If the filename contains "I-vs-time", then
-		{
-			// Plot Imax, Imin, Ion, Ioff vs time
-			
+		{			
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = TimeUnits$; // Units
 			
@@ -197,22 +197,16 @@
 			
 			window -ch 1; // hide the workbook that was processed
 			
-			// Plot columns
-			range Idon = [%(activeworkbook$)]1!wcol(10);  // data range of column (Id on)
-			range Idoff = [%(activeworkbook$)]1!wcol(11);  // data range of column (Id off)
-			range Igon = [%(activeworkbook$)]1!wcol(12);  // data range of column (Ig on)
-			range Igoff = [%(activeworkbook$)]1!wcol(13);  // data range of column (Ig off)
+			// Plot graphs
 			
 			// Idon, Idoff, Igon, Igoff graph
-			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
-			layer.include(Idon);  // plot in the active layer
-			layer.include(Idoff);  // plot in the active layer
-			layer.include(Igon);  // plot in the active layer
-			layer.include(Igoff);  // plot in the active layer
-				
-			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-			
+			TemplateGeneric$ = "%(templatepath$)Generic_Idon-Time.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V";
+			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+			Layers = {1, 1, 1, 1};
+			Columns = {10, 11, 12, 13};
+			LineTypes = {1, 1, 1, 1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
 			if (exist(Text3,16)==16) Text3.text$ = T\-(ss) = $(Tss) min; // If the label exists, update it
 			if (exist(Text4,16)==16) Text4.text$ = d(Id\-(on,SS))/dt = $(slopeIdon, P*2) A/min; // If the label exists, update it
@@ -223,28 +217,33 @@
 			
 			
 			// Idoff graph
-			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Idoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
-			layer.include(Idoff);  // plot in the active layer
-			
-			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+			TemplateGeneric$ = "%(templatepath$)Generic_Idoff-Time.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idoff-Time_Vd=%(Vdsat$)V";
+			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Idoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+			Layers = {1};
+			Columns = {11};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
 			
 			// Igon, Igoff graph
-			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
-			layer.include(Igon);  // plot in the active layer
-			layer.include(Igoff);  // plot in the active layer
-				
-			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Igon-Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-			
+			TemplateGeneric$ = "%(templatepath$)Generic_Igon-Igoff-Time.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Igon-Igoff-Time_Vd=%(Vdsat$)V";
+			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Igon-Igoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+			Layers = {1, 1};
+			Columns = {12, 13};
+			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
 			// Igoff graph
-			win -t p "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Igoff-Time_Vd=%(Vdsat$)V.otpu";  // create a graph window using template
-			layer.include(Igoff);  // plot in the active layer
+			TemplateGeneric$ = "%(templatepath$)Generic_Igoff-Time.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Igoff-Time_Vd=%(Vdsat$)V";
+			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Igoff-Time_Vd=%(Vdsat$)V.otpu"; // This is the template path
+			Layers = {1};
+			Columns = {13};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
-			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Igoff-Time_Vd=%(Vdsat$)V"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 			break;
 		};
 			
@@ -252,7 +251,6 @@
 		int k = sheetname.Find("plunger"); // It will yield a value different than 0 if the filename contains "plunger".
 		if (k!=0) // If the filename contains "plunger", then
 		{
-			// Plot Plunger position vs time								
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = TimeUnits$; // Units
 			
@@ -263,27 +261,26 @@
 			col(C)[U]$ = "ul"; // Units
 			col(C)[O]$ = "col(B)/3"; // Function
 			
-			// Plot columns
-			range PlungerPosition = [%(activeworkbook$)]1!wcol(2);  // data range of column
-			range SyringeVolume = [%(activeworkbook$)]1!wcol(3);  // data range of column
-			
+			// Plot graphs		
 			
 			// Volume vs time graph
-			win -t p "%(templatepath$)Volume-Time.otpu";  // create a graph window using template
-			layer.include(SyringeVolume);  // plot in the active layer
-			
-			//layer -a;  // rescale the layer
-			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Volume-Time"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+			TemplateGeneric$ = "%(templatepath$)Volume-Time.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Volume-Time";
+			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Volume-Time.otpu"; // This is the template path
+			Layers = {1};
+			Columns = {3};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			
 			
 			// Volume vs time (0-30 minutes) graph
-			win -t p "%(templatepath$)Volume-Time_static_mode_0-30_min.otpu";  // create a graph window using template
-			layer.include(SyringeVolume);  // plot in the active layer
-			
-			//layer -a;  // rescale the layer
-			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Volume-Time_0-30_min"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+			TemplateGeneric$ = "%(templatepath$)Volume-Time_static_mode_0-30_min.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Volume-Time_0-30_min";
+			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Volume-Time_0-30_min.otpu"; // This is the template path
+			Layers = {1};
+			Columns = {3};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 		};
 			
 			
@@ -296,16 +293,14 @@
 			col(B)[L]$ = "Valve port"; // Units
 			col(B)[U]$ = "No"; // Units
 			
-			// Plot columns
-			range ValvePort = [%(activeworkbook$)]1!wcol(2);  // data range of column
-			
 			// Valve port vs time graph
-			win -t p "%(templatepath$)Valve-port-Time.otpu";  // create a graph window using template
-			layer.include(ValvePort);  // plot in the active layer
-			
-			layer -a;  // rescale the layer
-			page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Valve-port-Time"; //this renames the active window (long name)
-			page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+			TemplateGeneric$ = "%(templatepath$)Valve-port-Time.otpu";
+			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Valve-port-Time";
+			Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_duration_%(Duration$)-min_Valve-port-Time.otpu"; // This is the template path
+			Layers = {1};
+			Columns = {2};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 		};
 	}
 }

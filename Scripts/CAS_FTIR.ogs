@@ -33,21 +33,21 @@
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		page.active = 1; // Switch to the first worksheet.
 		
-		string sheetname$=page.longname$; // Get the name of worksheet
+		string sheetname$ = page.longname$; // Get the name of worksheet
 		
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 		string method$ = sheetname.GetToken(2,"_")$; // Get the string that shows the experimental method (e.g. FTIR, CAS-FTIR)
 		string architecture$ = sheetname.GetToken(3,"_")$; // Get the string that shows the architecture
 		string material$ = sheetname.GetToken(4,"_")$; // Get the string that shows the material
-
+		
 		string concentration$ = sheetname.GetToken(5,"_")$; // Get the string that shows the concentration
 		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
 		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
-
+		
 		string solvent$ = sheetname.GetToken(6,"_")$; // Get the string that shows the solvent content
-
+		
 		string annealing$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
-
+		
 		string additive$ = sheetname.GetToken(8,"_")$; // Get the string that shows the additive
 		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
 		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
@@ -108,8 +108,7 @@
 				
 				// Parameters
 				string Rate$="none";
-				string CycleLength$="800";
-				
+				string CycleLength$="800";				
 				
 				GraphNameAbs$ = "%(batch$)_%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(pressure$)_%(temperature$)_A_W_all";
 				TemplateNameAbs$ = "%(templatepath$)%(method$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_cycle_%(CycleLength$)-min.otpu";
@@ -134,110 +133,110 @@
 		string meastypegraphlegend$; // This string will depend on "meastype" and it will display the measurement type (sample or background intensity spectrum) for the graph legend		
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-				// Case structures from filenames (used for legends).				
+		// Case structures from filenames (used for legends).				
+		
+		conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
+		additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
+		condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
+		timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
+		
+		//string legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(timegraphlegend$), %(minutesgraphlegend$), %(modegraphlegend$), %(intimegraphlegend$)"; // Legend
+		//string legend$ = "%(condgraphlegend$), %(timegraphlegend$), Meas. No %(measNo$), Vg=%(Vg$), Vd=%(Vd$), %(pressure$), %(temperature$)"; // Legend
+		string legend$ = "%(condgraphlegend$), %(timegraphlegend$), Meas. %(measNo$), Vg=%(Vg$), Vd=%(Vd$)"; // Legend
+		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		
+		string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
+		
+		if (meastype$ == "A") // if this is an absorbance spectrum then
+		{
+			wks.name$=method$; // Change the sheet name to the method used (e.g. CAS-FTIR)
+			wks.ncols=3; // set total column number to 3
+			wks.colwidth = 12;// set all col width to 12
+			
+			
+			// Write long name, units, comments, and parameters of columns
+			col(A)[L]$ = "Wavenumber"; // Long name
+			col(A)[U]$ = "cm\+(-1)"; // Units
+			col(B)[L]$ = "Absorbance"; // Long name
+			col(B)[U]$ = AU; // Units
+			col(C)[L]$ = "Transmittance"; // Long name
+			col(C)[U]$ = AU; // Units
+			col(C)[O]$ = "(1/log(2-col(B)))/100";
+			
+			
+			//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+			// Column legends
+			
+			col(B)[C]$ = legend$;
+			col(C)[C]$ = col(B)[C]$; // Comment field (graph legend)
+			
+			//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+			// Plot graphs
+			
+			// Plot FTIR spectrum (global)
+			TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
+			graphname$ = GraphNameAbs$;
+			Template$ = TemplateNameAbs$; // This is the template path
+			Layers = {1};
+			Columns = {2};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
+			
+			
+			// Plot FTIR spectrum (single)
+			TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
+			graphname$ = GraphNameSingleAbs$;
+			Template$ = TemplateNameSingleAbs$; // This is the template path
+			Layers = {1};
+			Columns = {2};
+			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
+		}						
+		
+		//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		else // if this is an intensity spectrum (sample or background)
+		{	
+				meastypegraphlegend$ = MakeCASFTIRMeasTypeLegend(meastype$)$; // Note ending '$'
 				
-				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
-				additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
-				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
-				timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
+				string legend$ = "%(condgraphlegend$), %(timegraphlegend$), Meas. %(measNo$), Vg=%(Vg$), Vd=%(Vd$), %(meastypegraphlegend$)"; // Legend
 				
-				//string legend$ = "%(material$) %(concnumber$) %(conunitslegend$) %(additivegraphlegend$), %(condgraphlegend$), %(timegraphlegend$), %(minutesgraphlegend$), %(modegraphlegend$), %(intimegraphlegend$)"; // Legend
-				//string legend$ = "%(condgraphlegend$), %(timegraphlegend$), Meas. No %(measNo$), Vg=%(Vg$), Vd=%(Vd$), %(pressure$), %(temperature$)"; // Legend
-				string legend$ = "%(condgraphlegend$), %(timegraphlegend$), Meas. %(measNo$), Vg=%(Vg$), Vd=%(Vd$)"; // Legend
+				wks.name$=method$; // Change the sheet name to the method used (e.g. CAS-FTIR)
+				wks.colwidth = 12;// set all col width to 12
+				
+				
+				// Write long name, units, comments, and parameters of columns
+				col(A)[L]$ = "Wavenumber"; // Long name
+				col(A)[U]$ = "cm\+(-1)"; // Units
+				col(B)[L]$ = "Intensity"; // Long name
+				col(B)[U]$ = AU; // Units
+				
+				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Column legends
 				
-				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
-				
-				if (meastype$ == "A") // if this is an absorbance spectrum then
-				{
-						wks.name$=method$; // Change the sheet name to the method used (e.g. CAS-FTIR)
-						wks.ncols=3; // set total column number to 3
-						wks.colwidth = 12;// set all col width to 12
-						
-						
-						// Write long name, units, comments, and parameters of columns
-						col(A)[L]$ = "Wavenumber"; // Long name
-						col(A)[U]$ = "cm\+(-1)"; // Units
-						col(B)[L]$ = "Absorbance"; // Long name
-						col(B)[U]$ = AU; // Units
-						col(C)[L]$ = "Transmittance"; // Long name
-						col(C)[U]$ = AU; // Units
-						col(C)[O]$ = "(1/log(2-col(B)))/100";
-						
-						
-						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-						// Column legends
-						
-						col(B)[C]$ = legend$;
-						col(C)[C]$ = col(B)[C]$; // Comment field (graph legend)
-						
-						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-						// Plot graphs
-						
-						// Plot FTIR spectrum (global)
-						TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
-						graphname$ = GraphNameAbs$;
-						Template$ = TemplateNameAbs$; // This is the template path
-						Layers = {1};
-						Columns = {2};
-						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
-						
-						
-						// Plot FTIR spectrum (single)
-						TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
-						graphname$ = GraphNameSingleAbs$;
-						Template$ = TemplateNameSingleAbs$; // This is the template path
-						Layers = {1};
-						Columns = {2};
-						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
-					}						
+				col(B)[C]$ = legend$;
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-				else // if this is an intensity spectrum (sample or background)
-				{	
-						meastypegraphlegend$ = MakeCASFTIRMeasTypeLegend(meastype$)$; // Note ending '$'
-							
-						string legend$ = "%(condgraphlegend$), %(timegraphlegend$), Meas. %(measNo$), Vg=%(Vg$), Vd=%(Vd$), %(meastypegraphlegend$)"; // Legend
-						
-						wks.name$=method$; // Change the sheet name to the method used (e.g. CAS-FTIR)
-						wks.colwidth = 12;// set all col width to 12
-						
-						
-						// Write long name, units, comments, and parameters of columns
-						col(A)[L]$ = "Wavenumber"; // Long name
-						col(A)[U]$ = "cm\+(-1)"; // Units
-						col(B)[L]$ = "Intensity"; // Long name
-						col(B)[U]$ = AU; // Units
-						
-						
-						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-						// Column legends
-						
-						col(B)[C]$ = legend$;
-						
-						//-----------------------------------------------------------------------------------------------------------------------------------------------------------
-						// Plot graphs
-						
-						// Plot FTIR spectrum (global)
-						TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
-						graphname$ = GraphNameInt$;
-						Template$ = TemplateNameInt$; // This is the template path
-						Layers = {1};
-						Columns = {2};
-						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
-						
-						
-						// Plot FTIR spectrum (single)
-						TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
-						graphname$ = GraphNameSingleInt$;
-						Template$ = TemplateNameSingleInt$; // This is the template path
-						Layers = {1};
-						Columns = {2};
-						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
-				};
-			};
+				// Plot graphs
+				
+				// Plot FTIR spectrum (global)
+				TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
+				graphname$ = GraphNameInt$;
+				Template$ = TemplateNameInt$; // This is the template path
+				Layers = {1};
+				Columns = {2};
+				LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+				PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
+				
+				
+				// Plot FTIR spectrum (single)
+				TemplateGeneric$ = "%(templatepath$)Generic_%(method$).otpu";
+				graphname$ = GraphNameSingleInt$;
+				Template$ = TemplateNameSingleInt$; // This is the template path
+				Layers = {1};
+				Columns = {2};
+				LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+				PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 1);
 		};
+	};
+};
