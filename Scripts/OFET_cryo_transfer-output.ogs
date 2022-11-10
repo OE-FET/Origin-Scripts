@@ -49,7 +49,7 @@
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		page.active = 1; // Switch to the first worksheet.
 		
-		string sheetname$=page.longname$; // Get the name of worksheet
+		string sheetname$ = page.longname$; // Get the name of worksheet
 		
 		int i = sheetname.Find("uavg-Vt-T");
 		if(i!=0) continue; // If "uavg-Vt-T" is present in the filename, then continue.
@@ -88,11 +88,11 @@
 		string pressure$ = sheetname.GetToken(16,"_")$; // Get the string that shows the pressure
 		string temperature$ = sheetname.GetToken(17,"_")$; // Get the string that shows the temperature
 		string temperatureNo$ = temperature.GetToken(1,"K")$; // Get the string that shows the temperatureNo
-		string meastype$=sheetname.GetToken(18,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
-		string measNo$=sheetname.GetToken(19,"_")$; // Get the string that shows the measurement number
-		string mode$=sheetname.GetToken(20,"_")$; // Get the string that shows the measurement mode
-		string intime$=sheetname.GetToken(21,"_")$; // Get the string that shows the integration time
-		intime$=intime.GetToken(1,".")$; // Remove ".txt" from the integration time
+		string meastype$ = sheetname.GetToken(18,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
+		string measNo$ = sheetname.GetToken(19,"_")$; // Get the string that shows the measurement number
+		string mode$ = sheetname.GetToken(20,"_")$; // Get the string that shows the measurement mode
+		string intime$ = sheetname.GetToken(21,"_")$; // Get the string that shows the integration time
+		intime$ = intime.GetToken(1,".")$; // Remove ".txt" from the integration time
 		
 		
 		// Transfer curve parameters
@@ -659,7 +659,7 @@
 					
 					
 					// Extract VdStart and VdStop
-					string VdStart$= $(col(A)[1]); // VdStart is the value of the first cell of col(A)						
+					string VdStart$=$(col(A)[1]); // VdStart is the value of the first cell of col(A)						
 					string VdStop$=$(col(A)[wks.maxrows/2]); // VdStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
 					
 					

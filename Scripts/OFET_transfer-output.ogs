@@ -1,4 +1,4 @@
-// This script is used in transfer curves taken with the low noise rig in two drain voltages. It loops over all the workbooks in the folder and plots the transfer and output curves.
+// This script is used in transfer curves taken with the low noise rig in two drain voltages (linear and saturation). It loops over all the workbooks in the folder and plots the transfer and output curves.
 // It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, and reliability factor.
 // NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
 
@@ -10,9 +10,9 @@
 // 5. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 8.3
-// Current status: Works well.
-// Changes: Replaced the misleading "previous workbook" variable.
+// Version: 8.4
+// Current status: Untested.
+// Changes: Small corrections.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -33,7 +33,7 @@
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		page.active = 1; // Switch to the first worksheet.
 		
-		string sheetname$=page.longname$; // Get the name of worksheet
+		string sheetname$ = page.longname$; // Get the name of worksheet
 		
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
@@ -67,11 +67,11 @@
 		string condition$ = sheetname.GetToken(13,"_")$; // Get the string that shows the conditions (air/type of liquid)
 		string timelength$ = sheetname.GetToken(14,"_")$; // get the string, which shows the number of days
 		string minutesNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the number of minutes
-		string meastype$=sheetname.GetToken(15,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
-		string measNo$=sheetname.GetToken(16,"_")$; // Get the string that shows the measurement number
-		string mode$=sheetname.GetToken(17,"_")$; // Get the string that shows the measurement mode
-		string intime$=sheetname.GetToken(18,"_")$; // Get the string that shows the integration time
-		intime$=intime.GetToken(1,".")$; // Remove ".txt" from the integration time
+		string meastype$ = sheetname.GetToken(15,"_")$; // Get the string "T" or "O", which shows if the curve is a transfer or output curve
+		string measNo$ = sheetname.GetToken(16,"_")$; // Get the string that shows the measurement number
+		string mode$ = sheetname.GetToken(17,"_")$; // Get the string that shows the measurement mode
+		string intime$ = sheetname.GetToken(18,"_")$; // Get the string that shows the integration time
+		intime$ = intime.GetToken(1,".")$; // Remove ".txt" from the integration time
 		
 		
 		// Transfer curve parameters
@@ -629,13 +629,13 @@
 					
 					
 					// Extract VdStart and VdStop
-					string VdStart$= $(col(A)[1]); // VdStart is the value of the first cell of col(A)						
+					string VdStart$=$(col(A)[1]); // VdStart is the value of the first cell of col(A)						
 					string VdStop$=$(col(A)[wks.maxrows/2]); // VdStop is the middle cell of col(A) (assuming the gate voltage has a forward and reverse sweep) - wks.maxrows is the total number of (non-empty) rows
 					
 					
 					loop(i,1,NoofVgs)
 						{
-							string activeworkbook$=%H; // Get the name of the previous window
+							string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
 							
 							// Extract Vg							
 							string Vg$=wcol(i+1)[L]$; // Start from column 2
@@ -657,11 +657,6 @@
 							wcol(i+NoofVgs+1+3*NoofVgs)[U]$ = A; // Units
 							wcol(i+NoofVgs+1+3*NoofVgs)[O]$ = "abs(col(%(i+2*NoofVgs+1)))";
 							wcol(i+NoofVgs+1+3*NoofVgs)[C]$ =  "Vg=%(Vg$)V, %(legend$), Leakage";
-							
-							
-							// Plot output curve
-							range rId = [%H]1!wcol(i+NoofVgs+1+2*NoofVgs);  // data range of abs(Id) column
-							range rIg = [%H]1!wcol(i+NoofVgs+1+3*NoofVgs);  // data range of abs(Ig) column
 							
 							// Output plot with all the Id
 							TemplateGeneric$ = "%(templatepath$)Generic_Output.otpu";
