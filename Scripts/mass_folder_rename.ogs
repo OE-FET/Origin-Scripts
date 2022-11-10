@@ -9,7 +9,7 @@
 	doc -e W { // loop over all layers in project
 		string oldfoldername$=%@F; //get the current folder name
 		string newfoldername$ = oldfoldername$;
-		newfoldername.Replace("NaP buffer", "NaP buffer (pH = 7.4)"); // replace "static mode" with "dynamic mode"
+		newfoldername.Replace("intervals", "period"); // replace "static mode" with "dynamic mode"
 		pe_cd /; // go to the top level
 		pe_rename old:=oldfoldername$ newname:=newfoldername$;
 		}
