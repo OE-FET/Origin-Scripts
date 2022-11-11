@@ -7,9 +7,11 @@ To install the scripts perform the following steps:
 	- The filepath should **NOT** contain *spaces*!
 	- The names of the scripts should also **NOT** contain *dashes* (`-`), as Origin cannot handle them.
 2. Copy the `Themes` and `Templates` folders to `C:\Users\<Account Name>\Documents\OriginLab\User Files`.
-3. Open OriginLab and select `View` and `Command Window`. The Command Window is similar to the Linux command line. It is where we can give commands directly to Origin.
-4. Write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts` to set the Scripts directory as the working directory. Then press `ENTER`.
-5. Now the scripts should be available. To verify this, start typing the name of a script in the command line (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name.
+3. Run OriginLab
+4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script. Make sure to save the script.
+5. Select `View` and then `Command Window`. The Command Window will appear. It is similar to the Linux command line and allows one to give commands directly to Origin.
+6. Write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts` to set the Scripts directory as the working directory. Then press `ENTER`.
+7. Now the scripts should be available. To verify this, start typing the name of a script in the command line (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name.
 
 ## Analysis of filename templates:
 
