@@ -12,8 +12,9 @@ To install the scripts perform the following steps:
 5. Now the scripts should be available. To verify this, start typing the name of a script in the command line (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name.
 
 ## Analysis of filename templates:
+
+### Fields
 Each filename template consists of different **fields**, separated by an *underscore* (`_`).
-The different **values** for each of the different **fields** can be seen in the `Library` file.
 
 The different **fields** are:
 - `batchNo`: The number of the batch (e.g. 235th)
@@ -26,6 +27,11 @@ The different **fields** are:
 - `additive (type-thickness-units)`: The additives or SAMs used to in the FET (e.g. Pristine, TCNQ-40-nm).
 	- **NOTE**: Units are separated by a dash (e.g. 20-nm).
 - `dielectric`: The dielectric used to make the FET (e.g. Cytop-M, PMMA).
+
+
+### Values
+The different **values** for each of the different **fields** can be seen in the `Library` file.
+
 
 
 ### The `step` convention:
@@ -45,6 +51,10 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 - ...
 - `<transistor parameters>_step_3_up-H2O_1-min_<measurement parameters>`
 - ...
+
+## Script parameters:
+
+**OFET (Transfer/Output)**:
 
 
 ## Filename templates:
@@ -96,7 +106,6 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 
 **Mass Spectrometry**:
 `batchNo_sampleNo_Method (LCMS/GCMS)_SampleType(Priming Waste/Experiment Waste)_Architecture (film)_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_condition(air/N2_liquid)_daysNo-"days"_MeasNo_IonMeasurementMode(Pos/Neg)_LowEnergy/HighEnergy Channel (LE/HE)`
-
 
 **Profilometer**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_daysNo-"days"_workbooktype(T-O)_MeasNo_MeasurementMode_IntegrationTime`
