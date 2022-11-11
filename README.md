@@ -1,5 +1,5 @@
 # Origin-Scripts
-LabTalk Scripts for OFET and EG-OFET analysis. Compatible with Origin 2018 Pro or newer.
+LabTalk Scripts for automated data analysis of OFET and EG-OFET data. Compatible with Origin 2018 Pro or newer.
 
 ## Installation:
 To install the scripts perform the following steps:
@@ -10,10 +10,21 @@ To install the scripts perform the following steps:
 5. Now the scripts should be available. To verify this, start typing the name of a script in the command line (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name.
 
 ## Analysis of filename templates:
-- Each filename template consists of different *fields*, separated by an *underscore* (`_`).
+Each filename template consists of different **fields**, separated by an *underscore* (`_`).
+The different **values** for each of the different **fields** can be seen in the `Library` file.
 
-The different fields are:
-- `batchNo`: The number of the batch.
+The different **fields** are:
+- `batchNo`: The number of the batch (e.g. 235th)
+- `Architecture`: The architecture of the device (e.g. TGBC-OFET, TGBC-EGOFET).
+- `material`: The semiconductor used to make the FET (e.g. IDTBT, C14-PBTTT).
+- `concentration(No-units)`: The concentration of the material/semiconductor (e.g. 10-gl).
+- `material`: The semiconductor used to make the FET (e.g. IDTBT, C14-PBTTT).
+- `solvent`: The solvent(s) used to make the semiconductor solution (e.g. 100pDCB, 75pDCB-25pCF).
+- `annealing`: The annealing conditions of the semiconductor thin films (e.g. 100C-1h).
+- `additive (type-thickness-units)`: The additives or SAMs used to in the FET (e.g. Pristine, TCNQ-40-nm).
+ - **NOTE**: Units are separated by a dash (e.g. 20-nm).
+- `dielectric`: The dielectric used to make the FET (e.g. Cytop-M, PMMA).
+
 
 ### The `step` convention:
 
@@ -35,7 +46,6 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 
 
 ## Filename templates:
-- **NOTE**: Units are separated by a dash (e.g. 20-nm).
 
 **OFET (Transfer/Output)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_daysNo-"days"_MeasurementType(T-O)_MeasNo_MeasurementMode_IntegrationTime`
