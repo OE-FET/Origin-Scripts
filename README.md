@@ -3,7 +3,9 @@ LabTalk Scripts for automated data analysis of OFET and EG-OFET data. Compatible
 
 ## Installation:
 To install the scripts perform the following steps:
-1. Copy the `Scripts` folder to `C:\Users\<Account Name>\Documents\OriginLab`. Note that the filepath should **NOT** contain *spaces*! The names of the scripts should also **NOT** contain *dashes* (`-`), as Origin cannot handle them.
+1. Copy the `Scripts` folder to `C:\Users\<Account Name>\Documents\OriginLab`.
+	- The filepath should **NOT** contain *spaces*!
+	- The names of the scripts should also **NOT** contain *dashes* (`-`), as Origin cannot handle them.
 2. Copy the `Themes` and `Templates` folders to `C:\Users\<Account Name>\Documents\OriginLab\User Files`.
 3. Open OriginLab and select `View` and `Command Window`. The Command Window is similar to the Linux command line. It is where we can give commands directly to Origin.
 4. Write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts` to set the Scripts directory as the working directory. Then press `ENTER`.
@@ -22,7 +24,7 @@ The different **fields** are:
 - `solvent`: The solvent(s) used to make the semiconductor solution (e.g. 100pDCB, 75pDCB-25pCF).
 - `annealing`: The annealing conditions of the semiconductor thin films (e.g. 100C-1h).
 - `additive (type-thickness-units)`: The additives or SAMs used to in the FET (e.g. Pristine, TCNQ-40-nm).
- - **NOTE**: Units are separated by a dash (e.g. 20-nm).
+	- **NOTE**: Units are separated by a dash (e.g. 20-nm).
 - `dielectric`: The dielectric used to make the FET (e.g. Cytop-M, PMMA).
 
 
@@ -63,7 +65,7 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 
 **OFET (Bias Stress)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_daysNo-"days"_BiasStressTypeandNo(PBS1/NBS1)_minutesNo-"min"_MeasurementType(T-O-S)_MeasNo_MeasurementMode_IntegrationTime`
-- **NOTE**: For `S` measurement type (`sample`) the suffix is: `S_Vg_Vd`
+	- **NOTE**: For a `sample` measurement type (`S`), the suffix is: `S_Vg_Vd`
 
 **EG-OGET (sensing-cycling)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_sampleNo_condition(air/N2_liquid)_daysNo-"days"_MeasurementType(I-vs-time_plunger,valve-port)`
