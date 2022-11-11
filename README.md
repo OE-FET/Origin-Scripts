@@ -1,6 +1,15 @@
 # Origin-Scripts
 LabTalk Scripts for OFET and EG-OFET analysis. Compatible with Origin 2018 Pro or newer.
 
+## Installation:
+To install the scripts perform the following steps:
+1. Copy the `Scripts` folder to `C:\Users\<Account Name>\Documents\OriginLab`.
+ - **NOTE**: <mark>The filepath should **NOT** contain spaces!</mark>
+2. Copy the `Themes` and `Templates` folders to `C:\Users\<Account Name>\Documents\OriginLab\User Files`.
+3. Open OriginLab and select `View` and `Command Window`. The Command Window is similar to the Linux command line. It is where we can give commands directly to Origin.
+4. Write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts` to set the Scripts directory as the working directory. Then press `ENTER`.
+5. Now the scripts should be available. To verify this, start typing the name of a script in the command line (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name.
+
 ## Analysis of filename templates:
 - Each filename template consists of different *fields*, separated by an *underscore* (`_`).
 
