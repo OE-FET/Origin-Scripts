@@ -239,12 +239,16 @@ function string MakeConditionLegend (string condition)
 			condgraphlegend$ = "1xPBS"; // Comment field (graph legend)
 			break;
 		
+		case "SDS-0,002-gl": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "SDS, 0.002 g/l"; // Comment field (graph legend)
+			break;		
+		
 		case "Lys-0,0125-gl": // If the string is "ss", write "Saline solution" in the comment field
-			condgraphlegend$ = "Lysozyme, 0.0125 g/l"; // Comment field (graph legend)
+			condgraphlegend$ = "Lysozyme, 12.5 ug/ml"; // Comment field (graph legend)
 			break;
 		
 		case "Lys-0,025-gl": // If the string is "ss", write "Saline solution" in the comment field
-			condgraphlegend$ = "Lysozyme, 0.025 g/l"; // Comment field (graph legend)
+			condgraphlegend$ = "Lysozyme, 25 ug/ml"; // Comment field (graph legend)
 			break;
 		
 		case "Lys-0,05-gl": // If the string is "ss", write "Saline solution" in the comment field
@@ -724,7 +728,7 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 	return beta;
 }
 
-function PlotSingle (string graphname, string Template, string TemplateGeneric, dataset Layers, int ColumnsNo, dataset Columns, dataset LineTypes, string previousworkbook, int LegendUpdate, int ReColor, int ReScale)
+function PlotSingle (string graphname, string Template, string TemplateGeneric, dataset Layers, int ColumnsNo, dataset Columns, dataset LineTypes, string activeworkbook, int LegendUpdate, int ReColor, int ReScale)
 {
 	if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))==0) // if there is no graph for this type of measurement then create a new graph
 	{
@@ -743,7 +747,7 @@ function PlotSingle (string graphname, string Template, string TemplateGeneric, 
 
 	loop(j, 1, ColumnsNo)
 	{
-		win -a %(uid2name(range2uid(["%(previousworkbook$)"]))$); // Note that I cannot use "win -a %(previousworkbook$);" inside the function.
+		win -a %(uid2name(range2uid(["%(activeworkbook$)"]))$); // Note that I cannot use "win -a %(activeworkbook$);" inside the function.
 		range rI = [%H]1!wcol(Columns[j]); // range variable
 		
 		win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
