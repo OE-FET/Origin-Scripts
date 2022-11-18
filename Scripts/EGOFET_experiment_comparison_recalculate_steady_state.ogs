@@ -1,8 +1,8 @@
 // This script is used on EG-OFETs and recalculates the metrics of the graphs of Idon, Idoff, Igon, Igoff and transfer curves vs time.
 // Author: Dimitrios Simatos
-// Version: 0.3
+// Version: 0.4
 // Current status: Works well.
-// Changes: Turned stability metric calculation into a function.
+// Changes: Updated the Duration variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -18,26 +18,13 @@
 	Library.Main; // Run Main section of Library file
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
-	// Set variables for all loops		
-	string IonIoffTimeAIOWorkbook$; // The long name of the Ion/Ioff-Time (AIO) workbook
-	string IdonTimeAIOGraph$; // The long name of the Idon-Time (AIO) graph
-	string IdoffTimeAIOGraph$; // The long name of the Idoff-Time (AIO) graph
-	string IgonTimeAIOGraph$; // The long name of the Igon-Time (AIO) graph
-	string IgoffTimeAIOGraph$; // The long name of the Igoff-Time (AIO) graph
-	
-	string IdonTimeGraph$; // The long name of the Idon-Time graph
-	string IdoffTimeGraph$; // The long name of the Idoff-Time graph
-	string IgonTimeGraph$; // The long name of the Igon-Time graph
-	string IgoffTimeGraph$; // The long name of the Igoff-Time graph
-	string TransferIgGraph$; // The long name of the Id-Ig-Time graph
-		
 	
 	// Parameters
 	string Vdsat$="-1";
 	string VgStart$="0";
 	string VgStop$="-1";
 	string Rate$="40-ulmin";
-	string CycleLength$="900";
+	string Duration$="769"; // [min] The total duration of the measurement.
 	
 	double slopeIdon; // The degradation slope of Id on
 	double Tss; // The steady state time
@@ -94,7 +81,7 @@
 	col(M)[U]$ = A; // Units
 	col(M)[1] = IdonSSRange;
 	
-	window -ch 1; // hide the "uavg-Vtsat-vs-invT" window
+	window -ch 1; // hide the workbook that was processed
 	if (exist(Text3,16)==16) Text3.text$ = T\-(ss) = $(Tss) min; // If the label exists, update it
 	if (exist(Text4,16)==16) Text4.text$ = d(Id\-(on,SS))/dt = $(slopeIdon, P*2) A/min; // If the label exists, update it
 	if (exist(Text5,16)==16) Text5.text$ = Id\-(on,SS,mean) = $(IdonSSMean, P*2) A; // If the label exists, update it
