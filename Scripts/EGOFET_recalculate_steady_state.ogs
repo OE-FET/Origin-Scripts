@@ -109,7 +109,7 @@
 	col(S)[U]$ = A; // Units
 	col(S)[1] = IdonSSRange;
 	
-	window -ch 1; // hide the transfer workbook that was processed
+	window -ch 1; // hide the workbook that was processed
 
 	graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(timelength$)_Idon-Idoff-Igon-Igoff-Time_Vd=%(Vdsat$)V";
 	win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the graph window
