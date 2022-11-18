@@ -10,8 +10,8 @@
 // 5. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 8.4
-// Current status: Untested.
+// Version: 8.5
+// Current status: Works well.
 // Changes: Small corrections.
 
 [Main]
@@ -151,7 +151,11 @@
 				string legend$ = "%(condgraphlegend$), %(timegraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
+				string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				// NOTE: If this is written with case structures instead of if-then structures, the program will crash due to Origin restrictions
 				
 				if (meastype$ == "T") // if this is a transfer curve then
 				{
@@ -530,7 +534,7 @@
 					Columns = {8, 14};
 					LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
 					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					if (exist(Text2,16)==16) Text2.text$ = V\-(t,lin) = $(Vtlin)V;
 					plot -c; // refresh the graph to update the labels
 					
@@ -541,7 +545,7 @@
 					Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
 					Columns = {17, 20};
 					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					if (exist(Text2,16)==16) Text2.text$ = V\-(t,sat)= $(Vtsat)V;
 					plot -c; // refresh the graph to update the labels
 					
@@ -561,9 +565,11 @@
 					if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0){
 						win -a %(activeworkbook$);  // activate the previous window (workbook)
 						window -ch 1; // hide the transfer workbook that was processed
-						continue; // if this is not the last measurement of its kind, then continue to the next iteration
+						continue; // if this is not the last measurement of this device, then continue to the next measurement. There's nothing more to plot.
 					};
 					
+					
+					// The following plots will only be done the last measurement of this device, not all measurements of this device
 					
 					// Plot joint mobility graph
 					TemplateGeneric$ = "%(templatepath$)Generic_u-lin-sat.otpu";
@@ -596,7 +602,7 @@
 					if (exist(Text5,16)==16) Text5.text$ = at V\-(d) = %(Vdsat$)V;
 					if (exist(Text,16)==16) Text.text$ = V\-(t,sat) = $(Vtsat)V; //(NOTE: The "Vt" label of the template is assumed to be on Layer 1.)
 					page.active = 2; // activate Layer 2
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					// Plot Power law fit (Saturation) for the last measurement of the sample
@@ -615,9 +621,6 @@
 					plot -c; // refresh the graph to update the labels
 						
 				};
-				
-				win -a %(activeworkbook$);  // activate the previous window (workbook)
-				window -ch 1; // hide the transfer workbook that was processed
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				else // if this is an output curve
