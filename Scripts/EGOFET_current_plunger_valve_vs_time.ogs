@@ -2,9 +2,9 @@
 // The script operates on the "I-vs-time", "plunger" and "valve-port" files. It plots the current, plunger and the valve port vs time.
 
 // Author: Dimitrios Simatos
-// Version: 5.1
+// Version: 5.2
 // Current status: Works well.
-// Changes: Changed variable names to match those of the experiment comparison script.
+// Changes: Removed multiple instances of the hide workbook command.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -195,8 +195,6 @@
 			col(M)[C]$ = %(legend$), %(col(M)[L]$); // Comment
 			//----------------------------------------------------------
 			
-			window -ch 1; // hide the workbook that was processed
-			
 			// Plot graphs
 			
 			// Idon, Idoff, Igon, Igoff graph
@@ -243,8 +241,6 @@
 			Columns = {13};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
 			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
-			
-			break;
 		};
 			
 			
@@ -302,5 +298,8 @@
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
 			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 		};
+		
+		win -a %(activeworkbook$);  // activate the previous window (workbook)
+		window -ch 1; // hide the workbook that was processed
 	}
 }
