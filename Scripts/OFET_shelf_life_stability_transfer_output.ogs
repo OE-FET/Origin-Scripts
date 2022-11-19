@@ -1,7 +1,7 @@
 // This script is used in transfer curves taken with the low noise rig in two drain voltages, in consecutive time points. It loops over all the workbooks in the folder and plots the transfer and output curves.
 // It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, reliability factor, and Idon vs time.
 // NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
-// NOTE: Workbooks with different device and step numbers need to be processed separately.
+// NOTE: Workbooks with different device and step numbers need to be processed in separate subfolders.
 
 // How to use:
 // 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
