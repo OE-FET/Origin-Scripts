@@ -61,7 +61,7 @@
 		string TimeUnits$ = "Minutes"; // The time units
 		string Vdsat$="-1";
 		string Rate$="40-ulmin"; // The flow rate (e.g. "40-ulmin" or "none")
-		string Duration$="900"; // [min] The total duration of the measurement.
+		string Duration$="769"; // [min] The total duration of the measurement.
 		
 		int CalculateMetrics = 1; // If it is 1, the metrics will be calculated.
 		double Tsswindow = 1E-9; // Window for extracting the steady state time
