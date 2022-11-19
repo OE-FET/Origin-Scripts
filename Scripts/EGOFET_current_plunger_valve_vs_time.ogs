@@ -2,9 +2,9 @@
 // The script operates on the "I-vs-time", "plunger" and "valve-port" files. It plots the current, plunger and the valve port vs time.
 
 // Author: Dimitrios Simatos
-// Version: 5.0
-// Current status: Untested.
-// Changes: Turned plotting into functions.
+// Version: 5.1
+// Current status: Works well.
+// Changes: Changed variable names to match those of the experiment comparison script.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -27,8 +27,8 @@
 		
 		string sheetname$ = page.longname$; // Get the name of worksheet
 		
-		int i = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
-		if (i!=0) continue; // If the filename contains "script", then just continue to the next workbook.
+		int s = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
+		if (s!=0) continue; // If the filename contains "script", then just continue to the next workbook.
 		
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
@@ -105,9 +105,9 @@
 			
 		// NOTE: If this is written with case structures instead of if-then structures, the program will crash due to Origin restrictions
 			
-		int j = sheetname.Find("I-vs-time"); // It will yield a value different than 0 if the filename contains "I-vs-time".
-		if (j!=0) // If the filename contains "I-vs-time", then
-		{			
+		int i = sheetname.Find("I-vs-time"); // It will yield a value different than 0 if the filename contains "I-vs-time".
+		if (i!=0) // If the filename contains "I-vs-time", then
+		{	
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = TimeUnits$; // Units
 			
@@ -248,8 +248,8 @@
 		};
 			
 			
-		int k = sheetname.Find("plunger"); // It will yield a value different than 0 if the filename contains "plunger".
-		if (k!=0) // If the filename contains "plunger", then
+		int p = sheetname.Find("plunger"); // It will yield a value different than 0 if the filename contains "plunger".
+		if (p!=0) // If the filename contains "plunger", then
 		{
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = TimeUnits$; // Units
