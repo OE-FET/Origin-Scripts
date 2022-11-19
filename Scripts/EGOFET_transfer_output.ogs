@@ -2,9 +2,9 @@
 // It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
 
 // Author: Dimitrios Simatos
-// Version: 3.1
+// Version: 3.2
 // Current status: Works well.
-// Changes: Condensed code by removing the "first loop" condition.
+// Changes: The plotted time points are now contained in a dataset, instead of being declared as individual string variables.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -23,25 +23,10 @@
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------
 	
 	// Define time points to plot
-	string t1$="20";
-	string t2$="31";
-	string t3$="40";
-	string t4$="50";
-	string t5$="60";
-	string t6$="100";
-	string t7$="120";
-	string t8$="140";
-	string t9$="160";
-	string t10$="180";
-	string t11$="200";
-	string t12$="250";
-	string t13$="300";
-	string t14$="401";
-	string t15$="500";
-	string t16$="600";
-	string t17$="700";
-	string t18$="800";
-	
+	Dataset PlottedTimePoints = {20,30,40,50,60,100,120,140,160,180,200,250,300,400,500,600,700,800};
+	Dataset OverviewTimePoints = {100,200,300,400,500,600};
+	//Dataset Graph1Limits = {10,200};
+	//Dataset Graph2Limits = {200,800};
 	
 	// Parameters
 	string Rate$="40-ulmin"; // The flow rate (e.g. "40-ulmin" or "none")
@@ -342,109 +327,116 @@
 					//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 					// Plot graphs
 					
-					if (minutesNo$==t1$ || minutesNo$==t2$ || minutesNo$==t3$ || minutesNo$==t4$ || minutesNo$==t5$ || minutesNo$==t6$ || minutesNo$==t7$ || minutesNo$==t8$ || minutesNo$==t9$ || minutesNo$==t10$ || minutesNo$==t11$ || minutesNo$==t12$ || minutesNo$==t13$ || minutesNo$==t14$ || minutesNo$==t15$ || minutesNo$==t16$ || minutesNo$==t17$ || minutesNo$==t18$)
-					{
-						// Id graph (Transfer curves)
-						TemplateGeneric$ = "%(templatepath$)Generic_Transfer.otpu";
-						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V";
-						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
-						Layers = {1};
-						Columns = {5};
-						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
-						
-						// Ig graph
-						TemplateGeneric$ = "%(templatepath$)Generic_Leakage.otpu";
-						graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V";
-						Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
-						Layers = {1};
-						Columns = {6};
-						LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-						PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);						
-						
-						// Plot the "10-200 minutes" graphs
-						if (minutesNo$==t1$ || minutesNo$==t2$ || minutesNo$==t3$ || minutesNo$==t4$ || minutesNo$==t5$ || minutesNo$==t6$ || minutesNo$==t7$ || minutesNo$==t8$ || minutesNo$==t9$ || minutesNo$==t10$ || minutesNo$==t11$)
-							{
-								// Id graph (Transfer curves)
-								TemplateGeneric$ = "%(templatepath$)Generic_Transfer.otpu";
-								graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V_10-200_min";
-								Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu"; // This is the template path
-								Layers = {1};
-								Columns = {5};
-								LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-								PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-								
-								// Ig graph
-								TemplateGeneric$ = "%(templatepath$)Generic_Leakage.otpu";
-								graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V_10-200_min";
-								Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu"; // This is the template path
-								Layers = {1};
-								Columns = {6};
-								LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-								PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-							};		
+					int TimePointIndexInPlottedTimePointsDataset;
+					int TimePointIndexInOverviewTimePointsDataset;
+					
+					TimePointIndexInPlottedTimePointsDataset = list(%(minutesNo$), PlottedTimePoints); // Find if the time point of the measurement is one of the time points to be plotted (i.e. if it exists in the PlottedTimePoints dataset).
+					if (TimePointIndexInPlottedTimePointsDataset != 0) // If the output of the list function is not 0 (i.e. this time point exists in the dataset) then plot the graphs for this time point.
+						{
+							// Id graph (Transfer curves)
+							TemplateGeneric$ = "%(templatepath$)Generic_Transfer.otpu";
+							graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V";
+							Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							Layers = {1};
+							Columns = {5};
+							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);
 							
-						// Plot the "200-800 minutes" graphs
-						if (minutesNo$==t11$ || minutesNo$==t12$ || minutesNo$==t13$ || minutesNo$==t14$ || minutesNo$==t15$ || minutesNo$==t16$ || minutesNo$==t17$ || minutesNo$==t18$)
-							{
-								// Id graph (Transfer curves)
-								TemplateGeneric$ = "%(templatepath$)Generic_Transfer.otpu";
-								graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V_200-750_min";
-								Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-750_min.otpu"; // This is the template path
-								Layers = {1};
-								Columns = {5};
-								LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-								PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-								
-								// Ig graph
-								TemplateGeneric$ = "%(templatepath$)Generic_Leakage.otpu";
-								graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V_200-750_min";
-								Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-750_min.otpu"; // This is the template path
-								Layers = {1};
-								Columns = {6};
-								LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-								PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-							};
-						
-						// Plot the "100-600 minutes" graph
-						if (minutesNo$==t6$ || minutesNo$==t11$ || minutesNo$==t13$ || minutesNo$==t14$ || minutesNo$==t15$ || minutesNo$==t16$)
-							{
-								// Id, Ig graph (Transfer curves)
-								TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage.otpu";
-								graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_100-600_min";
-								Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_100-600_min.otpu"; // This is the template path
-								Layers = {1, 1};
-								Columns = {5, 6};
-								LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-								PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-							};
-						
-						// Plot the "100th minute" graph
-						if (minutesNo$==t6$)
-							{
-								// Id, Ig graph (Transfer curves)
-								TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage_single.otpu";
-								graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_100_min";
-								Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
-								Layers = {1, 1};
-								Columns = {5, 6};
-								LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-								PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-							};
+							// Ig graph
+							TemplateGeneric$ = "%(templatepath$)Generic_Leakage.otpu";
+							graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V";
+							Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+							Layers = {1};
+							Columns = {6};
+							LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 1, 0);						
 							
-						// Plot the "400th minute" graph
-						if (minutesNo$==t14$)
-							{
-								// Id, Ig graph (Transfer curves)
-								TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage_single.otpu";
-								graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_400_min";
-								Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
-								Layers = {1, 1};
-								Columns = {5, 6};
-								LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-								PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-							};
-					};
+							// Plot the "10-200 minutes" graphs
+							if (%(minutesNo$) >= 10 && %(minutesNo$) <= 200)
+								{
+									// Id graph (Transfer curves)
+									TemplateGeneric$ = "%(templatepath$)Generic_Transfer.otpu";
+									graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V_10-200_min";
+									Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu"; // This is the template path
+									Layers = {1};
+									Columns = {5};
+									LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+									
+									// Ig graph
+									TemplateGeneric$ = "%(templatepath$)Generic_Leakage.otpu";
+									graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V_10-200_min";
+									Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_10-200_min.otpu"; // This is the template path
+									Layers = {1};
+									Columns = {6};
+									LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+								};		
+								
+							// Plot the "200-800 minutes" graphs
+							if (%(minutesNo$) >= 200 && %(minutesNo$) <= 800)
+								{
+									// Id graph (Transfer curves)
+									TemplateGeneric$ = "%(templatepath$)Generic_Transfer.otpu";
+									graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Vd=%(Vdsat$)V_200-800_min";
+									Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-800_min.otpu"; // This is the template path
+									Layers = {1};
+									Columns = {5};
+									LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+									
+									// Ig graph
+									TemplateGeneric$ = "%(templatepath$)Generic_Leakage.otpu";
+									graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Leakage_Vd=%(Vdsat$)V_200-800_min";
+									Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_200-800_min.otpu"; // This is the template path
+									Layers = {1};
+									Columns = {6};
+									LineTypes = {1}; // 1 for line plot, 2 for scatter plot
+									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+								};
+								
+								
+							// Plot the "100-600 minutes" graph (Overview graph). Only the points in the OverviewTimePoints dataset are plotted. These time points should also exist in the PlottedTimePoints dataset.
+							
+							TimePointIndexInOverviewTimePointsDataset = list(%(minutesNo$), OverviewTimePoints); // Find if the time point of the measurement is one of the time points to be plotted (i.e. if it exists in the PlottedTimePoints dataset).
+							if (TimePointIndexInOverviewTimePointsDataset != 0) // If the output of the list function is not 0 (i.e. this time point exists in the dataset) then plot the graphs for this time point.
+								{
+									// Id, Ig graph (Transfer curves)
+									TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage.otpu";
+									graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_100-600_min";
+									Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_100-600_min.otpu"; // This is the template path
+									Layers = {1, 1};
+									Columns = {5, 6};
+									LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
+									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+								};
+							
+							// Plot the "100th minute" graph
+							if (%(minutesNo$) == 100)
+								{
+									// Id, Ig graph (Transfer curves)
+									TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage_single.otpu";
+									graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_100_min";
+									Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+									Layers = {1, 1};
+									Columns = {5, 6};
+									LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
+									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+								};
+								
+							// Plot the "400th minute" graph
+							if (%(minutesNo$) == 400)
+								{
+									// Id, Ig graph (Transfer curves)
+									TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage_single.otpu";
+									graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_400_min";
+									Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+									Layers = {1, 1};
+									Columns = {5, 6};
+									LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
+									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+								};
+						};
 						
 							//
 							//
