@@ -241,9 +241,13 @@ function string MakeConditionLegend (string condition)
 		
 		case "SDS-0,002-gl": // If the string is "ss", write "Saline solution" in the comment field
 			condgraphlegend$ = "SDS, 0.002 g/l"; // Comment field (graph legend)
-			break;		
+			break;
 		
-		case "Lys-0,0125-gl": // If the string is "ss", write "Saline solution" in the comment field
+		case "SDS-0,02-gl": // If the string is "ss", write "Saline solution" in the comment field
+			condgraphlegend$ = "SDS, 0.02 g/l"; // Comment field (graph legend)
+			break;
+		
+			case "Lys-0,0125-gl": // If the string is "ss", write "Saline solution" in the comment field
 			condgraphlegend$ = "Lysozyme, 12.5 ug/ml"; // Comment field (graph legend)
 			break;
 		
