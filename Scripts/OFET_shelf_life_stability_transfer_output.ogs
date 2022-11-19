@@ -1,6 +1,7 @@
 // This script is used in transfer curves taken with the low noise rig in two drain voltages, in consecutive time points. It loops over all the workbooks in the folder and plots the transfer and output curves.
 // It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, reliability factor, and Idon vs time.
 // NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
+// NOTE: Workbooks with different device and step numbers need to be processed separately.
 
 // How to use:
 // 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
@@ -11,9 +12,9 @@
 // 6. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 1.8
+// Version: 1.9
 // Current status: Works well.
-// Changes: Replaced the misleading "previous workbook" variable.
+// Changes: Removal of a redundant "continue".
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -168,8 +169,11 @@
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
+				string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
 				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				// NOTE: If this is written with case structures instead of if-then structures, the program will crash due to Origin restrictions
 				
 				if (meastype$ == "T") // if this is an transfer curve then
 				{
@@ -461,7 +465,7 @@
 					if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0){
 						win -a %(activeworkbook$);  // activate the previous window (workbook)
 						window -ch 1; // hide the transfer workbook that was processed
-						continue; // if this is not the last measurement of its kind, then continue to the next iteration
+						continue; // if this is not the last measurement at that specific time point, then continue to the next measurement. There's nothing more to plot.
 					};
 					
 					
@@ -479,7 +483,7 @@
 					if (exist(Text5,16)==16) Text5.text$ = at V\-(d) = %(Vdsat$)V;
 					if (exist(Text,16)==16) Text.text$ = V\-(t,sat) = $(Vtsat)V; //(NOTE: The "Vt" label of the template is assumed to be on Layer 1.)
 					page.active = 2; // activate Layer 2
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					//-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -544,7 +548,7 @@
 					Columns = {8, 14};
 					LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
 					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					// Plot linear fit of SQRT(Idsat) and linear extrapolation (for Vt) for all time points
@@ -553,7 +557,7 @@
 					Template$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 					Columns = {17, 20};
 					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					// Plot contact resistance (Linear) for all time points
@@ -665,8 +669,6 @@
 					
 					win -a %(activeworkbook$);  // activate the previous window (workbook)
 					window -ch 1; // hide the workbook that was processed
-					continue;
-					
 				};
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -685,7 +687,7 @@
 					
 					loop(i,1,NoofVgs)
 						{
-							string activeworkbook$=%H; // Get the name of the previous window
+							string activeworkbook$ = %H; // Get the name of the previous window
 							
 							// Extract Vg							
 							string Vg$=wcol(i+1)[L]$; // Start from column 2
