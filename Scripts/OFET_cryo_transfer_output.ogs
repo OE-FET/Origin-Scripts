@@ -1,6 +1,7 @@
 // This script is used in transfer curves taken with the cryo rig in two drain voltages. It loops over all the workbooks in the folder and plots the transfer curves.
 // It then calculates and plots the (linear and saturation) mobility, transconductance, threshold voltage, and reliability factor.
 // NOTE: The saturation curve is best measured by short-circuiting the drain and gate and sweeping them simultaneously. This eliminates any chance of minority carriers participating in the mobility calculations.
+// NOTE: Workbooks with different device numbers need to be processed separately.
 
 // How to use:
 // 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
@@ -12,9 +13,9 @@
 // NOTE: When fitting the activation energy, fit only the linear part of the ln(mu) curve. Do NOT fit the hump at high temperatures, and the point at 100K (it will not be 100K due to Joule heating).
 
 // Author: Dimitrios Simatos
-// Version: 3.3
-// Current status: Workbooks with different device numbers need to be processed separately.
-// Changes: Replaced the misleading "previous workbook" variable.
+// Version: 3.4
+// Current status: Works well
+// Changes: Removal of a redundant "continue".
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -167,8 +168,11 @@
 				string legend$ = "%(temperature$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
+				string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
 				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				// NOTE: If this is written with case structures instead of if-then structures, the program will crash due to Origin restrictions
 				
 				if (meastype$ == "T") // if this is an transfer curve then
 				{
@@ -455,9 +459,11 @@
 					if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0){
 						win -a %(activeworkbook$);  // activate the previous window (workbook)
 						window -ch 1; // hide the transfer workbook that was processed
-						continue; // if this is not the last measurement of its kind, then continue to the next iteration
+						continue; // if this is not the last measurement at that specific temperature, then continue to the next measurement. There's nothing more to plot.
 					};
 					
+					
+					// The following plots will only include the last measurement at a specific temperature, not all measurements at that specific temperature
 					
 					// Plot joint transfer curve - SQRT(Idsat) graph for a single temperature
 					TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Vt-sat.otpu";
@@ -473,7 +479,7 @@
 					if (exist(Text5,16)==16) Text5.text$ = at V\-(d) = %(Vdsat$)V;
 					if (exist(Text,16)==16) Text.text$ = V\-(t,sat) = $(Vtsat)V; //(NOTE: The "Vt" label of the template is assumed to be on Layer 1.)
 					page.active = 2; // activate Layer 2
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					//-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -538,7 +544,7 @@
 					Columns = {8, 14};
 					LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
 					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					// Plot linear fit of SQRT(Idsat) and linear extrapolation (for Vt) for all temperatures
@@ -547,7 +553,7 @@
 					Template$ = "%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 					Columns = {17, 20};
 					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					// Plot contact resistance (Linear) for all temperatures
@@ -645,8 +651,6 @@
 					
 					win -a %(activeworkbook$);  // activate the previous window (workbook)
 					window -ch 1; // hide the workbook that was processed
-					continue;
-					
 				};
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -719,12 +723,10 @@
 							LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
 							PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
 							
-							
 							win -a %(activeworkbook$);  // activate the previous window (workbook)
 						};
 					window -ch 1; // hide the output workbook that was processed
 				};
-				
 			};
 	};
 	
@@ -786,7 +788,7 @@
 	if (exist(Text2,16)==16) Text2.text$ = E\-(a,lin)= $(Ealin) meV;
 	if (exist(Text3,16)==16) Text3.text$ = E\-(a,sat)= $(Easat) meV;
 	plot -c; // refresh the graph to update the labels
-		
+	
 	//layer -a;  // rescale the layer
 	////layer -g; // Group the datasets in the layer to auto-color increment
 	////layer -gu; // Ungroup the datasets in the layer
@@ -802,7 +804,7 @@
 
 	layer -i201 rVtlinT;  // plot in the active layer as scatter plot
 	layer -i201 rVtsatT;  // plot in the active layer as scatter plot
-		
+	
 	//layer -a;  // rescale the layer
 	////layer -g; // Group the datasets in the layer to auto-color increment
 	////layer -gu; // Ungroup the datasets in the layer

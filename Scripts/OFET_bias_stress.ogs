@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 3.3
+// Version: 3.4
 // Current status: Works well.
-// Changes: Replaced the misleading "previous workbook" variable.
+// Changes: Removal of a redundant "continue".
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -42,8 +42,8 @@
 		
 		int i = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
 		int j = sheetname.Find("sample"); // It will yield a value different than 0 if the filename contains "sample".
-		int k = sheetname.Find("Uavg-Time");
-		int s = sheetname.Find("_S_");
+		int k = sheetname.Find("Uavg-Time"); // It will yield a value different than 0 if the filename contains "Uavg-Time".
+		int s = sheetname.Find("_S_"); // It will yield a value different than 0 if the filename contains "_S_".
 		
 		if (i!=0 || k!=0 || s!=0) continue; // If the filename contains "script" or "sample" or "Uavg-Time", then just continue to the next workbook.
 		
@@ -80,8 +80,8 @@
 		string BiasStressType$ = sheetname.GetToken(15,"_")$; // get the string, which shows the type of bias stress (PBS/NBS)
 		
 		// This check is done after the GetToken commands, so that the strings can be extracted, and the template located.
-		if (j!=0) {
-			string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
+		if (j!=0) { // If this is the sample file
+			string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
 			
 			col(A)[L]$ = "Time"; // Long name
 			col(A)[U]$ = "s"; // Units
@@ -147,7 +147,7 @@
 			plot -c; // refresh the graph to update the labels
 			
 			win -a %(activeworkbook$);  // activate the previous window (workbook)
-			window -ch 1; // hide the workbook that was processed
+			window -ch 1; // hide the workbook that was processed (in this case, the sample file)
 			continue;
 				
 		};
@@ -229,8 +229,11 @@
 				string legend$ = "%(timegraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				
-				string activeworkbook$=%H; // Get the name of the (active) workbook to be processed
+				string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
 				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				// NOTE: If this is written with case structures instead of if-then structures, the program will crash due to Origin restrictions
 				
 				if (meastype$ == "T") // if this is an transfer curve then
 				{
@@ -517,9 +520,11 @@
 					if(exist(%(uid2name(range2uid(["%(nextmeassheetname$)"]))$))!=0){
 						win -a %(activeworkbook$);  // activate the previous window (workbook)
 						window -ch 1; // hide the transfer workbook that was processed
-						continue; // if this is not the last measurement of its kind, then continue to the next iteration
+						continue; // if this is not the last measurement at that specific time point, then continue to the next measurement. There's nothing more to plot.
 					};
 					
+					
+					// The following plots will only include the last measurement at a specific time point, not all measurements at that specific time point
 					
 					// Plot joint transfer curve - SQRT(Idsat) graph for a single time point
 					TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Vt-sat.otpu";
@@ -535,7 +540,7 @@
 					if (exist(Text5,16)==16) Text5.text$ = at V\-(d) = %(Vdsat$)V;
 					if (exist(Text,16)==16) Text.text$ = V\-(t,sat) = $(Vtsat)V; //(NOTE: The "Vt" label of the template is assumed to be on Layer 1.)
 					page.active = 2; // activate Layer 2
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					//-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -600,7 +605,7 @@
 					Columns = {8, 14};
 					LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
 					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					// Plot linear fit of SQRT(Idsat) and linear extrapolation (for Vt) for all time points
@@ -609,7 +614,7 @@
 					Template$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-sat_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 					Columns = {17, 20};
 					PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 0, 0, 0);
-					layer.y.from=0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
+					layer.y.from = 0; // place the "From" scale of the Y axis from 0, to show clearly the intercept of the linear fit with the X axis
 					
 					
 					// Plot contact resistance (Linear) for all time points
@@ -699,8 +704,6 @@
 					
 					win -a %(activeworkbook$);  // activate the previous window (workbook)
 					window -ch 1; // hide the workbook that was processed
-					continue;
-					
 				};
 				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -777,7 +780,6 @@
 						};
 					window -ch 1; // hide the output workbook that was processed
 				};
-				
 			};
 	};
 	
@@ -788,14 +790,14 @@
 	range rVtlinTime = [%H]1!col(D);  // data range of Threshold voltage (Linear) column
 	range rVtsatTime = [%H]1!col(E);  // data range of Threshold voltage (Saturation) column
 	
-	window -ch 1; // hide the workbook that was processed
+	window -ch 1; // hide the workbook that was processed (in this case, the UavgTimeWorkbook)
 	
 	win -a %(uid2name(range2uid(["%(UavgTimeGraph$)"]))$); // activate the workbook
 	page.active = 1; // activate Layer 1
 	
 	layer -i201 rulinavgTime;  // plot in the active layer as scatter plot
 	layer -i201 rusatavgTime;  // plot in the active layer as scatter plot
-		
+	
 	//layer -a;  // rescale the layer
 	////layer -g; // Group the datasets in the layer to auto-color increment
 	////layer -gu; // Ungroup the datasets in the layer
@@ -807,7 +809,7 @@
 
 	layer -i201 rVtlinTime;  // plot in the active layer as scatter plot
 	layer -i201 rVtsatTime;  // plot in the active layer as scatter plot
-		
+	
 	//layer -a;  // rescale the layer
 	////layer -g; // Group the datasets in the layer to auto-color increment
 	////layer -gu; // Ungroup the datasets in the layer
