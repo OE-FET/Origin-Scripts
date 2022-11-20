@@ -1,5 +1,6 @@
 // This script is used in EG-OFET operational stability experiments. It plots transfer and output curves taken with the low noise rig in the saturation drain voltage.
 // It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
+// NOTE: The program expects that the OverviewTimePoints and the IndividualGraphTimePoints are subsets of the PlottedTimePoints.
 
 // Author: Dimitrios Simatos
 // Version: 3.3
@@ -25,7 +26,7 @@
 	// Define time points to plot
 	Dataset PlottedTimePoints = {20,30,40,50,60,100,120,140,160,180,200,250,300,400,500,600,700,800};
 	Dataset OverviewTimePoints = {100,200,300,400,500,600};
-	Dataset IndividualGraphTimepoints = {100,400};
+	Dataset IndividualGraphTimePoints = {100,400};
 	//Dataset Graph1Limits = {10,200};
 	//Dataset Graph2Limits = {200,800};
 	
@@ -414,9 +415,9 @@
 								
 							// Plot the graphs at individual time points
 							
-							loop(i,1,IndividualGraphTimepoints.GetSize()) // Loop over each element of the IndividualGraphTimepoints dataset (each time point to be individually plotted)
+							loop(i,1,IndividualGraphTimePoints.GetSize()) // Loop over each element of the IndividualGraphTimePoints dataset (each time point to be individually plotted)
 								{
-									if (%(minutesNo$) == IndividualGraphTimepoints(i))
+									if (%(minutesNo$) == IndividualGraphTimePoints(i))
 										{
 											// Id, Ig graph (Transfer curves)
 											TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage_single.otpu";
