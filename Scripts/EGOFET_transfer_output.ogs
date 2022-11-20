@@ -2,9 +2,9 @@
 // It loops over all the workbooks in the folder and creates four new columns, one pair for the abs(Id) and one pair for abs(Ig).
 
 // Author: Dimitrios Simatos
-// Version: 3.2
+// Version: 3.3
 // Current status: Works well.
-// Changes: The plotted time points are now contained in a dataset, instead of being declared as individual string variables.
+// Changes: The individually plotted time points are now contained in a dataset.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -25,6 +25,7 @@
 	// Define time points to plot
 	Dataset PlottedTimePoints = {20,30,40,50,60,100,120,140,160,180,200,250,300,400,500,600,700,800};
 	Dataset OverviewTimePoints = {100,200,300,400,500,600};
+	Dataset IndividualGraphTimepoints = {100,400};
 	//Dataset Graph1Limits = {10,200};
 	//Dataset Graph2Limits = {200,800};
 	
@@ -410,34 +411,24 @@
 									LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
 									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
 								};
-							
-							// Plot the "100th minute" graph
-							if (%(minutesNo$) == 100)
-								{
-									// Id, Ig graph (Transfer curves)
-									TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage_single.otpu";
-									graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_100_min";
-									Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
-									Layers = {1, 1};
-									Columns = {5, 6};
-									LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-								};
 								
-							// Plot the "400th minute" graph
-							if (%(minutesNo$) == 400)
+							// Plot the graphs at individual time points
+							
+							loop(i,1,IndividualGraphTimepoints.GetSize()) // Loop over each element of the IndividualGraphTimepoints dataset (each time point to be individually plotted)
 								{
-									// Id, Ig graph (Transfer curves)
-									TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage_single.otpu";
-									graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_400_min";
-									Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
-									Layers = {1, 1};
-									Columns = {5, 6};
-									LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
-									PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+									if (%(minutesNo$) == IndividualGraphTimepoints(i))
+										{
+											// Id, Ig graph (Transfer curves)
+											TemplateGeneric$ = "%(templatepath$)Generic_Transfer_Leakage_single.otpu";
+											graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_step_%(stepNo$)_%(condition$)_%(dayslength$)_Transfer_Leakage_Vd=%(Vdsat$)V_%(minutesNo$)_min";
+											Template$ = "%(templatepath$)%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_rate_%(Rate$)_Transfer_Leakage_Vd=%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V_single.otpu"; // This is the template path
+											Layers = {1, 1};
+											Columns = {5, 6};
+											LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
+											PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+										};
 								};
 						};
-						
 							//
 							//
 							//
