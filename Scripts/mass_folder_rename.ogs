@@ -1,0 +1,30 @@
+// This script loops all folders and replaces a substring in the folder name. See here: https://my.originlab.com/forum/topic.asp?TOPIC_ID=46894
+// Author: Dimitrios Simatos
+// Version: 0.2
+// Current status: Works well
+// Changes: Fixed with help from the Origin forums.
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+string oldfoldername$;
+string newfoldername$;
+
+pe_cd;
+pe_dir oname:=folders;
+int n = folders.GetNumTokens(CRLF);
+for (int i = 1; i <= n; i++)
+{
+	string tmp$ = folders.GetToken(i, CRLF)$;
+	if (tmp.GetToken(1, ' ')$ == "<Folder>")
+	{
+		oldfoldername$ = tmp.GetToken(2, ' ')$;  //get the current folder name
+		oldfoldername$ = ;
+	}
+	newfoldername$ = oldfoldername$;
+	newfoldername.Replace("Folder", "FolderNewName"); // replace "Folder" with "FolderNewName"
+	newfoldername$ = ;
+	pe_rename old:=oldfoldername$ newname:=newfoldername$;
+}
+
