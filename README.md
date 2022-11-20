@@ -1,17 +1,24 @@
 # Origin-Scripts
-LabTalk Scripts for automated data analysis of OFET and EG-OFET data. Compatible with Origin 2018 Pro or newer.
+LabTalk Scripts for automated data analysis of OFET and EG-OFET data, measured with the [`Agilent-415X`](https://github.com/OE-FET/Agilent-415X) LabVIEW programs. Compatible with Origin 2018 Pro or newer.
 
 ## Installation:
-To install the scripts perform the following steps:
+To install the scripts, perform the following steps:
 1. Copy the `Scripts` folder to `C:\Users\<Account Name>\Documents\OriginLab`.
 	- The filepath should **NOT** contain *spaces*!
-	- The names of the scripts should also **NOT** contain *dashes* (`-`), as Origin cannot handle them.
+	- The filenames of the scripts should also **NOT** contain *dashes* (`-`), as Origin cannot handle them.
 2. Copy the `Themes` and `Templates` folders to `C:\Users\<Account Name>\Documents\OriginLab\User Files`.
-3. Run OriginLab
+	- In this case, there is no issue with *spaces* being in the filepath.
+3. Copy the project files in the `Examples` folder into a folder of your choice.
+	- The `Script examples` project file contains subfolders, each of which is designed to test the corresponding Origin script mentioned in the subfolder name. All scripts are tested in this file, except the `Experiment comparison` scripts.
+	- The `Script examples - Experiment comparison` project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different experiments (and hence from different subfolders).
+3. Run OriginLab and open the `Script examples` project file.
+	- Each subfolder of the project file contains sample data and a readme file. The readme provides instructions on how to test the corresponding Origin script mentioned in the subfolder name.
 4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script. Make sure to save the script.
-5. Select `View` and then `Command Window`. The Command Window will appear. It is similar to the Linux command line and allows one to give commands directly to Origin.
-6. Write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts;` to set the Scripts directory as the working directory (do not forget the semicolon!). Then press `ENTER`.
-7. Now the scripts should be available. To verify this, start typing the name of a script in the command line (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name.
+	- The `Library` is a script that contains functions that other scripts call. It will not meant to be executed.
+5. Select `View` and then `Command Window`. The Command Window will appear. It is similar to the Linux command line and allows one to give commands directly to Origin, and run scripts, among other things.
+6. In the `Command Window`, write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts;` to set the Scripts directory as the working directory (do not forget the semicolon!). Then press `ENTER`.
+7. Now the scripts should be available. To verify this, start typing the name of a script in the `Command Window` (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name.
+8. Test a script by going to a subfolder of the `Script examples` project file and following the instructions on the readme file. Usually all that is needed is to type the name of the corresponding script in the `Command Window` and press `ENTER`.
 
 ## Analysis of filename templates:
 
@@ -26,9 +33,9 @@ The different **fields** are:
 - `material`: The semiconductor used to make the FET (e.g. IDTBT, C14-PBTTT).
 - `solvent`: The solvent(s) used to make the semiconductor solution (e.g. 100pDCB, 75pDCB-25pCF).
 - `annealing`: The annealing conditions of the semiconductor thin films (e.g. 100C-1h).
-- `additive (type-thickness-units)`: The additives or SAMs used to in the FET (e.g. Pristine, TCNQ-40-nm).
-	- **NOTE**: Units are separated by a dash (e.g. 20-nm).
+- `additive`: The additives or SAMs used to in the FET (e.g. Pristine, TCNQ-40-nm). The format is `AdditiveType-Thickness-Units` (e.g. TCNQ-20-nm).
 - `dielectric`: The dielectric used to make the FET (e.g. Cytop-M, PMMA).
+- 
 
 
 ### Values
