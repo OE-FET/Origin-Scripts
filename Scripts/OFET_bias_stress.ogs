@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 3.4
+// Version: 3.5
 // Current status: Works well.
-// Changes: Removal of a redundant "continue".
+// Changes: Replaced additivetype$ with additive$.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -60,9 +60,6 @@
 		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
 		
 		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
-		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
-		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
-		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
 		
 		string dielectric$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric
 		string dielectricconc$ = sheetname.GetToken(9,"_")$; // Get the string that shows the dielectric concentration or ratio
@@ -219,7 +216,7 @@
 				// Case structures from filenames (used for legends).
 				
 				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
-				additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
+				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
 				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
 				daysgraphlegend$ = MakeTimeLegendBS(dayslength$)$; // Note ending '$'
 				timegraphlegend$ = MakeTimeLegendBS(timelength$)$; // Note ending '$'

@@ -4,9 +4,9 @@
 // Hence, the naming convention is slightly different.
 
 // Author: Dimitrios Simatos
-// Version: 1.3
+// Version: 1.4
 // Current status: Works well.
-// Changes: Removed multiple instances of the hide workbook command.
+// Changes: Replaced additivetype$ with additive$.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -45,9 +45,6 @@
 		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
 		
 		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
-		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
-		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
-		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
 		
 		string sampleNo$ = sheetname.GetToken(8,"_")$; // Get the string that shows the sample number
 		
@@ -84,7 +81,7 @@
 			else
 			{
 				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
-				additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
+				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
 				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
 				timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
 				

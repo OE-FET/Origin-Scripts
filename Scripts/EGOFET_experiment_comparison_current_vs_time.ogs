@@ -3,9 +3,9 @@
 // The "experiment-comparison" script compares and plots the current vs time for multiple experiments in the same graph, to give an overview of the entire batch.
 
 // Author: Dimitrios Simatos
-// Version: 2.0
+// Version: 2.1
 // Current status: Works well.
-// Changes: Corrected bugs.
+// Changes: Replaced additivetype$ with additive$.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -35,7 +35,7 @@
 	string solvent$; // Get the string that shows the solvent content
 	string annealing$; // Get the string that shows the additive
 	string additive$; // Get the string that shows the additive
-	string additivetype$; // Get the string that shows the additive type
+	string additive$; // Get the string that shows the additive type
 	string addthickness$; // Get the string that shows the additive thickness
 	string addthicknessunits$; // Get the string that shows the additive thickness units
 	string dielectric$; // Get the string that shows the dielectric
@@ -96,9 +96,6 @@
 		annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
 		
 		additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
-		additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
-		//addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
-		//addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
 		
 		//dielectric$ = sheetname.GetToken(7,"_")$; // Get the string that shows the dielectric
 		//dielectricconc$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric concentration or ratio
@@ -132,7 +129,7 @@
 			else
 			{
 				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
-				additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
+				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
 				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
 				timegraphlegend$ = MakeTimeLegend(timegraphlegend$)$; // Note ending '$'
 				

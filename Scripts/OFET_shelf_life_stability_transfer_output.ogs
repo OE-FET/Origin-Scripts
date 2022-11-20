@@ -12,9 +12,9 @@
 // 6. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 1.9
+// Version: 2.0
 // Current status: Works well.
-// Changes: Removal of a redundant "continue".
+// Changes: Replaced additive$ with additive$.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -60,9 +60,6 @@
 		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
 		
 		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
-		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
-		//string addthickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
-		//string addthicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
 		
 		string dielectric$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric
 		string dielectricconc$ = sheetname.GetToken(9,"_")$; // Get the string that shows the dielectric concentration or ratio
@@ -151,7 +148,7 @@
 				// Case structures from filenames (used for legends).
 				
 				conunitslegend$ = MakeConcUnitsLegend(concunits$)$; // Note ending '$'
-				additivegraphlegend$ = MakeAdditiveLegend(additivetype$)$; // Note ending '$'
+				additivegraphlegend$ = MakeAdditiveLegend(additive$)$; // Note ending '$'
 				condgraphlegend$ = MakeConditionLegend(condition$)$; // Note ending '$'
 				timegraphlegend$ = MakeTimeLegend(timelength$)$; // Note ending '$'
 				modegraphlegend$ = MakeMeasModeLegend(mode$)$; // Note ending '$'

@@ -6,9 +6,9 @@
 // 3. Run the main script.
 
 // Author: Dimitrios Simatos
-// Version: 0.8
+// Version: 0.9
 // Current status: Works well.
-// Changes: Added MakeCASFTIRMeasTypeLegend and MakeMassSpecIonModeLegend function.
+// Changes: Condensed the MakeAdditiveLegend fundtion.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -131,30 +131,55 @@ function string MakeConcUnitsLegend (string concunits)
 		return conunitslegend$;
 }
 
-function string MakeAdditiveLegend (string additivetype)
+function string MakeAdditiveLegend (string additive)
 {
-	switch (%(additivetype$)) // Case study
+	if (additive.Find("Pristine")!=0){ // If the additive field is "Pristine"
+		string additivegraphlegend$ = additive$;
+		return additivegraphlegend$;
+	};
+		
+	// Example: F4TCNQ-10-pww
+	if (additive.Find("-pww")!=0 || additive.Find("-pwv")!=0 || additive.Find("-pvv")!=0){ // If the string "-pww" exists, then the additive is in w/w percentage
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		string additiveconcentration$ = additive.GetToken(2,"-")$; // Get the string that shows the additive concentration
+		string additiveconcentrationunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive concentration units
+		string additiveconcentrationunitsgraphlegend$;
+		
+		switch (%(additiveconcentrationunits$)) // Case study
+			{
+				case "pww": // If the number is 1, use single form
+					additiveconcentrationunitsgraphlegend$ = "w/w"; // Comment field (graph legend)
+					break;
+				
+				case "pwv": // If the number is 1, use single form
+					additiveconcentrationunitsgraphlegend$ = "w/v"; // Comment field (graph legend)
+					break;
+				
+				case "pvv": // If the number is 1, use single form
+					additiveconcentrationunitsgraphlegend$ = "v/v"; // Comment field (graph legend)
+					break;
+				
+				default: // For all other strings, write "Pristine" in the comment field
+					additiveconcentrationunitsgraphlegend$ = additiveconcentrationunits$; // Comment field (graph legend)
+					break;
+			};
+		
+		additivegraphlegend$ = "+ %(additiveconcentration$)% %(additiveconcentrationunitsgraphlegend$) %(additivetype$)"; // Comment field (graph legend)
+		return additivegraphlegend$;
+	};
+	
+	// Example: F4TCNQ-10-nm
+	if (additive.Find("-nm")!=0 || additive.Find("-um")!=0){ // If the string "-pww" exists, then the additive is in w/w percentage
+		string additivetype$ = additive.GetToken(1,"-")$; // Get the string that shows the additive type
+		string additivethickness$ = additive.GetToken(2,"-")$; // Get the string that shows the additive thickness
+		string additivethicknessunits$ = additive.GetToken(3,"-")$; // Get the string that shows the additive thickness units
+		
+		additivegraphlegend$ = "+ %(additivetype$), %(additivethickness$) %(additivethicknessunits$)"; // Comment field (graph legend)
+		return additivegraphlegend$;
+	};
+	
+	switch (%(additive$)) // Case study
 		{
-			case "Pristine": // If the string is "TCNQ", write "TCNQ" in the comment field
-				additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
-				break;
-			
-			case "TCNQ": // If the string is "TCNQ", write "TCNQ" in the comment field
-				additivegraphlegend$ = "+ TCNQ"; // Comment field (graph legend)
-				break;
-			
-			case "F2TCNQ": // If the string is "F2TCNQ", write "F2TCNQ" in the comment field
-				additivegraphlegend$ = "+ F2TCNQ"; // Comment field (graph legend)
-				break;
-			
-			case "F4TCNQ": // If the string is "F4TCNQ", write "F4TCNQ" in the comment field
-				additivegraphlegend$ = "+ F4TCNQ"; // Comment field (graph legend)
-				break;
-			
-			case "Guanine": // If the string is "Guanine", write "Guanine" in the comment field
-				additivegraphlegend$ = "+ Guanine"; // Comment field (graph legend)
-				break;
-			
 			case "SAM-1OCT-v": // If the number is 1, use single form
 				additivegraphlegend$ = "+ 1-Octanethiol (vapor)"; // Comment field (graph legend)
 				break;
@@ -171,16 +196,13 @@ function string MakeAdditiveLegend (string additivetype)
 				additivegraphlegend$ = "+ TDF-1-Octanethiol (immersion)"; // Comment field (graph legend)
 				break;
 			
-			case "10-needles": // If the number is 1, use single form
-				additivegraphlegend$ = "+ 10 needles"; // Comment field (graph legend)
-				break;
-			
 			default: // For all other strings, write "Pristine" in the comment field
-				additivegraphlegend$ = "Pristine"; // Comment field (graph legend)
+				additivegraphlegend$ = additivetype$; // Comment field (graph legend)
+				additivegraphlegend.Replace("-", " "); // replace "-" with space
 				break;
 		}
-			
-		return additivegraphlegend$;
+		
+	return additivegraphlegend$;
 }
 
 function string MakeConditionLegend (string condition)
@@ -247,7 +269,7 @@ function string MakeConditionLegend (string condition)
 			condgraphlegend$ = "SDS, 0.02 g/l"; // Comment field (graph legend)
 			break;
 		
-			case "Lys-0,0125-gl": // If the string is "ss", write "Saline solution" in the comment field
+		case "Lys-0,0125-gl": // If the string is "ss", write "Saline solution" in the comment field
 			condgraphlegend$ = "Lysozyme, 12.5 ug/ml"; // Comment field (graph legend)
 			break;
 		
