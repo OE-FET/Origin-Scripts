@@ -40,6 +40,7 @@ The different **fields** are:
 	- For *solution-mixed* additives, the format is `AdditiveType-Concentration-Units` (e.g. F4TCNQ-10-pww, which will be converted to 10% w/w F4TCNQ).
 - `dielectric`: The dielectric used to make the FET (e.g. Cytop-M, PMMA).
 	- For details, look inside the `Library` script.
+	- **NOTE**: The OFET scripts have some preset dielectric thicknesses used to extract the mobility. To set the dielectric thickness manually, open the script, comment out `DielectricThicknessCalc` function and set the `dielectricthickness` variable manually.
 - `DielectricConcentration`: The format is either in a v/v ratio, or in g/l (e.g. 3-1, 50-gl).
 	- For details, look inside the `Library` script.
 - `sampleNo`: The number of the sample (e.g. 1st).
@@ -82,6 +83,8 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 
 
 ## Script parameters:
+
+**Parameters** are **variables** inside the scripts that need to be set up manually, using the `CodeBuilder`, before the script is run. These parameters are then used to extract various metrics (e.g. the dielectric thickness parameter is used to extract the mobility), or to select the correct template. If the parameters are set up incorrectly, the script may also not run properly. The parameters for each script are the following:
 
 **OFET (Transfer/Output)**:
 
