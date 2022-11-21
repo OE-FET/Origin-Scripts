@@ -1,5 +1,5 @@
 # Origin-Scripts
-LabTalk Scripts for automated data analysis of OFET and EG-OFET data, measured with the [`Agilent-415X`](https://github.com/OE-FET/Agilent-415X) LabVIEW programs. Compatible with Origin 2018 Pro or newer.
+LabTalk Scripts for automated data analysis of OFET and EG-OFET data, measured with the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs. Compatible with Origin 2018 Pro or newer.
 
 ## Installation:
 To install the scripts, perform the following steps:
@@ -25,7 +25,7 @@ To install the scripts, perform the following steps:
 
 ### Fields and their Values
 Each filename template consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
-	- Not all filename templates contain all available fields. To determine the format of each type of measurement, see the [`Filename templates`](#FilenameTemplates) section.
+	- Not all filename templates contain all available fields. To determine the format of each type of measurement, see the [Filename templates](#FilenameTemplates) section.
 
 The different **fields** are:
 - `batchNo`: The number of the batch (e.g. 235th).
@@ -43,7 +43,7 @@ The different **fields** are:
 - `DielectricConcentration`: The format is either in a v/v ratio, or in g/l (e.g. 3-1, 50-gl).
 	- For details, look inside the `Library` script.
 - `sampleNo`: The number of the sample (e.g. 1st).
-- `step`: The step of the measurement (see the [`Step Convention`](#StepConvention) section).
+- `step`: The step of the measurement (see the [Step Convention](#StepConvention) section).
 - `stepNo`: The step number (e.g. 1, 2, 3...)
 - `deviceNo`: The number of the device, if there are multiple devices on the same chip.
 - `length`: The length of the device (distance between the source-drain electrodes).
