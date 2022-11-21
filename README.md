@@ -48,7 +48,9 @@ The different **fields** are:
 - `deviceNo`: The number of the device, if there are multiple devices on the same chip.
 - `length`: The length of the device (distance between the source-drain electrodes).
 	- The format is `No-Units` (e.g. 20-um).
-- `condition(air/N2_liquid)`: 
+- `condition(air/N2_liquid)`: The condition in which the sample has been stored (for shelf-life stability), or is being measured (for operational stability).
+	- Example: `up-H2O` is used for ultrapure water, `ss` for saline solution, `1-x-PBS` for 1xPBS, `NaP` for NaP buffer.
+	- For details, look inside the `Library` script.
 - `timelength`: The time that the sample has spent in the respective condition.
 	- The format is `No-Units` (e.g. 20-days, 50-min, 3-h, or just "initial" for the initial day of measurements)
 - `MeasurementType`: `T` for a transfer curve, `O` for an output curve, `S` for a sample (bias stress) measurement (for a `sample` measurement type (`S`), the suffix is: `S_Vg_Vd`).
@@ -97,7 +99,6 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 
 **OFET (Bias Stress)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_timelength_BiasStressTypeandNo(PBS1/NBS1)_minutesNo-"min"_MeasurementType(T-O-S)_MeasNo_MeasurementMode_IntegrationTime`
-	- **NOTE**: For a `sample` measurement type (`S`), the suffix is: `S_Vg_Vd`
 
 **EG-OGET (sensing-cycling)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_sampleNo_condition(air/N2_liquid)_timelength_MeasurementType(I-vs-time_plunger,valve-port)`
