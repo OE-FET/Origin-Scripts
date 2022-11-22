@@ -99,7 +99,7 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 ### Mobility correction (power law fit) parameters
 There is a [publication](https://aip.scitation.org/doi/10.1063/1.4876057) that demonstrates how to calculate the gate voltage dependent contact and channel resistance from the transfer curves, in the linear and saturation regime. The process involves fitting a exponential function into the mobility curve. The fit is performed using the `PowerLawFit` function that can be called from the `Library` script. To disable the power law fit, open the script to be executed (not the `Library` script itself), and comment out the line calling the `PowerLawFit` function. If performing The parameters of the `PowerLawFit` function are:
 
-- `minRangeLengthPLF [V]`: The minimum voltage range over which the Power Law fit will be applied. The fit starts at least `minRangeLengthPLF` volts after the `Vgmax` point. This number is usually `20`.
+- `minRangeLengthPLF` [V]: The minimum voltage range over which the Power Law fit will be applied. The fit starts at least `minRangeLengthPLF` volts after the `Vgmax` point. This number is usually `20`.
 - `errorwindowPLF`: The maximum Root Mean Square Error allowed for the power law fit to be performed. If the error is larger than this value then the voltage range in which the fit is performed increases by a single row. Hence, this error defines the "window" for performing the power law fit. The default value is usually `0.001`.
 
 
@@ -115,9 +115,9 @@ Instead, the `RollingRegression` function tries to find the maximum voltage rang
 
 So far two **parameters** have been introduced:
 
-- `minRangeLength [V]`: The minimum voltage range (not row index range!) over which the linear fit will be applied. The more curvy the `Id/SQRT(Id)` curve, the smaller `minRangeLength` has to be, in order to be able to fit linearly. Typical values are between `5` and `20`, with the default values being `5` for the Linear and `10` for the Saturation regime.
+- `minRangeLength` [V]: The minimum voltage range (not row index range!) over which the linear fit will be applied. The more curvy the `Id/SQRT(Id)` curve, the smaller `minRangeLength` has to be, in order to be able to fit linearly. Typical values are between `5` and `20`, with the default values being `5` for the Linear and `10` for the Saturation regime.
 
-- `slopewindow [%]`: The percentage of slope variation (relative to the first linear fit) allowed before the final linear fit is performed. This is the "window" for performing the rolling regression. The default values are `1.2` for the Linear and `3` for the Saturation regime.
+- `slopewindow` [%]: The percentage of slope variation (relative to the first linear fit) allowed before the final linear fit is performed. This is the "window" for performing the rolling regression. The default values are `1.2` for the Linear and `3` for the Saturation regime.
 
 
 #### The `offset` parameters
