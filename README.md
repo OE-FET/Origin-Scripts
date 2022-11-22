@@ -109,8 +109,8 @@ The `RollingRegression` function is used to perform a linear fit on part of the 
 Instead, the `RollingRegression` function tries to find the maximum voltage range it can perform a linear fit on before the slope of the linear fit surpasses a pre-determined **parameter** called `slopewindow`.
 
 - Note that in our measurements, the transfer curves are usually scanned with a forward and reverse sweep. Hence, in a typical transfer curve data file, Vgmax would be at `maxrows/2` (the middle row) and the minimum voltages would be at the first and last rows and (row 0 and `maxrows`). We perform the linear fit in the reverse sweep (i.e. after `Vg` has reached `Vgmax` and is reducing).	
-- The function initially sets the left voltage limit for the linear fit at `Id(Vgmax)` (or `Id(Vgmax)+offset`) and the right voltage limit at a distance of `minRangeLength` volts away, at a value `Vg(i)`, where `i` is the row number corresponding to that particular row number `Vg(i)`. `i` is larger than `maxrows/2` because we are fitting in the reverse sweep. A linear fit is performed at that range, with the value stored inside the variable `firstfit`, since it is the first linear fit performed.	
-- The left limit is held constant at `Id(Vgmax)` (or `Id(Vgmax)+offset`), while the right limit is iteratively moving further away from the first one (the row number `i` increases by `1` with each iteration). After every iteration, a new linear fit is performed in the new voltage range. This limit moving and linear re-fitting continues until the slope of the linear fit diverges beyond a certain percentage from the original `firstfit`. The divergence limit is called `slopewindow` and it is a **parameter** to be set in the script.	
+- The function initially sets the left voltage limit for the linear fit at `Vgmax` (or `Vgmax+offset`) and the right voltage limit at a distance of `minRangeLength` volts away, at a value `Vg(i)`, where `i` is the row number corresponding to that particular row number `Vg(i)`. `i` is larger than `maxrows/2` because we are fitting in the reverse sweep. A linear fit is performed at that range, with the value stored inside the variable `firstfit`, since it is the first linear fit performed.	
+- The left limit is held constant at `Vgmax` (or `Vgmax + offset`), while the right limit is iteratively moving further away from the first one (the row number `i` increases by `1` with each iteration). After every iteration, a new linear fit is performed in the new voltage range. This limit moving and linear re-fitting continues until the slope of the linear fit diverges beyond a certain percentage from the original `firstfit`. The divergence limit is called `slopewindow` and it is a **parameter** to be set in the script.	
 - Hence, the row index `i` shows the right limit of the voltage range for the linear fit. The iterative loop extends from the minimum `i` value `wks.maxrows/2 + minRangeLength` (or `wks.maxrows/2 + minRangeLength + offset`) to the end of the voltage range (`maxrows`). Moving `i` to the right (via the loop) constitutes the *rolling window*.
 
 So far two **parameters** have been introduced:
@@ -121,13 +121,17 @@ So far two **parameters** have been introduced:
 
 
 #### Offset
-There are cases cases where taking the left integration limit to be `Id(Vgmax)` leads to a wrong linear fit. For example let us examine the following image:
+There are cases cases when taking the left integration limit to be `Vgmax` will cause the Rolling Regression to fail. One such case is when `Idmax` and `Vgmax` do not coincide. This is presented in the following image:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%201.png" alt="Offset1" height="400"> 
 
-In this case, performing a Rolling Regression will always fail because `Idmax` and `Vgmax` do not coincide.
+In this case, `Idmax` occurs at a different voltage `Vg(Idmax)`. After `Vg(Idmax)`, the slope of the `dId/dV` curve turns positive and the resulting linear fit rises to infinity. To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left the left voltage limit will then start from `Vg(Idmax)`.
 
-// Offset: If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
+Another case when the Rolling Regression can fail is when `gm,max` does not coincide with `Vgmax`. This is presented in the following image:
+
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%202.png" alt="Offset2" height="400"> 
+
+
 
 int autooffsetlin = 1; // Determines whether an automatic offset calculation will be performed (Linear)
 int autooffsetsat = 1; // Determines whether an automatic offset calculation will be performed (Saturation)
@@ -137,6 +141,8 @@ int offsetsat = 0; // [V] Offset value in case the d(SQRT(Id(Vdlin)))/dV functio
 
 offset1 The contribution of the offset due to Idmax not coinciding with Vgmax.
 offset2 The contribution of the offset due to the max gm not coinciding with Vgmax.
+
+I do not start the integration from Vgmax. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
 
 
 ### Reliability factor
