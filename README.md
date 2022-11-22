@@ -120,13 +120,17 @@ So far two **parameters** have been introduced:
 - `slopewindow [%]`: The percentage of slope variation (relative to the first linear fit) allowed before the final linear fit is performed. This is the "window" for performing the rolling regression. The default values are `1.2` for the Linear and `3` for the Saturation regime.
 
 
-#### Offset
+#### The `offset` parameters
+
+##### Offset 1: When `Idmax` and `Vgmax` do not coincide
 There are cases cases when taking the left integration limit to be `Vgmax` will cause the Rolling Regression to fail. One such case is when `Idmax` and `Vgmax` do not coincide. This is presented in the following image:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%201%20wrong%20fit.png" alt="VtlinOffset1WrongFit" height="400">
 
 In this case, `Idmax` occurs at a different voltage: `Vg(Idmax)`. After `Vg(Idmax)`, the slope of the `dId/dV` curve turns positive and the resulting linear fit rises to infinity. To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left the left voltage limit will then start from `Vg(Idmax)`.
 
+
+##### Offset 2: When `gm,max` and `Vgmax` do not coincide
 Another case when the Rolling Regression can fail is when `gm,max` and `Vgmax` do not coincide. This is presented in the following image:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%202%20wrong%20fit.png" alt="VtlinOffset2WrongFit" height="400">
@@ -135,11 +139,13 @@ In this case, `gm,max` occurs at a different voltage: `Vg(gm,max)`. The `Rolling
 
 To correct for this, the `RollingRegression` function checks if `gm,max` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset2`, where `offset2` is the voltage difference between `Vgmax` and `Vg(gm,max)`. The left the left voltage limit will then start from `Vg(gm,max)`.
 
-The offsets ensure that the linear fit is applied at the voltage range around `gm,max`. This is presented in the following image:
+`offset2` ensures that the linear fit is applied at the voltage range around `gm,max`. This is presented in the following image:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%202%20correct%20fit.png" alt="VtlinOffset2CorrectFit" height="400">
 
-Note that the `RollingRegression` function checks and applies both offsets, first `offset1` and then `offset2`. If `offset1` is not accounted for, then there is a chance that `Vg(gm,max)` is occuring before `Idmax`. The offsets are summed into a new variable (`offset = offset1 + offset2`) and the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset`.
+
+##### Summary
+The `RollingRegression` function checks and applies both offsets, first `offset1` and then `offset2`. If `offset1` is not accounted for, then there is a chance that `Vg(gm,max)` is occuring before `Idmax`. The offsets are summed into a new variable (`offset = offset1 + offset2`) and the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset`.
 
 The offset-related **parameters** are:
 
