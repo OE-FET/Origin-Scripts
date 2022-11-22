@@ -135,21 +135,16 @@ In this case, `gm,max` occurs at a different voltage: `Vg(gm,max)`. The `Rolling
 
 To correct for this, the `RollingRegression` function checks if `gm,max` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset2`, where `offset2` is the voltage difference between `Vgmax` and `Vg(gm,max)`. The left the left voltage limit will then start from `Vg(gm,max)`.
 
-The function checks and applies both offsets, first `offset1` and then `offset2`. If `offset1` is not accounted for, then there is a chance that `Vg(gm,max)` is occuring before `Idmax`. The offsets are summed into a new variable (`offset = offset1 + offset2`) and the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset`.
-
-int autooffsetlin = 1; // Determines whether an automatic offset calculation will be performed (Linear)
-int autooffsetsat = 1; // Determines whether an automatic offset calculation will be performed (Saturation)
-
-int offsetlin = 10; // [V] (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
-int offsetsat = 0; // [V] Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
-
-offset1 The contribution of the offset due to Idmax not coinciding with Vgmax.
-offset2 The contribution of the offset due to the max gm not coinciding with Vgmax.
-
-
 The offsets ensure that the linear fit is applied at the voltage range around `gm,max`. This is presented in the following image:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Correct%20fit.png" alt="CorrectFit" height="400">
+
+Note that the `RollingRegression` function checks and applies both offsets, first `offset1` and then `offset2`. If `offset1` is not accounted for, then there is a chance that `Vg(gm,max)` is occuring before `Idmax`. The offsets are summed into a new variable (`offset = offset1 + offset2`) and the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset`.
+
+The offset-related **parameters** are:
+
+- `autooffset`: Setting it to `1` will enable the automatic offset calculation. Setting it to `0` will disable it.
+- `offset`: Manual setting of the offset value, in case `autooffset` is set to `0`. Common offset values include `20` for `IDTBT` and `0` for `N2200`. The default value is `10`. If `autooffset` is set to `1` this parameter is meaningless, as the offset will be automatically determined.
 
 
 ### Reliability factor
