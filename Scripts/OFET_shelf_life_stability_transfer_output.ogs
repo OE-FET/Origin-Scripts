@@ -12,9 +12,9 @@
 // 6. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 2.0
+// Version: 2.1
 // Current status: Works well.
-// Changes: Replaced additive$ with additive$.
+// Changes: Renamed the Rolling Regression function.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -98,9 +98,9 @@
 		
 		// Rolling Regression function parameters
 		// Offset: If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
-		// minRangeLength: Usually 10 (between 7 and 20.) The minimum range of voltages over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
-		int minRangeLengthlin = 5; // [V] The minimum range of voltages over which the linear fit will be applied (Linear)
-		int minRangeLengthsat = 2; // [V] The minimum range of voltages over which the linear fit will be applied (Saturation)
+		// minRangeLength: Usually 10 (between 7 and 20.) The voltage range over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
+		int minRangeLengthlin = 5; // [V] The voltage range over which the linear fit will be applied (Linear)
+		int minRangeLengthsat = 2; // [V] The voltage range over which the linear fit will be applied (Saturation)
 		
 		int autooffsetlin = 1; // Determines whether an automatic offset calculation will be performed (Linear)
 		int autooffsetsat = 0; // Determines whether an automatic offset calculation will be performed (Saturation)
@@ -233,7 +233,7 @@
 					
 					col(N)[L]$ = "Linear fit on Id (Vd=%(Vdlin$)V)"; // Long name
 					col(N)[U]$ = A; // Units
-					Vtlin = RollingRegressionAO(8, 14, minRangeLengthlin, slopewindowlin, autooffsetlin, offsetlin, 12, "Linear"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+					Vtlin = RollingRegression(8, 14, minRangeLengthlin, slopewindowlin, autooffsetlin, offsetlin, 12, "Linear"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 					
 					
 					// Linear extrapolation of the linear fit, to find the intercept with the X axis
@@ -269,7 +269,7 @@
 					
 					col(T)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
 					col(T)[U]$ = A^(1/2); // Units
-					Vtsat = RollingRegressionAO(17, 20, minRangeLengthsat, slopewindowsat, autooffsetsat, offsetsat, 18, "Saturation"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+					Vtsat = RollingRegression(17, 20, minRangeLengthsat, slopewindowsat, autooffsetsat, offsetsat, 18, "Saturation"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
 					
 					// Linear extrapolation of the linear fit, to find the intercept with the X axis
 					range rt=(1,20); // Define XYrange
