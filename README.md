@@ -86,20 +86,20 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 
 
 ### OFET parameters
-- `Width (W)`: The transistor width in `um`.
-- `Length (L)`: The transistor length in `um`. This is not usually set manually, as a parameter, but is extracted from the `length` field of the filename. This is because a sample can contain devices of different lengths.
-- `Thickness of accumulation layer (d)`: The thickness of the accumulation layer in `nm`.
+- `Width (W) [um]`: The transistor width.
+- `Length (L) [um]`: The transistor length. This is not usually set manually, as a parameter, but is extracted from the `length` field of the filename. This is because a sample can contain devices of different lengths.
+- `Thickness of accumulation layer (d) [nm]`: The thickness of the accumulation layer.
 - `Dielectric constant (er)`: The dielectric constant. Common values include `2.1` for `CYTOP`, `3.6` for `PMMA` and `3.9` for `SiO2`.
-- `Vacuum permittivity (e0)`: The dielectric permittivity of vacuum is a constant with a value of `8.854E-12 F/m`.
-- `Dielectric thickness`: The thickness of the dielectric in `nm`. This parameter is not usually set manually. It is calculated using the `DielectricThicknessCalc` function, using the `dielectric` field as input.
+- `Vacuum permittivity (e0) [F/m]`: The dielectric permittivity of vacuum is a constant with a value of `8.854E-12`.
+- `Dielectric thickness [nm]`: The thickness of the dielectric. This parameter is not usually set manually. It is calculated using the `DielectricThicknessCalc` function, using the `dielectric` field as input.
 	- **NOTE**: To set the dielectric thickness manually, open the script to be executed (not the `Library` script itself), comment out `DielectricThicknessCalc` function and set the `dielectricthickness` variable manually.
-- `Dielectric capacitance (Ci)`: The capacitance per unit area of the dielectric in `F/m^2`. This is calculated by the dielectric thickness and the dielectric constant, using the formula `Ci=e0*er/(dielectricthickness*10^(-9))`. However, this is not completely correct. In reality, there is metal penetration inside the dielectric during the gate evaporation. Hence, we should not take into account the entire dielectric thickness into account when calculating the dielectric capacitance. The correct way to extract the dielectric capacitance is to measure it with an impedance analyzer by short-circuiting the source and drain. Typical values for dielectrics are 3.2 nF/cm^2 for `CYTOP` and `5.2 nF/cm^2` for `PMMA`. From that capacitance, we can extract the effective dielectric thickness, compare it with the measured dielectric thickness and estimate the extent of metal penetration into the dielectric.
+- `Dielectric capacitance (Ci) [F/m^2]`: The capacitance per unit area of the dielectric. This is calculated by the dielectric thickness and the dielectric constant, using the formula `Ci=e0*er/(dielectricthickness*10^(-9))`. However, this is not completely correct. In reality, there is metal penetration inside the dielectric during the gate evaporation. Hence, we should not take into account the entire dielectric thickness into account when calculating the dielectric capacitance. The correct way to extract the dielectric capacitance is to measure it with an impedance analyzer by short-circuiting the source and drain. Typical values for dielectrics are 3.2 nF/cm^2 for `CYTOP` and `5.2 nF/cm^2` for `PMMA`. From that capacitance, we can extract the effective dielectric thickness, compare it with the measured dielectric thickness and estimate the extent of metal penetration into the dielectric.
 
 
 ### Mobility correction (power law fit) parameters
 There is a [publication](https://aip.scitation.org/doi/10.1063/1.4876057) that demonstrates how to calculate the gate voltage dependent contact and channel resistance from the transfer curves, in the linear and saturation regime. The process involves fitting a exponential function into the mobility curve. The fit is performed using the `PowerLawFit` function that can be called from the `Library` script. To disable the power law fit, open the script to be executed (not the `Library` script itself), and comment out the line calling the `PowerLawFit` function. If performing The parameters of the `PowerLawFit` function are:
 
-- `minRangeLengthPLF`: The minimum voltage range over which the Power Law fit will be applied. The fit starts at least `minRangeLengthPLF` volts after the `Vgmax` point. This number is usually `20`.
+- `minRangeLengthPLF [V]`: The minimum voltage range over which the Power Law fit will be applied. The fit starts at least `minRangeLengthPLF` volts after the `Vgmax` point. This number is usually `20`.
 - `errorwindowPLF`: The maximum Root Mean Square Error allowed for the power law fit to be performed. If the error is larger than this value then the voltage range in which the fit is performed increases by a single row. Hence, this error defines the "window" for performing the power law fit. The default value is usually `0.001`.
 
 
@@ -113,12 +113,11 @@ Instead, the `RollingRegression` function tries to find the maximum voltage rang
 - The left limit is held constant at `Id(Vgmax)` (or `Id(Vgmax)+offset`), while the right limit is iteratively moving further away from the first one (the row number `i` increases by `1` with each iteration). After every iteration, a new linear fit is performed in the new voltage range. This limit moving and linear re-fitting continues until the slope of the linear fit diverges beyond a certain percentage from the original `firstfit`. The divergence limit is called `slopewindow` and it is a **parameter** to be set in the script.	
 - Hence, the row index `i` shows the right limit of the voltage range for the linear fit. The iterative loop extends from the minimum `i` value `wks.maxrows/2 + minRangeLength` (or `wks.maxrows/2 + minRangeLength + offset`) to the end of the voltage range (`maxrows`). Moving `i` to the right (via the loop) constitutes the *rolling window*.
 
-// minRangeLength: Usually 10 (between 7 and 20.) The minimum voltage range over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
-int minRangeLengthlin = 5; // [V] The minimum voltage range over which the linear fit will be applied (Linear)
-int minRangeLengthsat = 10; // [V] The minimum voltage range over which the linear fit will be applied (Saturation)
+So far two **parameters** have been introduced:
 
-double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Linear)
-double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Saturation)
+- `minRangeLength [V]`: The minimum voltage range (not row index range!) over which the linear fit will be applied. The more curvy the `Id/SQRT(Id)` curve, the smaller `minRangeLength` has to be, in order to be able to fit linearly. Typical values are between `5` and `20`, with the default values being `5` for the Linear and `10` for the Saturation regime.
+
+- `slopewindow [%]`: The percentage of slope variation (relative to the first linear fit) allowed before the final linear fit is performed. This is the "window" for performing the rolling regression. The default values are `1.2` for the Linear and `3` for the Saturation regime.
 
 
 #### Offset
