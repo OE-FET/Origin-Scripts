@@ -116,7 +116,7 @@ Instead, the `RollingRegression` function tries to find the maximum voltage rang
 #### Offset
 There are cases cases where taking the left integration limit to be `Id(Vgmax)` leads to a wrong linear fit. For example let us examine the following image:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%201.png" alt="Offset1" width="500" height="600"> 
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%201.png" alt="Offset1" height="600"> 
 
 
 
