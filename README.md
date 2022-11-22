@@ -123,13 +123,13 @@ So far two **parameters** have been introduced:
 #### Offset
 There are cases cases when taking the left integration limit to be `Vgmax` will cause the Rolling Regression to fail. One such case is when `Idmax` and `Vgmax` do not coincide. This is presented in the following image:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%201.png" alt="Offset1" height="400"> 
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%201.png" alt="Offset1" height="400">
 
 In this case, `Idmax` occurs at a different voltage `Vg(Idmax)`. After `Vg(Idmax)`, the slope of the `dId/dV` curve turns positive and the resulting linear fit rises to infinity. To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left the left voltage limit will then start from `Vg(Idmax)`.
 
 Another case when the Rolling Regression can fail is when `gm,max` does not coincide with `Vgmax`. This is presented in the following image:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%202.png" alt="Offset2" height="400"> 
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%202.png" alt="Offset2" height="400">
 
 
 
@@ -143,6 +143,8 @@ offset1 The contribution of the offset due to Idmax not coinciding with Vgmax.
 offset2 The contribution of the offset due to the max gm not coinciding with Vgmax.
 
 I do not start the integration from Vgmax. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
+
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Correct%20fit.png" alt="CorrectFit" height="400">
 
 
 ### Reliability factor
