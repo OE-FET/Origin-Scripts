@@ -125,13 +125,17 @@ There are cases cases when taking the left integration limit to be `Vgmax` will 
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%201.png" alt="Offset1" height="400">
 
-In this case, `Idmax` occurs at a different voltage `Vg(Idmax)`. After `Vg(Idmax)`, the slope of the `dId/dV` curve turns positive and the resulting linear fit rises to infinity. To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left the left voltage limit will then start from `Vg(Idmax)`.
+In this case, `Idmax` occurs at a different voltage: `Vg(Idmax)`. After `Vg(Idmax)`, the slope of the `dId/dV` curve turns positive and the resulting linear fit rises to infinity. To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left the left voltage limit will then start from `Vg(Idmax)`.
 
-Another case when the Rolling Regression can fail is when `gm,max` does not coincide with `Vgmax`. This is presented in the following image:
+Another case when the Rolling Regression can fail is when `gm,max` and `Vgmax` do not coincide. This is presented in the following image:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%202.png" alt="Offset2" height="400">
 
+In this case, `gm,max` occurs at a different voltage: `Vg(gm,max)`. The `RollingRegression` function will start at `Vgmax` (60 Volts), perform the first linear fit over a voltage range of `minRangeLength` Volts and then keep iterating until the slope diverges. The divergence happens roughly ~15 Volts away from `Vgmax`, at 45 Volts. However, this linear fit obviously underestimates the threshold voltage `Vt`. This is because beyond the 45 Volts the slope (i.e. the transconductance, `gm`) becomes even larger. The maximum value of the slope (and of the transconductance) occurs at roughly 35 Volts, and this is where the linear fit should have taken place.
 
+To correct for this, the `RollingRegression` function checks if `gm,max` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset2`, where `offset2` is the voltage difference between `Vgmax` and `Vg(gm,max)`. The left the left voltage limit will then start from `Vg(gm,max)`.
+
+The function checks and applies both offsets, first `offset1` and then `offset2`. If `offset1` is not accounted for, then there is a chance that `Vg(gm,max)` is occuring before `Idmax`. The offsets are summed into a new variable (`offset = offset1 + offset2`) and the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset`.
 
 int autooffsetlin = 1; // Determines whether an automatic offset calculation will be performed (Linear)
 int autooffsetsat = 1; // Determines whether an automatic offset calculation will be performed (Saturation)
@@ -142,7 +146,8 @@ int offsetsat = 0; // [V] Offset value in case the d(SQRT(Id(Vdlin)))/dV functio
 offset1 The contribution of the offset due to Idmax not coinciding with Vgmax.
 offset2 The contribution of the offset due to the max gm not coinciding with Vgmax.
 
-I do not start the integration from Vgmax. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
+
+The offsets ensure that the linear fit is applied at the voltage range around `gm,max`. This is presented in the following image:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Correct%20fit.png" alt="CorrectFit" height="400">
 
