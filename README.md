@@ -86,14 +86,14 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 
 
 ### OFET parameters
-- `Width (W) [um]`: The transistor width.
-- `Length (L) [um]`: The transistor length. This is not usually set manually, as a parameter, but is extracted from the `length` field of the filename. This is because a sample can contain devices of different lengths.
-- `Thickness of accumulation layer (d) [nm]`: The thickness of the accumulation layer.
+- `Width (W)` [um]: The transistor width.
+- `Length (L)` [um]: The transistor length. This is not usually set manually, as a parameter, but is extracted from the `length` field of the filename. This is because a sample can contain devices of different lengths.
+- `Thickness of accumulation layer (d)` [nm]: The thickness of the accumulation layer.
 - `Dielectric constant (er)`: The dielectric constant. Common values include `2.1` for `CYTOP`, `3.6` for `PMMA` and `3.9` for `SiO2`.
-- `Vacuum permittivity (e0) [F/m]`: The dielectric permittivity of vacuum is a constant with a value of `8.854E-12`.
-- `Dielectric thickness [nm]`: The thickness of the dielectric. This parameter is not usually set manually. It is calculated using the `DielectricThicknessCalc` function, using the `dielectric` field as input.
+- `Vacuum permittivity (e0)` [F/m]: The dielectric permittivity of vacuum is a constant with a value of `8.854E-12`.
+- `Dielectric thickness` [nm]: The thickness of the dielectric. This parameter is not usually set manually. It is calculated using the `DielectricThicknessCalc` function, using the `dielectric` field as input.
 	- **NOTE**: To set the dielectric thickness manually, open the script to be executed (not the `Library` script itself), comment out `DielectricThicknessCalc` function and set the `dielectricthickness` variable manually.
-- `Dielectric capacitance (Ci) [F/m<sup>2</sup>]`: The capacitance per unit area of the dielectric. This is calculated by the dielectric thickness and the dielectric constant, using the formula `Ci=e0*er/(dielectricthickness*10<sup>-9</sup>)`. However, this is not completely correct. In reality, there is metal penetration inside the dielectric during the gate evaporation. Hence, we should not take into account the entire dielectric thickness into account when calculating the dielectric capacitance. The correct way to extract the dielectric capacitance is to measure it with an impedance analyzer by short-circuiting the source and drain. Typical values for dielectrics are `3.2 nF/cm<sup>2</sup>` for `CYTOP` and `5.2 nF/cm<sup>2</sup>` for `PMMA`. From that capacitance, we can extract the effective dielectric thickness, compare it with the measured dielectric thickness and estimate the extent of metal penetration into the dielectric.
+- `Dielectric capacitance (Ci)` [F/m<sup>2</sup>]: The capacitance per unit area of the dielectric. This is calculated by the dielectric thickness and the dielectric constant, using the formula `Ci=e0*er/(dielectricthickness*10^(-9)`. However, this is not completely correct. In reality, there is metal penetration inside the dielectric during the gate evaporation. Hence, we should not take into account the entire dielectric thickness into account when calculating the dielectric capacitance. The correct way to extract the dielectric capacitance is to measure it with an impedance analyzer by short-circuiting the source and drain. Typical values for dielectrics are `3.2` nF/cm<sup>2</sup> for `CYTOP` and `5.2` nF/cm<sup>2</sup> for `PMMA`. From that capacitance, we can extract the effective dielectric thickness, compare it with the measured dielectric thickness and estimate the extent of metal penetration into the dielectric.
 
 
 ### Mobility correction (power law fit) parameters
