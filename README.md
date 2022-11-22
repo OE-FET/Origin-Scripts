@@ -113,27 +113,28 @@ Instead, the `RollingRegression` function tries to find the maximum voltage rang
 - The left limit is held constant at `Id(Vgmax)` (or `Id(Vgmax)+offset`), while the right limit is iteratively moving further away from the first one (the row number `i` increases by `1` with each iteration). After every iteration, a new linear fit is performed in the new voltage range. This limit moving and linear re-fitting continues until the slope of the linear fit diverges beyond a certain percentage from the original `firstfit`. The divergence limit is called `slopewindow` and it is a **parameter** to be set in the script.	
 - Hence, the row index `i` shows the right limit of the voltage range for the linear fit. The iterative loop extends from the minimum `i` value `wks.maxrows/2 + minRangeLength` (or `wks.maxrows/2 + minRangeLength + offset`) to the end of the voltage range (`maxrows`). Moving `i` to the right (via the loop) constitutes the *rolling window*.
 
+// minRangeLength: Usually 10 (between 7 and 20.) The minimum voltage range over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
+int minRangeLengthlin = 5; // [V] The minimum voltage range over which the linear fit will be applied (Linear)
+int minRangeLengthsat = 10; // [V] The minimum voltage range over which the linear fit will be applied (Saturation)
+
+double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Linear)
+double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Saturation)
+
 
 #### Offset
 There are cases cases where taking the left integration limit to be `Id(Vgmax)` leads to a wrong linear fit. For example let us examine the following image:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%201.png" alt="Offset1" height="600"> 
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Wrong%20fit%201.png" alt="Offset1" height="400"> 
 
-
+In this case, performing a Rolling Regression will always fail because `Idmax` and `Vgmax` do not coincide.
 
 // Offset: If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
-// minRangeLength: Usually 10 (between 7 and 20.) The minimum voltage range over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
-int minRangeLengthlin = 5; // [V] The minimum voltage range over which the linear fit will be applied (Linear)
-int minRangeLengthsat = 10; // [V] The minimum voltage range over which the linear fit will be applied (Saturation)
 
 int autooffsetlin = 1; // Determines whether an automatic offset calculation will be performed (Linear)
 int autooffsetsat = 1; // Determines whether an automatic offset calculation will be performed (Saturation)
 
 int offsetlin = 10; // [V] (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
 int offsetsat = 0; // [V] Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
-
-double slopewindowlin = 1.2; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Linear)
-double slopewindowsat = 3; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Saturation)
 
 offset1 The contribution of the offset due to Idmax not coinciding with Vgmax.
 offset2 The contribution of the offset due to the max gm not coinciding with Vgmax.
