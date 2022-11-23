@@ -127,8 +127,13 @@ There are cases cases when taking the left integration limit to be `Vgmax` will 
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%201%20wrong%20fit.png" alt="VtlinOffset1WrongFit" height="400">
 
-In this case, `Idmax` occurs at a different voltage: `Vg(Idmax)`. After `Vg(Idmax)`, the slope of the `dId/dV` curve turns positive and the resulting linear fit rises to infinity. To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left the left voltage limit will then start from `Vg(Idmax)`.
+In this case, `Idmax` occurs at a different voltage: `Vg(Idmax)`. After `Vg(Idmax)`, the slope of the `dId/dV` curve turns positive and the resulting linear fit rises to infinity.
 
+To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left the left voltage limit will then start from `Vg(Idmax)`.
+
+`offset1` ensures that the linear fit is applied at the voltage range around `Idmax`. This is presented in the following image:
+
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%201%20correct%20fit.png" alt="VtlinOffset1CorrectFit" height="400">
 
 ##### Offset 2: When `gm,max` and `Vgmax` do not coincide
 Another case when the Rolling Regression can fail is when `gm,max` and `Vgmax` do not coincide. This is presented in the following image:
