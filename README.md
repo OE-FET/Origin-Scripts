@@ -20,8 +20,8 @@ To install the scripts, perform the following steps:
 7. Now the scripts should be available. To verify this, start typing the name of a script in the `Command Window` (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name with one of the EGOFET scripts.
 8. Test a script by going to a subfolder of the `Script examples` project file and following the instructions on the readme file. Usually all that is needed is to type the name of the corresponding script in the `Command Window` and press `ENTER`.
 
-## Analysis of filename templates
 
+## Analysis of filename templates
 
 ### Fields and their Values
 Each filename template consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
@@ -96,14 +96,14 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 - `Dielectric capacitance (Ci)` [F/m<sup>2</sup>]: The capacitance per unit area of the dielectric. This is calculated by the dielectric thickness and the dielectric constant, using the formula `Ci=e0*er/(dielectricthickness*10^(-9)`. However, this is not completely correct. In reality, there is metal penetration inside the dielectric during the gate evaporation. Hence, we should not take into account the entire dielectric thickness into account when calculating the dielectric capacitance. The correct way to extract the dielectric capacitance is to measure it with an impedance analyzer by short-circuiting the source and drain. Typical values for dielectrics are `3.2` nF/cm<sup>2</sup> for `CYTOP` and `5.2` nF/cm<sup>2</sup> for `PMMA`. From that capacitance, we can extract the effective dielectric thickness, compare it with the measured dielectric thickness and estimate the extent of metal penetration into the dielectric.
 
 
-### Mobility correction (power law fit) parameters
+#### Mobility correction (power law fit) parameters
 There is a [publication](https://aip.scitation.org/doi/10.1063/1.4876057) that demonstrates how to calculate the gate voltage dependent contact and channel resistance from the transfer curves, in the linear and saturation regime. The process involves fitting a exponential function into the mobility curve. The fit is performed using the `PowerLawFit` function that can be called from the `Library` script. To disable the power law fit, open the script to be executed (not the `Library` script itself), and comment out the line calling the `PowerLawFit` function. If performing The parameters of the `PowerLawFit` function are:
 
 - `minRangeLengthPLF` [V]: The minimum voltage range over which the Power Law fit will be applied. The fit starts at least `minRangeLengthPLF` volts after the `Vgmax` point. This number is usually `20`.
 - `errorwindowPLF`: The maximum Root Mean Square Error allowed for the power law fit to be performed. If the error is larger than this value then the voltage range in which the fit is performed increases by a single row. Hence, this error defines the "window" for performing the power law fit. The default value is usually `0.001`.
 
 
-### Rolling Regression (Vt fit) parameters
+#### Rolling Regression (Vt fit) parameters
 The `RollingRegression` function is used to perform a linear fit on part of the `Id` (or <span>&#8730;</span>Id) curve in order to calculate the threshold voltage `Vt`, which is the intercept of the fit with the voltage (horizontal) axis. One option would be to choose two fixed limits on the voltage axis (e.g. a 20 Volt range) and perform the linear fit in those. If the fit was not good, we would manually change the fit limits and try again.
 
 Instead, the `RollingRegression` function tries to find the maximum voltage range it can perform a linear fit on before the slope of the linear fit surpasses a pre-determined **parameter** called `slopewindow`.
@@ -158,8 +158,14 @@ The offset-related **parameters** are:
 - `offset`: Manual setting of the offset value, in case `autooffset` is set to `0`. Common offset values include `20` for `IDTBT` and `0` for `N2200`. The default value is `10`. If `autooffset` is set to `1` this parameter is meaningless, as the offset will be automatically determined.
 
 
-### Reliability factor
+#### Reliability factor
 The **reliability factor** is calculated as described in the relevant [publication](https://www.nature.com/articles/nmat5035). A point of uncertainty exists with respect to the denominators of formulas (B1) and (B2) of the publication. The denominators are the transconductances, which depend on the gate voltage. The question is, which value of the transconductance should be used for the calculation of the reliability factor. We could use the maximum transconductance (g<sub>m, max</sub>), or the transconductance at the maximum gate voltage (g<sub>m, VGmax</sub>). The scripts have been coded to use the maximum transconductance (g<sub>m, max</sub>) value (which may not be at the maximum gate voltage), thus calculating a worst case scenario for the reliability factor.
+
+
+### EGOFET parameters
+
+#### Steady state time `Tss`
+- To be completed.
 
 
 ## Filename templates:<a name="FilenameTemplates"></a>
