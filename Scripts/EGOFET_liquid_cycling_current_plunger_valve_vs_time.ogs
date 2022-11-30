@@ -4,9 +4,9 @@
 // Hence, the naming convention is slightly different.
 
 // Author: Dimitrios Simatos
-// Version: 1.4
+// Version: 1.5
 // Current status: Works well.
-// Changes: Replaced additivetype$ with additive$.
+// Changes: Added variant$ variable.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -64,6 +64,7 @@
 		string Period$ = "7"; // The number of cycles between two liquid pumping cycles, even if the same liquid in injected.
 		string InjStep$ = "4"; // The number of injections per step.
 		int Ladder = 0; // If this variable is equal to 1, the ladder templates will be used.
+		string variant$ = "2"; // Which variant of the template will be used (the same template may have different color schemes and protein concentrations).
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
 		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
@@ -149,9 +150,9 @@
 			TemplateGeneric$ = "%(templatepath$)Generic_Idon-Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Idon-Time_Vd=%(Vdsat$)V";
 			if (Ladder == 1)
-				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time_3.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time_%(variant$).otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time_3.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idon-Time_%(variant$).otpu"; // This is the template path
 			Layers = {1};
 			Columns = {10};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
@@ -162,9 +163,9 @@
 			TemplateGeneric$ = "%(templatepath$)Generic_Idoff-Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Idoff-Time_Vd=%(Vdsat$)V";
 			if (Ladder == 1)
-				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time_3.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time_%(variant$).otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time_3.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Idoff-Time_%(variant$).otpu"; // This is the template path
 			Layers = {1};
 			Columns = {11};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
@@ -175,9 +176,9 @@
 			TemplateGeneric$ = "%(templatepath$)Generic_Igon-Igoff-Volume-Time.otpu";
 			graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(sampleNo$)_%(condition$)_%(timelength$)_Igon-Igoff-Time_Vd=%(Vdsat$)V";
 			if (Ladder == 1)
-				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time_3.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling-Ladder_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time_%(variant$).otpu"; // This is the template path
 			else
-				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time_3.otpu"; // This is the template path
+				Template$ = "%(templatepath$)Cycling_%(Steps$)-steps_%(Cycles$)-cycles_%(CycleDuration$)-mins-cycle_%(Period$)-period_%(InjStep$)-inj-step_Igon-Igoff-Time_%(variant$).otpu"; // This is the template path
 			Layers = {1, 1};
 			Columns = {12, 13};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
