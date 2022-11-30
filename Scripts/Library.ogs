@@ -623,14 +623,14 @@ function string MakeMassSpecIonModeLegend (string IonMode)
 		return ionmodegraphlegend$;
 }
 
-// The linear fitting is done from Id(Vgmax)+offset to the i. Id(Vgmax)+offset is the left limit of the voltage range for the linear fit.
-// The index i shows the right limit of the voltage range for the linear fit. It starts from maxrows/2 (Id(Vgmax)) + minRangeLength (the min voltage range I want to fit on; if this is zero, then the left and right limits will overlap) + offset (correction factor in case Id plateaus at the left limit of the range (Vgmax). This happens in the linear regime.).
+// The linear fitting is done from Vgmax+offset to the i. Vgmax+offset is the left limit of the voltage range for the linear fit.
+// The index i shows the right limit of the voltage range for the linear fit. It starts from maxrows/2 (Vgmax) + minRangeLength (the min voltage range I want to fit on; if this is zero, then the left and right limits will overlap) + offset (correction factor in case Id plateaus at the left limit of the range (Vgmax). This happens in the linear regime.).
 // The loop extends from the minimum i value to the end of the voltage range (maxrows). Moving i to the right (via the loop) constitutes the rolling window.
 
 function double RollingRegression (int inputcolNo, int outputcolNo, int minRangeLength, double slopewindow, int autooffset, int offsetmanual, int gmcolNo, string regime)
 {
 	double Vt; // Threshold voltage (Temporary variable to be used in the Rolling Regression function)
-	double firstfit; // The first value of the slope of the linear fit (done between Id(Vgmax) and Id(Vg(i=0)).
+	double firstfit; // The first value of the slope of the linear fit (done between Vgmax and Vg(i=0).
 	range inputcol = [%H]1!wcol(inputcolNo); // Define the range variable (Vg column, SQRT(Id) column) for the input argument of the rolling regression function.
 	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable (linear fit output column) for the input argument of the rolling regression function.
 	range gm = [%H]1!wcol(gmcolNo); // Define the range variable (gm (Saturation)) for the input argument of the rolling regression function.
@@ -653,13 +653,13 @@ function double RollingRegression (int inputcolNo, int outputcolNo, int minRange
 		
 		// Calculate the offset (distance between Vgmax and point of max slope of curve to be fitted - Id for linear regime or SQRT(Id) for saturation)
 		// If Idmax is not at Vgmax, I calculate offset1 = Vg(Idmax) - Vgmax. This is the first contribution to the offset.
-		// In addition, if the max slope of Id (gmmax) is not at Vgmax, I calculate a second contribution to the offset: offset2 = Vg(gmmax) - Vgmax. If I do not calculate offset1, then there is a chance that Vg(gmmax) is occuring before Idmax (see images with wrong fits).
+		// In addition, if the max slope of Id (gmmax) is not at Vgmax, I calculate a second contribution to the offset: offset2 = Vg(gm,max) - Vgmax. If I do not calculate offset1, then there is a chance that Vg(gm,max) is occuring before Idmax (see images with wrong fits).
 		range rIdmax = inputcol[wks.maxrows/2:wks.maxrows];
 		sum(rIdmax); // Generate statistics on input column
 		rowIdmax = $(sum.imax); // The row number of max Id/SQRT(Id).
 		type "The row No in which Id/SQRT(Id) is max is $(rowIdmax)";
 		
-		fitLR iy:=inputcol[wks.maxrows/2:wks.maxrows/2 + minRangeLength]; // Linear fit from Id(Vgmax) to Id(Vgmax)+minRangeLength (offset=0).
+		fitLR iy:=inputcol[wks.maxrows/2:wks.maxrows/2 + minRangeLength]; // Linear fit from Vgmax to Vgmax+minRangeLength (offset=0).
 		if (fitLR.b>0 || rowIdmax!=maxrows/2) // I will correct for an offset if 1) the slope of Id is positive - it will rise to infinity and not intercept the X-axis, resulting in a bad fit. 2) If Idmax and Vgmax do not coincide.
 		{
 			offset1 = rowIdmax - wks.maxrows/2;
@@ -684,7 +684,7 @@ function double RollingRegression (int inputcolNo, int outputcolNo, int minRange
 	type "The left limit of the linear fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
 	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
 	{
-		fitLR iy:=inputcol[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Id(Vgmax) to Id(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
+		fitLR iy:=inputcol[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Vgmax to Vg(i). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
 		if (i == wks.maxrows/2 + minRangeLength + offset) // If i is equal to the initial value of the loop, then store the value in the "firstfit" variable. All fit differences will be calculated with this reference, and compared with the slope window.
 			{
 				firstfit = fitLR.b;
@@ -710,7 +710,7 @@ function double RollingRegression (int inputcolNo, int outputcolNo, int minRange
 function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLengthPLF, double errorwindowPLF)
 {
 	double beta; // Parameter for power law dependence of the mobility
-	double firsterror; // The error value of the power law fit (done between Id(Vgmax) and Id(Vg(i=0)).
+	double firsterror; // The error value of the power law fit (done between Vgmax and Vg(i=0).
 	int offsetPLF = 0; // Offset value in case the mobility function plateaus. The left limit of the voltage range will start from mu(Vgmax+offset) (Saturation)
 	range inputcol = [%H]1!wcol(inputcolNo); // Define the range variable (Vg column, usat column) for the input argument of the rolling regression function.
 	range outputcol = [%H]1!wcol(outputcolNo); // Define the range variable (power law fit output column) for the output argument of the rolling regression function.
