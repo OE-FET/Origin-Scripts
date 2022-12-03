@@ -261,6 +261,10 @@ function string MakeConditionLegend (string condition)
 			condgraphlegend$ = "1xPBS"; // Comment field (graph legend)
 			break;
 		
+		case "1-x-RIPA": // If the string is "1-x-PBS", write "1xPBS" in the comment field
+			condgraphlegend$ = "RIPA buffer"; // Comment field (graph legend)
+			break;
+		
 		case "SDS-0,002-gl": // If the string is "ss", write "Saline solution" in the comment field
 			condgraphlegend$ = "SDS, 0.002 g/l"; // Comment field (graph legend)
 			break;
