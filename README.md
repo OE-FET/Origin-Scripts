@@ -181,7 +181,7 @@ The **reliability factor** is calculated as described in the relevant [publicati
 **OFET (Bias Stress)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_timelength_BiasStressTypeandNo(PBS1/NBS1)_minutesNo-"min"_MeasurementType(T-O-S)_MeasNo_MeasurementMode_IntegrationTime`
 
-	- **NOTE**: For `S` measurement type (`sample`) the suffix is: `S_Vg_Vd`.
+- **NOTE**: For `S` measurement type (`sample`) the suffix is: `S_Vg_Vd`.
 
 **EG-OGET (sensing-cycling)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_sampleNo_condition(air/N2_liquid)_timelength_MeasurementType(I-vs-time_plunger,valve-port)`
