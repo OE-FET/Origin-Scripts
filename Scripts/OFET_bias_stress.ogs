@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 3.6
+// Version: 3.7
 // Current status: Works well.
-// Changes: Renamed the Rolling Regression function.
+// Changes: Fixed the normalized current columns.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -110,13 +110,13 @@
 			Igratio = round(Igratio,0); // Round the Ig ratio
 			col(G)[1] = Igratio; // Ig ratio
 			
-			col(H)[L]$ = "Normalized Is"; // Long name
+			col(H)[L]$ = "Is(t) / Is(0)"; // Long name
 			col(H) = col(B)/col(B)[1];
 			
-			col(I)[L]$ = "Normalized Id"; // Long name
+			col(I)[L]$ = "Id(t) / Id(0)"; // Long name
 			col(I) = col(C)/col(C)[1];
 			
-			col(J)[L]$ = "Normalized Ig"; // Long name
+			col(J)[L]$ = "Id(g) / Ig(0)"; // Long name
 			col(J) = col(D)/col(D)[1];
 			
 			
