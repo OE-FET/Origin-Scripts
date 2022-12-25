@@ -128,7 +128,7 @@
 			Columns = {3, 4};
 			LineTypes = {1, 1}; // 1 for line plot, 2 for scatter plot
 			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-			if (exist(Text,16)==16) Text.text$ = I\-(d,fin)/I\-(d,init)=$(Idratio) %; // If the label exists, update it
+			if (exist(Text,16)==16) Text.text$ = I\-(d,fin)/I\-(d)(0) = $(Idratio) %; // If the label exists, update it
 			plot -c; // refresh the graph to update the labels
 			
 			
@@ -140,7 +140,7 @@
 			Columns = {9};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
 			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
-			if (exist(Text,16)==16) Text.text$ = I\-(d,fin)/I\-(d,init)=$(Idratio) %; // If the label exists, update it
+			if (exist(Text,16)==16) Text.text$ = I\-(d,fin)/I\-(d)(0) = $(Idratio) %; // If the label exists, update it
 			plot -c; // refresh the graph to update the labels
 			
 			win -a %(activeworkbook$);  // activate the previous window (workbook)
