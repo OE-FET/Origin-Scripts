@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 3.7
+// Version: 3.8
 // Current status: Works well.
-// Changes: Fixed the normalized current columns.
+// Changes: Changed the Uavg-Time and the Vt-Time template names.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -661,7 +661,7 @@
 						// Create plot u vs Time
 						
 						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
@@ -675,7 +675,7 @@
 						// Create plot Vt vs Time
 						
 						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
+						string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time.otpu"; // This is the template path
 						if (exist(Template$)!=-1)// if the template exists
 							win -t p "%(Template$)"; // create a graph window using template
 						else
