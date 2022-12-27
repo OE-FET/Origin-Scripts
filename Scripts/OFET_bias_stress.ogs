@@ -666,11 +666,11 @@
 						// The template names and the graph longnames are defined here because the string variables (e.g. batch etc) are not defined outside the -doc loop.
 						UavgTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
 						UavgTimeGraphShift$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time-Shift_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						UavgTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time.otpu"; // This is the template path
+						UavgTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time-Shift.otpu"; // This is the template path
 						
 						VtTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
 						VtTimeGraphShift$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time-Shift_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						VtTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time.otpu"; // This is the template path
+						VtTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time-Shift.otpu"; // This is the template path
 					};
 					
 					win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
