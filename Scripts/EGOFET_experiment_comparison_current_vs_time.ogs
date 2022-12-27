@@ -26,21 +26,21 @@
 	int v = 0; // k is 0 if the "volume vs time graph" has NOT been plotted, and something else (usually 1) if it has been plotted.
 	string IonIoffTimeAIOWorkbook$; // The long name of the Ion/Ioff-Time (AIO) workbook
 	
-	string batch$; // Get the string that shows the batch
-	string architecture$; // Get the string that shows the architecture
-	string material$; // Get the string that shows the material
-	string concentration$; // Get the string that shows the concentration
-	string concnumber$; // Get the string that shows the concentration number
-	string concunits$; // Get the string that shows the concentration units
-	string solvent$; // Get the string that shows the solvent content
-	string annealing$; // Get the string that shows the additive
-	string additive$; // Get the string that shows the additive
-	string additive$; // Get the string that shows the additive type
-	string addthickness$; // Get the string that shows the additive thickness
-	string addthicknessunits$; // Get the string that shows the additive thickness units
-	string dielectric$; // Get the string that shows the dielectric
-	string dielectricconc$; // Get the string that shows the dielectric concentration or ratio
-	string sampleNo$; // Get the string that shows the sample number
+	string batch$; // The string that shows the batch
+	string architecture$; // The string that shows the architecture
+	string material$; // The string that shows the material
+	string concentration$; // The string that shows the concentration
+	string concnumber$; // The string that shows the concentration number
+	string concunits$; // The string that shows the concentration units
+	string solvent$; // The string that shows the solvent content
+	string annealing$; // The string that shows the additive
+	string additive$; // The string that shows the additive
+	string additive$; // The string that shows the additive type
+	string addthickness$; // The string that shows the additive thickness
+	string addthicknessunits$; // The string that shows the additive thickness units
+	string dielectric$; // The string that shows the dielectric
+	string dielectricconc$; // The string that shows the dielectric concentration or ratio
+	string sampleNo$; // The string that shows the sample number
 	
 	
 	// Parameters
