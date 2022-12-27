@@ -12,9 +12,9 @@
 // 6. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 2.1
+// Version: 2.2
 // Current status: Works well.
-// Changes: Renamed the Rolling Regression function.
+// Changes: Turned the Uavg-Time and the Vt-Time graph plotting into functions.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -33,11 +33,16 @@
 	
 	// Set variables for all loops
 	string IdonUavgTimeWorkbook$; // The long name of the Idon-Uavg-Time workbook
+	
 	string IdonTimeGraph$; // The long name of the Idon-Time graph
+	string IdonTimeTemplate$; // The long name of the Idon-Time template
+	
 	string UavgTimeGraph$; // The long name of the Uavg-Time graph
+	string UavgTimeTemplate$; // The long name of the Uavg-Time template
+	
 	string VtTimeGraph$; // The long name of the Vt-Time graph
-	
-	
+	string VtTimeTemplate$; // The long name of the Vt-Time template
+
 	doc -ef LB { // loop over all workbooks in folder
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
 		page.active = 1; // Switch to the first worksheet.
@@ -608,48 +613,15 @@
 						col(G)[U]$ = V; // Units
 						col(G)[C]$ = "Saturation";
 						
+						// The template names and the graph longnames are defined here because the string variables (e.g. batch etc) are not defined outside the -doc loop.
+						IdonTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Idon-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						IdonTimeTemplate$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Idon-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						
-						// Create plot Idon vs Time
+						UavgTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						UavgTimeTemplate$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						
-						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Idon-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
-						if (exist(Template$)!=-1)// if the template exists
-							win -t p "%(Template$)"; // create a graph window using template
-						else
-							win -t p "%(templatepath$)Generic_Stab_Idon-Time.otpu"; // create a graph window using a generic template
-						
-						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Idon-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						IdonTimeGraph$ = page.longname$;
-						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						
-						
-						// Create plot u vs Time
-						
-						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
-						if (exist(Template$)!=-1)// if the template exists
-							win -t p "%(Template$)"; // create a graph window using template
-						else
-							win -t p "%(templatepath$)Generic_Stab_Uavg-Time.otpu"; // create a graph window using a generic template
-						
-						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						UavgTimeGraph$ = page.longname$;
-						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						
-						
-						// Create plot Vt vs Time
-						
-						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
-						if (exist(Template$)!=-1)// if the template exists
-							win -t p "%(Template$)"; // create a graph window using template
-						else
-							win -t p "%(templatepath$)Generic_Stab_Vt-Time.otpu"; // create a graph window using a generic template
-						
-						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						VtTimeGraph$ = page.longname$;
-						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						
+						VtTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_step_%(stepNo$)_%(condition$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						VtTimeTemplate$ = "%(templatepath$)Stab_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 					};
 					
 					win -a %(uid2name(range2uid(["%(IdonUavgTimeWorkbook$)"]))$); // activate the workbook
@@ -747,34 +719,33 @@
 			};
 	};
 	
-	// Plot Idon, u, and Vt vs Time
-	win -a %(uid2name(range2uid(["%(IdonUavgTimeWorkbook$)"]))$); // activate the workbook
-	range rIdonlinTime = [%H]1!col(B);  // data range of Id on (Linear) column
-	range rIdonsatTime = [%H]1!col(C);  // data range of Id on (Saturation) column
-	range rulinavgTime = [%H]1!col(D);  // data range of average Mobility (Linear)
-	range rusatavgTime = [%H]1!col(E);  // data range of average Mobility (Saturation)
-	range rVtlinTime = [%H]1!col(F);  // data range of Threshold voltage (Linear) column
-	range rVtsatTime = [%H]1!col(G);  // data range of Threshold voltage (Saturation) column
+	// Plot Idon vs Time
+	TemplateGeneric$ = "%(templatepath$)Generic_Stab_Idon-Time.otpu";
+	graphname$ = IdonTimeGraph$;
+	Template$ = IdonTimeTemplate$; // This is the template path
+	Layers = {1, 1};
+	Columns = {2, 3};
+	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, IdonUavgTimeWorkbook$, 0, 0, 0);	
 	
-	window -ch 1; // hide the workbook that was processed
-	
-	win -a %(uid2name(range2uid(["%(IdonTimeGraph$)"]))$); // activate the workbook
-	page.active = 1; // activate Layer 1
-	
-	layer -i201 rIdonlinTime;  // plot in the active layer as scatter plot
-	layer -i201 rIdonsatTime;  // plot in the active layer as scatter plot
-	
-	
-	win -a %(uid2name(range2uid(["%(UavgTimeGraph$)"]))$); // activate the workbook
-	page.active = 1; // activate Layer 1
-	
-	layer -i201 rulinavgTime;  // plot in the active layer as scatter plot
-	layer -i201 rusatavgTime;  // plot in the active layer as scatter plot
-	
-	
-	win -a %(uid2name(range2uid(["%(VtTimeGraph$)"]))$); // activate the workbook
-	page.active = 1; // activate Layer 1
+	// Plot u vs Time
+	TemplateGeneric$ = "%(templatepath$)Generic_Stab_Uavg-Time.otpu";
+	graphname$ = UavgTimeGraph$;
+	Template$ = UavgTimeTemplate$; // This is the template path
+	Layers = {1, 1};
+	Columns = {4, 5};
+	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, IdonUavgTimeWorkbook$, 0, 0, 0);
 
-	layer -i201 rVtlinTime;  // plot in the active layer as scatter plot
-	layer -i201 rVtsatTime;  // plot in the active layer as scatter plot
+	// Plot Vt vs Time
+	TemplateGeneric$ = "%(templatepath$)Generic_Stab_Vt-Time.otpu";
+	graphname$ = VtTimeGraph$;
+	Template$ = VtTimeTemplate$; // This is the template path
+	Layers = {1, 1};
+	Columns = {6, 7};
+	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, IdonUavgTimeWorkbook$, 0, 0, 0);
+	
+	win -a %(uid2name(range2uid(["%(IdonUavgTimeWorkbook$)"]))$); // activate the workbook
+	window -ch 1; // hide the workbook that was processed (in this case, the IdonUavgTimeWorkbook)
 };

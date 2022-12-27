@@ -13,9 +13,9 @@
 // NOTE: When fitting the activation energy, fit only the linear part of the ln(mu) curve. Do NOT fit the hump at high temperatures, and the point at 100K (it will not be 100K due to Joule heating).
 
 // Author: Dimitrios Simatos
-// Version: 3.6
+// Version: 3.7
 // Current status: Works well
-// Changes: Renamed the Rolling Regression function.
+// Changes: Turned the uavg-invT and the Vt-T graph plotting into functions.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -34,9 +34,15 @@
 	
 	// Set variables for all loops
 	double kb = 8.617333262145E-5; // Boltzmann constant [eV/K]
+	
 	string UavgInvTWorkbook$; // The long name of the uavg-invT workbook
+	
 	string UavgInvTGraph$; // The long name of the uavg-invT graph
+	string UavgInvTTemplate$; // The template name of the uavg-invT template	
+	
 	string VtTGraph$; // The long name of the Vt-T graph
+	string VtTTemplate$; // The template name of the Vt-T template
+	
 	double Ealin; // Activation energy (Linear)
 	double Easat; // Activation energy (Saturation)
 	int lastrowlinT = wks.maxrows; // The upper limit of the integration will be equal to the total number of rows. The total number of rows does not include the empty rows (use "maxrows" command instead of "nRows").
@@ -605,34 +611,12 @@
 						col(H)[L]$ = "ln (Average mobility (Saturation))"; // Long name
 						col(H)[U]$ = cm^2/V*s; // Units
 						
+						// The template names and the graph longnames are defined here because the string variables (e.g. batch etc) are not defined outside the -doc loop.
+						UavgInvTGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Uavg-invT_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						UavgInvTTemplate$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-invT_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 						
-						// Create plot u vs invT
-						
-						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-invT_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
-						if (exist(Template$)!=-1)// if the template exists
-							win -t p "%(Template$)"; // create a graph window using template
-						else
-							win -t p "%(templatepath$)Generic_Uavg-invT.otpu"; // create a graph window using a generic template
-						
-						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Uavg-invT_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						UavgInvTGraph$ = page.longname$;
-						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						
-						
-						// Create plot Vt vs T
-						
-						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-T_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
-						if (exist(Template$)!=-1)// if the template exists
-							win -t p "%(Template$)"; // create a graph window using template
-						else
-							win -t p "%(templatepath$)Generic_Vt-T.otpu"; // create a graph window using a generic template
-						
-						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Vt-T_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						VtTGraph$ = page.longname$;
-						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						
+						VtTGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(timelength$)_Vt-T_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						VtTTemplate$ = "%(templatepath$)Cryo_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-T_Vd=%(Vdlin$),%(Vdsat$)V_Vg=%(VgStart$)V to %(VgStop$)V.otpu"; // This is the template path
 					};
 					
 					win -a %(uid2name(range2uid(["%(UavgInvTWorkbook$)"]))$); // activate the workbook
@@ -764,46 +748,32 @@
 	
 	else type "The number of data points is too small to perform a linear fit.";
 	
-	// Plot u vs T and Vt-sat vs T (or vs invT)
-	//page.active = nActive;  // activate the layer for plot
-	range rulinavgT = [%H]1!col(C);  // data range of average Mobility (Linear)
-	range rusatavgT = [%H]1!col(D);  // data range of average Mobility (Saturation)
-	range rulinavgTLF = [%H]1!col(M);  // data range of average Mobility (Linear)
-	range rusatavgTLF = [%H]1!col(N);  // data range of average Mobility (Saturation)
-	range rVtlinT = [%H]1!col(E);  // data range of Threshold voltage (Linear) column
-	range rVtsatT = [%H]1!col(F);  // data range of Threshold voltage (Saturation) column
-		
 	
-	win -a %(uid2name(range2uid(["%(UavgInvTGraph$)"]))$); // activate the workbook
-	page.active = 1; // activate Layer 1
+	// Plot u vs T and Vt-sat vs T (or vs invT)	
 	
-	layer -i201 rulinavgT;  // plot in the active layer as scatter plot
-	layer -i201 rusatavgT;  // plot in the active layer as scatter plot
-	layer.include(rulinavgTLF);  // plot in the active layer
-	layer.include(rusatavgTLF);  // plot in the active layer
+	TemplateGeneric$ = "%(templatepath$)Generic_Uavg-invT.otpu";
+	graphname$ = UavgInvTGraph$;
+	Template$ = UavgInvTTemplate$; // This is the template path
+	Layers = {1, 1, 1, 1};
+	Columns = {3, 4, 13, 14};
+	LineTypes = {2, 2, 1, 1}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 4, Columns, LineTypes, UavgInvTWorkbook$, 0, 0, 0);
 	
 	if (exist(Text2,16)==16) Text2.text$ = E\-(a,lin)= $(Ealin) meV;
 	if (exist(Text3,16)==16) Text3.text$ = E\-(a,sat)= $(Easat) meV;
 	plot -c; // refresh the graph to update the labels
 	
-	//layer -a;  // rescale the layer
-	////layer -g; // Group the datasets in the layer to auto-color increment
-	////layer -gu; // Ungroup the datasets in the layer
-	//legend; // Update the legend
-	
 	win -a %(uid2name(range2uid(["%(UavgInvTWorkbook$)"]))$); // activate the workbook
 	wks.col2.type=1;	// set col(B) as Y
 	
-	window -ch 1; // hide the "uavg-Vtsat-vs-invT" window
+	TemplateGeneric$ = "%(templatepath$)Generic_Vt-T.otpu";
+	graphname$ = VtTGraph$;
+	Template$ = VtTTemplate$; // This is the template path
+	Layers = {1, 1};
+	Columns = {5, 6};
+	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, UavgInvTWorkbook$, 0, 0, 0);
 	
-	win -a %(uid2name(range2uid(["%(VtTGraph$)"]))$); // activate the workbook
-	page.active = 1; // activate Layer 1
-
-	layer -i201 rVtlinT;  // plot in the active layer as scatter plot
-	layer -i201 rVtsatT;  // plot in the active layer as scatter plot
-	
-	//layer -a;  // rescale the layer
-	////layer -g; // Group the datasets in the layer to auto-color increment
-	////layer -gu; // Ungroup the datasets in the layer
-	//legend; // Update the legend
+	win -a %(uid2name(range2uid(["%(UavgInvTWorkbook$)"]))$); // activate the workbook
+	window -ch 1; // hide the workbook that was processed (in this case, the UavgInvTWorkbook)
 };

@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 3.8
+// Version: 3.9
 // Current status: Works well.
-// Changes: Changed the Uavg-Time and the Vt-Time template names.
+// Changes: Turned the Uavg-Time and the Vt-Time graph plotting into functions.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -31,8 +31,12 @@
 	
 	// Set variables for all loops
 	string UavgTimeWorkbook$; // The long name of the Uavg-Time workbook
+	
 	string UavgTimeGraph$; // The long name of the Uavg-Time graph
+	string UavgTimeTemplate$; // The template name of the Uavg-Time template	
+	
 	string VtTimeGraph$; // The long name of the Vt-Time graph
+	string VtTimeTemplate$; // The template name of the Vt-Time template
 
 	doc -ef LB { // loop over all workbooks in folder
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -657,34 +661,12 @@
 						col(E)[U]$ = V; // Units
 						col(E)[C]$ = "Saturation";
 						
+						// The template names and the graph longnames are defined here because the string variables (e.g. batch etc) are not defined outside the -doc loop.
+						UavgTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						UavgTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time.otpu"; // This is the template path
 						
-						// Create plot u vs Time
-						
-						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time.otpu"; // This is the template path
-						if (exist(Template$)!=-1)// if the template exists
-							win -t p "%(Template$)"; // create a graph window using template
-						else
-							win -t p "%(templatepath$)Generic_Uavg-Time.otpu"; // create a graph window using a generic template
-						
-						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						UavgTimeGraph$ = page.longname$;
-						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						
-						
-						// Create plot Vt vs Time
-						
-						// Check if the template exists, otherwise, use a generic one
-						string Template$="%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time.otpu"; // This is the template path
-						if (exist(Template$)!=-1)// if the template exists
-							win -t p "%(Template$)"; // create a graph window using template
-						else
-							win -t p "%(templatepath$)Generic_Vt-Time.otpu"; // create a graph window using a generic template
-						
-						page.longname$= "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						VtTimeGraph$ = page.longname$;
-						page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
-						
+						VtTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						VtTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time.otpu"; // This is the template path
 					};
 					
 					win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
@@ -780,35 +762,24 @@
 			};
 	};
 	
-	// Plot u and Vt vs Time
-	win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
-	range rulinavgTime = [%H]1!col(B);  // data range of average Mobility (Linear)
-	range rusatavgTime = [%H]1!col(C);  // data range of average Mobility (Saturation)
-	range rVtlinTime = [%H]1!col(D);  // data range of Threshold voltage (Linear) column
-	range rVtsatTime = [%H]1!col(E);  // data range of Threshold voltage (Saturation) column
-	
-	window -ch 1; // hide the workbook that was processed (in this case, the UavgTimeWorkbook)
-	
-	win -a %(uid2name(range2uid(["%(UavgTimeGraph$)"]))$); // activate the workbook
-	page.active = 1; // activate Layer 1
-	
-	layer -i201 rulinavgTime;  // plot in the active layer as scatter plot
-	layer -i201 rusatavgTime;  // plot in the active layer as scatter plot
-	
-	//layer -a;  // rescale the layer
-	////layer -g; // Group the datasets in the layer to auto-color increment
-	////layer -gu; // Ungroup the datasets in the layer
-	//legend; // Update the legend
-	
-	
-	win -a %(uid2name(range2uid(["%(VtTimeGraph$)"]))$); // activate the workbook
-	page.active = 1; // activate Layer 1
+	// Plot u vs Time
+	TemplateGeneric$ = "%(templatepath$)Generic_Uavg-Time.otpu";
+	graphname$ = UavgTimeGraph$;
+	Template$ = UavgTimeTemplate$; // This is the template path
+	Layers = {1, 1};
+	Columns = {2, 3};
+	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, UavgTimeWorkbook$, 0, 0, 0);
 
-	layer -i201 rVtlinTime;  // plot in the active layer as scatter plot
-	layer -i201 rVtsatTime;  // plot in the active layer as scatter plot
+	// Plot Vt vs Time
+	TemplateGeneric$ = "%(templatepath$)Generic_Vt-Time.otpu";
+	graphname$ = VtTimeGraph$;
+	Template$ = VtTimeTemplate$; // This is the template path
+	Layers = {1, 1};
+	Columns = {4, 5};
+	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, UavgTimeWorkbook$, 0, 0, 0);
 	
-	//layer -a;  // rescale the layer
-	////layer -g; // Group the datasets in the layer to auto-color increment
-	////layer -gu; // Ungroup the datasets in the layer
-	//legend; // Update the legend
+	win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
+	window -ch 1; // hide the workbook that was processed (in this case, the UavgTimeWorkbook)
 };
