@@ -645,7 +645,7 @@ function double RollingRegression (int inputcolNo, int outputcolNo, int minRange
 	
 	// Calculate the voltage step and convert minRangeLength from Volts to No of rows.
 	double Vstep = abs(col(A)[2]-col(A)[1]); // Rows per Volt
-	type "For a voltage step of $(Vstep)V, the minimum integration range of $(minRangeLength)V is converted to $(round(minRangeLength/Vstep)) rows.";
+	type "For a voltage step of $(Vstep) V, the minimum integration range of $(minRangeLength) V is converted to $(round(minRangeLength/Vstep)) rows.";
 	minRangeLength = round(minRangeLength/Vstep);
 	
 	if (autooffset == 1) // Determines whether an automatic offset calculation will be performed.
@@ -667,7 +667,7 @@ function double RollingRegression (int inputcolNo, int outputcolNo, int minRange
 		if (fitLR.b>0 || rowIdmax!=maxrows/2) // I will correct for an offset if 1) the slope of Id is positive - it will rise to infinity and not intercept the X-axis, resulting in a bad fit. 2) If Idmax and Vgmax do not coincide.
 		{
 			offset1 = rowIdmax - wks.maxrows/2;
-			type "The offset contribution due to Idmax not being at Vgmax is $(offset1) rows ($(offset1/Vstep)V).";
+			type "The offset contribution due to Idmax not being at Vgmax is $(offset1) rows ($(offset1/Vstep) V).";
 		};
 		
 		range rgmmax = gm[wks.maxrows/2:wks.maxrows];
@@ -675,14 +675,14 @@ function double RollingRegression (int inputcolNo, int outputcolNo, int minRange
 		rowgmmax = $(sum.imax); // The row number of gm max.
 		type "The row No in which gm is max is $(rowgmmax)";
 		offset2 = rowgmmax - wks.maxrows/2;
-		type "The offset contribution due to gmmax not being at Vgmax is $(offset2) rows ($(offset2/Vstep)V).";
+		type "The offset contribution due to gmmax not being at Vgmax is $(offset2) rows ($(offset2/Vstep) V).";
 		
 		offset = offset1 + offset2;
 	}
 	else
 		offset = offsetmanual*Vstep; // Convert the offset from Volts to No of rows.
 	
-	type "The total offset is $(offset) rows ($(offset/Vstep)V).";
+	type "The total offset is $(offset) rows ($(offset/Vstep) V).";
 	
 	// Linear fit
 	type "The left limit of the linear fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
