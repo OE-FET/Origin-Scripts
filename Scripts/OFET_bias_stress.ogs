@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 3.9
+// Version: 4.0
 // Current status: Works well.
-// Changes: Turned the Uavg-Time and the Vt-Time graph plotting into functions.
+// Changes: Added the plotting of the average mobility and threshold voltage shifts over time.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -33,9 +33,11 @@
 	string UavgTimeWorkbook$; // The long name of the Uavg-Time workbook
 	
 	string UavgTimeGraph$; // The long name of the Uavg-Time graph
+	string UavgTimeGraphShift$; // The long name of the normalized Uavg-Time graph
 	string UavgTimeTemplate$; // The template name of the Uavg-Time template	
 	
 	string VtTimeGraph$; // The long name of the Vt-Time graph
+	string VtTimeGraphShift$; // The long name of the normalized Vt-Time graph
 	string VtTimeTemplate$; // The template name of the Vt-Time template
 
 	doc -ef LB { // loop over all workbooks in folder
@@ -663,9 +665,11 @@
 						
 						// The template names and the graph longnames are defined here because the string variables (e.g. batch etc) are not defined outside the -doc loop.
 						UavgTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						UavgTimeGraphShift$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time-Shift_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
 						UavgTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time.otpu"; // This is the template path
 						
 						VtTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						VtTimeGraphShift$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time-Shift_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
 						VtTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time.otpu"; // This is the template path
 					};
 					
@@ -762,6 +766,20 @@
 			};
 	};
 	
+	win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
+	
+	col(F)[L]$ = "mlin(t) - mlin(0)"; // Long name
+	col(F) = col(B)-col(B)[1];
+	
+	col(G)[L]$ = "msat(t) - msat(0)"; // Long name
+	col(G) = col(C)-col(C)[1];
+	
+	col(H)[L]$ = "Vtlin(t) - Vtlin(0)"; // Long name
+	col(H) = col(D)-col(D)[1];
+	
+	col(I)[L]$ = "Vtsat(t) - Vtsat(0)"; // Long name
+	col(I) = col(E)-col(E)[1];
+	
 	// Plot u vs Time
 	TemplateGeneric$ = "%(templatepath$)Generic_Uavg-Time.otpu";
 	graphname$ = UavgTimeGraph$;
@@ -770,13 +788,31 @@
 	Columns = {2, 3};
 	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
 	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, UavgTimeWorkbook$, 0, 0, 0);
-
+	
 	// Plot Vt vs Time
 	TemplateGeneric$ = "%(templatepath$)Generic_Vt-Time.otpu";
 	graphname$ = VtTimeGraph$;
 	Template$ = VtTimeTemplate$; // This is the template path
 	Layers = {1, 1};
 	Columns = {4, 5};
+	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, UavgTimeWorkbook$, 0, 0, 0);
+	
+	// Plot u vs Time (shift)
+	TemplateGeneric$ = "%(templatepath$)Generic_Uavg-Time.otpu";
+	graphname$ = UavgTimeGraphShift$;
+	Template$ = UavgTimeTemplate$; // This is the template path
+	Layers = {1, 1};
+	Columns = {6, 7};
+	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
+	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, UavgTimeWorkbook$, 0, 0, 0);
+	
+	// Plot Vt vs Time (shift)
+	TemplateGeneric$ = "%(templatepath$)Generic_Vt-Time.otpu";
+	graphname$ = VtTimeGraphShift$;
+	Template$ = VtTimeTemplate$; // This is the template path
+	Layers = {1, 1};
+	Columns = {8, 9};
 	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
 	PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 2, Columns, LineTypes, UavgTimeWorkbook$, 0, 0, 0);
 	
