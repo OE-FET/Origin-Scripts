@@ -147,7 +147,7 @@
 			Layers = {1};
 			Columns = {9};
 			LineTypes = {1}; // 1 for line plot, 2 for scatter plot
-			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 1, 0, 0);
+			PlotSingle(graphname$, Template$, TemplateGeneric$, Layers, 1, Columns, LineTypes, activeworkbook$, 0, 0, 0);
 			if (exist(Text,16)==16) Text.text$ = I\-(d,fin)/I\-(d)(0) = $(Idratio) %; // If the label exists, update it
 			plot -c; // refresh the graph to update the labels
 			
