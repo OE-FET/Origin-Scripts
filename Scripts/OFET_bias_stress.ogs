@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 4.0
+// Version: 4.1
 // Current status: Works well.
-// Changes: Added the plotting of the average mobility and threshold voltage shifts over time.
+// Changes: Added separate string variables for the average mobility and threshold voltage shifts over time.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -33,12 +33,14 @@
 	string UavgTimeWorkbook$; // The long name of the Uavg-Time workbook
 	
 	string UavgTimeGraph$; // The long name of the Uavg-Time graph
-	string UavgTimeGraphShift$; // The long name of the normalized Uavg-Time graph
-	string UavgTimeTemplate$; // The template name of the Uavg-Time template	
+	string UavgTimeShiftGraph$; // The long name of the normalized Uavg-Time graph
+	string UavgTimeTemplate$; // The template name of the Uavg-Time template
+	string UavgTimeShiftTemplate$; // The template name of the Uavg-Time template
 	
 	string VtTimeGraph$; // The long name of the Vt-Time graph
-	string VtTimeGraphShift$; // The long name of the normalized Vt-Time graph
+	string VtTimeShiftGraph$; // The long name of the normalized Vt-Time graph
 	string VtTimeTemplate$; // The template name of the Vt-Time template
+	string VtTimeShiftTemplate$; // The template name of the Vt-Time template
 
 	doc -ef LB { // loop over all workbooks in folder
 		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
@@ -665,12 +667,14 @@
 						
 						// The template names and the graph longnames are defined here because the string variables (e.g. batch etc) are not defined outside the -doc loop.
 						UavgTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						UavgTimeGraphShift$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time-Shift_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						UavgTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time-Shift.otpu"; // This is the template path
+						UavgTimeShiftGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time-Shift_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						UavgTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time.otpu"; // This is the template path
+						UavgTimeShiftTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Uavg-Time-Shift.otpu"; // This is the template path
 						
 						VtTimeGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						VtTimeGraphShift$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time-Shift_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
-						VtTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time-Shift.otpu"; // This is the template path
+						VtTimeShiftGraph$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Vt-Time-Shift_Vd=%(Vdlin$),%(Vdsat$)V"; //this renames the active window (long name)
+						VtTimeTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time.otpu"; // This is the template path
+						VtTimeShiftTemplate$ = "%(templatepath$)BS_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_Vt-Time-Shift.otpu"; // This is the template path
 					};
 					
 					win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
@@ -800,8 +804,8 @@
 	
 	// Plot u vs Time (shift)
 	TemplateGeneric$ = "%(templatepath$)Generic_Uavg-Time.otpu";
-	graphname$ = UavgTimeGraphShift$;
-	Template$ = UavgTimeTemplate$; // This is the template path
+	graphname$ = UavgTimeShiftGraph$;
+	Template$ = UavgTimeShiftTemplate$; // This is the template path
 	Layers = {1, 1};
 	Columns = {6, 7};
 	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
@@ -809,8 +813,8 @@
 	
 	// Plot Vt vs Time (shift)
 	TemplateGeneric$ = "%(templatepath$)Generic_Vt-Time.otpu";
-	graphname$ = VtTimeGraphShift$;
-	Template$ = VtTimeTemplate$; // This is the template path
+	graphname$ = VtTimeShiftGraph$;
+	Template$ = VtTimeShiftTemplate$; // This is the template path
 	Layers = {1, 1};
 	Columns = {8, 9};
 	LineTypes = {2, 2}; // 1 for line plot, 2 for scatter plot
