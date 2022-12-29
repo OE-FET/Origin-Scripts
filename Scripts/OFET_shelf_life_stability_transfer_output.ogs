@@ -12,9 +12,9 @@
 // 6. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
 
 // Author: Dimitrios Simatos
-// Version: 2.2
+// Version: 2.3
 // Current status: Works well.
-// Changes: Turned the Uavg-Time and the Vt-Time graph plotting into functions.
+// Changes: Changed the name of a string variable from TimeUnitsStabilityPlots to DesiredTimeUnits.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -87,7 +87,7 @@
 		string intime$ = sheetname.GetToken(20,"_")$; // Get the string that shows the integration time
 		intime$ = intime.GetToken(1,".")$; // Remove ".txt" from the integration time
 		
-		string TimeUnitsStabilityPlots$ = "Days"; // The time axis units of the stability plot (Minutes, Hours, or Days).
+		string DesiredTimeUnits$ = "Days"; // The desired time axis units of the stability plot (Seconds, Minutes, Hours, or Days).
 		string RecalculatedTimeNo$; // The string for the recalculated time.
 		
 		// Transfer curve parameters
@@ -159,13 +159,12 @@
 				modegraphlegend$ = MakeMeasModeLegend(mode$)$; // Note ending '$'
 				intimegraphlegend$ = MakeInTimeLegend(intime$)$; // Note ending '$'
 				
-				string legend$ = "%(timegraphlegend$)"; // Legend
-				
+				string legend$ = "%(timegraphlegend$)"; // Legend				
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 				// Case structures from filenames (used for legends).
 				
 				if (timelength$ != "initial")
-					RecalculatedTimeNo$ = RecalculateTime(timelength$, TimeUnitsStabilityPlots$)$; // Note ending '$'
+					RecalculatedTimeNo$ = RecalculateTime(timelength$, DesiredTimeUnits$)$; // Note ending '$'
 				else
 					RecalculatedTimeNo$ = "0";
 				
@@ -587,7 +586,7 @@
 						wks.colwidth = 10;// set all col width to 10
 						
 						col(A)[L]$ = "Time"; // Long name
-						col(A)[U]$ = TimeUnitsStabilityPlots$; // Units
+						col(A)[U]$ = DesiredTimeUnits$; // Units
 						
 						col(B)[L]$ = "Id on"; // Long name
 						col(B)[U]$ = A; // Units
