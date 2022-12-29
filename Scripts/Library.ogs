@@ -6,9 +6,9 @@
 // 3. Run the main script.
 
 // Author: Dimitrios Simatos
-// Version: 1.0
+// Version: 1.1
 // Current status: Works well.
-// Changes: Renamed the Rolling Regression function.
+// Changes: Changed the RecalculateTime function to include seconds.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -501,35 +501,52 @@ function string MakeTimeLegendBS (string timelength)
 		return timegraphlegend$;
 }
 
-function string RecalculateTime (string timelength, string TimeUnitsStabilityPlots)
+function string RecalculateTime (string timelength, string DesiredTimeUnits)
 {
 	timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
 	timeunits$ = timelength.GetToken(2,"-")$; // get the string, which shows the time units
 	
-	switch (%(TimeUnitsStabilityPlots$)) // Case study
+	switch (%(DesiredTimeUnits$)) // Case study
 	{
-		case "Minutes":
-			if (timeunits$ == "min")
+		case "Seconds":
+			if (timeunits$ == "sec" || timeunits$ == "s" || timeunits$ == "Seconds")
 				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
-			if (timeunits$ == "h")
+			if (timeunits$ == "min" || timeunits$ == "Minutes")
+				RecalculatedTimeNo$ = $(%(timeNo$)*60); // Convert minutes to seconds.
+			if (timeunits$ == "h" || timeunits$ == "Hours")
+				RecalculatedTimeNo$ = $(%(timeNo$)*3600); // Convert hours to seconds.
+			if (timeunits$ == "day" || timeunits$ == "days")
+				RecalculatedTimeNo$ = $(%(timeNo$)*86400); // Convert days to seconds.
+		break;
+			
+		case "Minutes":
+			if (timeunits$ == "sec" || timeunits$ == "s" || timeunits$ == "Seconds")
+				RecalculatedTimeNo$ = $(%(timeNo$)/60); // Convert seconds to minutes.
+			if (timeunits$ == "min" || timeunits$ == "Minutes")
+				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
+			if (timeunits$ == "h" || timeunits$ == "Hours")
 				RecalculatedTimeNo$ = $(%(timeNo$)*60); // Convert hours to minutes.
 			if (timeunits$ == "day" || timeunits$ == "days")
 				RecalculatedTimeNo$ = $(%(timeNo$)*1440); // Convert days to minutes.
 			break;
 			
 		case "Hours":
-			if (timeunits$ == "min")
+			if (timeunits$ == "sec" || timeunits$ == "s" || timeunits$ == "Seconds")
+				RecalculatedTimeNo$ = $(%(timeNo$)/3600); // Convert seconds to hours.
+			if (timeunits$ == "min" || timeunits$ == "Minutes")
 				RecalculatedTimeNo$ = $(%(timeNo$)/1440); // Convert minutes to hours.
-			if (timeunits$ == "h")
+			if (timeunits$ == "h" || timeunits$ == "Hours")
 				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
 			if (timeunits$ == "day" || timeunits$ == "days")
 				RecalculatedTimeNo$ = $(%(timeNo$)*24); // Convert days to hours.
 			break;
 			
 		case "Days":
-			if (timeunits$ == "min")
+			if (timeunits$ == "sec" || timeunits$ == "s" || timeunits$ == "Seconds")
+				RecalculatedTimeNo$ = $(%(timeNo$)/86400); // Convert seconds to days.
+			if (timeunits$ == "min" || timeunits$ == "Minutes")
 				RecalculatedTimeNo$ = $(%(timeNo$)/1440); // Convert minutes to days.
-			if (timeunits$ == "h")
+			if (timeunits$ == "h" || timeunits$ == "Hours")
 				RecalculatedTimeNo$ = $(%(timeNo$)/24); // Convert hours to days.
 			if (timeunits$ == "day" || timeunits$ == "days")
 				RecalculatedTimeNo$ = timeNo$; // Do not convert the time units.
