@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 4.1
+// Version: 4.2
 // Current status: Works well.
-// Changes: Added separate string variables for the average mobility and threshold voltage shifts over time.
+// Changes: Added the possibility to adjust the time units.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -31,6 +31,10 @@
 	
 	// Set variables for all loops
 	string UavgTimeWorkbook$; // The long name of the Uavg-Time workbook
+	
+	string SampleTimeUnits$; // The time units in which the measurements were taken (the time units extracted from the sample file)
+	string DesiredTimeUnits$ = "Seconds"; // The desired time axis units of the bias stress stability plot (Seconds, Minutes, Hours, or Days).
+	string RecalculatedTimeNo$; // The string for the recalculated time.	
 	
 	string UavgTimeGraph$; // The long name of the Uavg-Time graph
 	string UavgTimeShiftGraph$; // The long name of the normalized Uavg-Time graph
@@ -88,8 +92,24 @@
 		if (j!=0) { // If this is the sample file
 			string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
 			
+			
+			// Extract the time units of the sample file
+			SampleTimeUnits$=col(A)[L]$;
+			SampleTimeUnits$=SampleTimeUnits.GetToken(2,"(")$; // Take the string on the right of the "("
+			SampleTimeUnits$=SampleTimeUnits.GetToken(1,")")$; // Take the string on the left of the ")" (units)
+			
 			col(A)[L]$ = "Time"; // Long name
-			col(A)[U]$ = "s"; // Units
+			col(A)[U]$ = SampleTimeUnits$; // Units
+			
+			if (SampleTimeUnits$!=DesiredTimeUnits$){ // If the time units of the sample file are not the desired ones
+				col(A)[U]$ = DesiredTimeUnits$; // Set the units of column A to the desired time units
+				loop(i,1,wks.maxrows) // Loop over all rows
+				{
+					string PreviousTimeValueAndUnits$ = col(A)[i]$ + "-" + SampleTimeUnits$; // Append "-SampleTimeUnits" to every time value (e.g. 300 becomes 300-Minutes, if the SampleTimeUnits are mimutes). This is because the function input demands it.
+					string RecalculatedTimeValue$ = RecalculateTime(PreviousTimeValueAndUnits$, DesiredTimeUnits$)$; // Recalculate the time value (e.g. 300-Minutes with a DesiredTimeUnits of seconds will return 300*60 = 1800 (without the units).
+					col(A)[i] = %(RecalculatedTimeValue$); // Set the recalculated time value to column A. The %() converts the string value to a number.
+				}
+			};
 			
 			col(B)[L]$ = "Is"; // Long name
 			col(B)[U]$ = "A"; // Units
@@ -233,6 +253,14 @@
 				
 				string legend$ = "%(timegraphlegend$)"; // Legend
 				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Case structures from filenames (used for legends).
+				
+				if (timelength$ != "initial")
+					RecalculatedTimeNo$ = RecalculateTime(timelength$, DesiredTimeUnits$)$; // Note ending '$'
+				else
+					RecalculatedTimeNo$ = "0";
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------				
 				
 				string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
 				
@@ -647,7 +675,7 @@
 						wks.colwidth = 10;// set all col width to 10
 						
 						col(A)[L]$ = "Time"; // Long name
-						col(A)[U]$ = "s"; // Units
+						col(A)[U]$ = DesiredTimeUnits$; // Units
 						
 						col(B)[L]$ = "Average mobility"; // Long name
 						col(B)[U]$ = cm^2/V*s; // Units
@@ -682,7 +710,7 @@
 					
 					// Copy average mobility (Linear and Saturation)
 					if (timeNo$ != "Initial"){ // If timeNo$ is "Initial" then do not attempt to write the cell.
-						col(A)[wks.maxrows+1] = %(timeNo$); // Increase No of rows by 1.
+						col(A)[wks.maxrows+1] = %(RecalculatedTimeNo$); // Increase No of rows by 1.
 						col(B)[wks.maxrows] = ulinavg; // Rows have already increased, so there's no need to add 1.
 						col(C)[wks.maxrows] = usatavg; // Rows have already increased, so there's no need to add 1.
 						col(D)[wks.maxrows] = Vtlin; // Rows have already increased, so there's no need to add 1.
