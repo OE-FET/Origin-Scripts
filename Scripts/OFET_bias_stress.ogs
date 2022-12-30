@@ -10,9 +10,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 4.2
+// Version: 4.3
 // Current status: Works well.
-// Changes: Added the possibility to adjust the time units.
+// Changes: Added absolute values of Is, Id, Ig in the sample file.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -113,12 +113,15 @@
 			
 			col(B)[L]$ = "Is"; // Long name
 			col(B)[U]$ = "A"; // Units
+			col(B)[O]$ = "abs(col(B))";
 			
 			col(C)[L]$ = "Id"; // Long name
 			col(C)[U]$ = "A"; // Units
+			col(C)[O]$ = "abs(col(C))";
 			
 			col(D)[L]$ = "Ig"; // Long name
 			col(D)[U]$ = "A"; // Units
+			col(D)[O]$ = "abs(col(D))";
 			
 			col(E)[L]$ = "Is ratio"; // Long name
 			col(E)[U]$ = %; // Units
