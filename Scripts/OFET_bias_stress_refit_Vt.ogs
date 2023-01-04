@@ -1,0 +1,272 @@
+// This script is used in to re-fit the threshold voltage.
+
+// How to use:
+// 1. Set the capacitance per area value from impedance analysis measurements (or the thickness of the dielectric from profilometry).
+// 2. Run the script.
+// 3. Check that the Vt linear fitting is correct. Otherwise adjust the slope window (difference between current fit slope and fit slope for Vgmax). Increase the window to relax the constraints for "flatness" of SQRT(Id). Then re-run the script.
+// 4. If the Id(Vdlin) pleateaus near Vgmax, then increase the offset value, in order to exclude some of the high Vg values from the linear fit. This plateau normally happens in the linear regime.
+// NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
+
+// Author: Dimitrios Simatos
+// Version: 0.1
+// Current status: Works well.
+// Changes: 
+
+[Main]
+//uncomment following line to define functions using outside of this scope
+//@global=1;
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+	del -al *;// Delete all the local and session variables
+	
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+// Call libraries.
+
+	Library.Main; // Run Main section of Library file
+
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+	// Set variables for all loops
+	string UavgTimeWorkbook$; // The long name of the Uavg-Time workbook
+	
+	string DesiredTimeUnits$ = "Seconds"; // The desired time axis units of the bias stress stability plot (Seconds, Minutes, Hours, or Days).
+	string RecalculatedTimeNo$; // The string for the recalculated time.
+	int u = 1; // If u is a non-zero value, clear all values from the UavgTimeWorkbook workbook
+	int rowNumber = 1; // Counter for the row number of the UavgTimeWorkbook workbook
+
+	doc -ef LB { // loop over all workbooks in folder
+		page.title = 1;  // Let the workbook title shows Long Name only (1 = Long Name, 2 = short name, 3 = both)
+		page.active = 1; // Switch to the first worksheet.
+		
+		string sheetname$ = page.longname$; // Get the name of worksheet
+		
+		int i = sheetname.Find("script"); // It will yield a value different than 0 if the filename contains "script".
+		int j = sheetname.Find("sample"); // It will yield a value different than 0 if the filename contains "sample".
+		int k = sheetname.Find("Uavg-Time"); // It will yield a value different than 0 if the filename contains "Uavg-Time".
+		int s = sheetname.Find("_S_"); // It will yield a value different than 0 if the filename contains "_S_".
+		
+		if (j!=0 || i!=0 || k!=0 || s!=0) continue; // If the filename contains "Uavg-Time", "script", "sample", or "Uavg-Time", then just continue to the next workbook.
+		
+		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
+		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
+		string material$ = sheetname.GetToken(3,"_")$; // Get the string that shows the material
+		
+		string concentration$ = sheetname.GetToken(4,"_")$; // Get the string that shows the concentration
+		string concnumber$ = concentration.GetToken(1,"-")$; // Get the string that shows the concentration number
+		string concunits$ = concentration.GetToken(2,"-")$; // Get the string that shows the concentration units
+		
+		string solvent$ = sheetname.GetToken(5,"_")$; // Get the string that shows the solvent content
+		
+		string annealing$ = sheetname.GetToken(6,"_")$; // Get the string that shows the additive
+		
+		string additive$ = sheetname.GetToken(7,"_")$; // Get the string that shows the additive
+		
+		string dielectric$ = sheetname.GetToken(8,"_")$; // Get the string that shows the dielectric
+		string dielectricconc$ = sheetname.GetToken(9,"_")$; // Get the string that shows the dielectric concentration or ratio
+		
+		string sampleNo$ = sheetname.GetToken(10,"_")$; // Get the string that shows the sample number
+		
+		string deviceNo$ = sheetname.GetToken(11,"_")$; // Get the string that shows the device number
+		
+		string length$ = sheetname.GetToken(12,"_")$; // Get the string that shows the channel length
+		string lengthnumber$ = length.GetToken(1,"-")$; // Get the string that shows the length number
+		string lengthunits$ = length.GetToken(2,"-")$; // Get the string that shows the length units
+		
+		string condition$ = sheetname.GetToken(13,"_")$; // Get the string that shows the conditions (air/type of liquid)
+		string dayslength$ = sheetname.GetToken(14,"_")$; // get the string, which shows the number of days
+		string BiasStressType$ = sheetname.GetToken(15,"_")$; // get the string, which shows the type of bias stress (PBS/NBS)
+		
+		string timelength$ = sheetname.GetToken(16,"_")$; // get the string, which shows the elapsed time
+		string timeNo$ = timelength.GetToken(1,"-")$; // get the string, which shows the time (number)
+		string timeunits$; // the string, which shows the time units
+		string meastype$ = sheetname.GetToken(17,"_")$; // Get the string "T", "O", or "S", which shows if the curve is a transfer or output curve
+		
+		string measNo$ = sheetname.GetToken(18,"_")$; // Get the string that shows the measurement number
+		string mode$ = sheetname.GetToken(19,"_")$; // Get the string that shows the measurement mode
+		string intime$ = sheetname.GetToken(20,"_")$; // Get the string that shows the integration time
+		intime$ = intime.GetToken(1,".")$; // Remove ".txt" from the integration time
+		
+		// Transfer curve parameters
+		double W=1000; // Width [um]
+		//double L=20; // Length [um]
+		double L=%(lengthnumber$); // Length [um] (extracted from the file name)
+		double d=3; // Thickness of accumulation layer [nm]
+		double er=2.1; // Dielectric constant (CYTOP: 2.1, PMMA: 3.6, SiO2: 3.9)
+		double e0=8.854E-12; // Vacuum permittivity [F/m]
+		double dielectricthickness = DielectricThicknessCalc(dielectric$, dielectricconc$); // Dielectric thickness [nm]
+		double Ci=e0*er/(dielectricthickness*10^(-9)); // Insulator capacitance per area [F/m^2]
+		//double Ci=5.2E-5; // Ci for Cytop (Mark: 3.2 nF, 5.2 is for PMMA)
+		
+		// Rolling Regression function parameters
+		// Offset: If the dId/dV function plateaus, I do not start the integration from Id(Vgmax), as the slope will be positive and the fitting curve will rise to infinity. So, now the left limit of the voltage range will start from Id(Vgmax+offset)
+		// minRangeLength: Usually 10 (between 7 and 20.) The voltage range over which the linear fit will be applied. The more curvy the Id/SQRT(Id) curve, the smaller minRangeLength has to be, in order to be able to fit linearly.
+		int minRangeLengthlin = 10; // [V] The voltage range over which the linear fit will be applied (Linear)
+		int minRangeLengthsat = 10; // [V] The voltage range over which the linear fit will be applied (Saturation)
+		
+		int autooffsetlin = 0; // Determines whether an automatic offset calculation will be performed (Linear)
+		int autooffsetsat = 0; // Determines whether an automatic offset calculation will be performed (Saturation)
+		
+		int offsetlin = 0; // [V] (IDTBT: 20, N2200: 0) Offset value in case the dId(Vdlin)/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Linear)
+		int offsetsat = 0; // [V] Offset value in case the d(SQRT(Id(Vdlin)))/dV function plateaus. The left limit of the voltage range will start from Id(Vgmax+offset) (Saturation)
+		
+		double slopewindowlin = 0.0001; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Linear)
+		double slopewindowsat = 0.0001; // [%] Percentage of slope variation allowed before linear fit is performed. This is the "window" for performing the rolling regression. (Saturation)
+		
+		double jmaxlin; // Max channel current density (Linear)
+		double jmaxsat; // Max channel current density (Saturation)
+		double Pmaxlin; // Max channel power density (Linear)
+		double Pmaxsat; // Max channel power density (Saturation)
+		
+		string Vdlin$; // Vd in the linear regime
+		string Vdsat$; // Vd in the saturation regime
+		double Vtlin; // Threshold voltage (Linear)
+		double Vtsat; // Threshold voltage (Saturation)
+		double rlin; // Reliability factor (Linear)
+		double rsat; // Reliability factor (Saturation)		
+		
+//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+		// Check for NaN columns
+		range rb = [%H]1!wcol(2);  // data range of (Is) (Vd=Vdlin) column (col(B))
+		range rc = [%H]1!wcol(3);  // data range of (Is) (Vd=Vdsat) column (col(C))
+		
+		string NaNb$ = Lookup("NaN", rb)$;
+		string NaNc$ = Lookup("NaN", rc)$;
+		
+		if(Nanb$=="NaN" || Nanc$=="NaN" || exist(%H,2)==0) continue; // If object does not exist or if "NaN" is present, then just continue to the next workbook. When LabVIEW measurements are interrupted, they yield NaN values.
+			else
+			{
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				// Case structures from filenames (used for legends).
+				
+				if (timelength$ != "initial")
+					RecalculatedTimeNo$ = RecalculateTime(timelength$, DesiredTimeUnits$)$; // Note ending '$'
+				else
+					RecalculatedTimeNo$ = "0";
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------				
+				
+				string activeworkbook$ = %H; // Get the name of the (active) workbook to be processed
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				
+				// NOTE: If this is written with case structures instead of if-then structures, the program will crash due to Origin restrictions
+				
+				if (meastype$ == "T") // if this is an transfer curve then
+				{
+					
+					// Extract Vdlin and Vdsat
+					Vdlin$=col(D)[L]$;
+					Vdlin$=Vdlin.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+					Vdlin$=Vdlin.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+					if (Vdlin.Find('.')!=0 && Vdlin.GetToken(2,".")$ == "0")
+						Vdlin$=Vdlin.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
+					
+					
+					Vdsat$=col(E)[L]$;
+					Vdsat$=Vdsat.GetToken(2,"=")$; // Take the string on the right of the "=" sign
+					Vdsat$=Vdsat.GetToken(1,"V")$; // Take the string on the left of the "V" (units)
+					if (Vdsat.Find('.')!=0 && Vdsat.GetToken(2,".")$ == "0")
+						Vdsat$=Vdsat.GetToken(1,".")$; // Take the string on the left of the "." (this line gets rid of the decimal points if the right digit is 0)
+					
+					UavgTimeWorkbook$="%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_Uavg-Time_Vd=%(Vdlin$),%(Vdsat$)V.txt";
+					
+					if (u!=0) { // If u is a non-zero value, clear all values from the UavgTimeWorkbook workbook
+						win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
+						col(A) = ""; // Empty the contents of the column
+						col(B) = ""; // Empty the contents of the column
+						col(C) = ""; // Empty the contents of the column
+						col(D) = ""; // Empty the contents of the column
+						col(E) = ""; // Empty the contents of the column
+						col(F) = ""; // Empty the contents of the column
+						col(G) = ""; // Empty the contents of the column
+						col(H) = ""; // Empty the contents of the column
+						col(I) = ""; // Empty the contents of the column
+						u=0; // Set u to zero
+					};
+					
+					win -a %(activeworkbook$);  // activate the previous window (workbook)
+					col(N) = ""; // Empty the contents of the column
+					
+					col(N)[L]$ = "Linear fit on Id (Vd=%(Vdlin$)V)"; // Long name
+					col(N)[U]$ = A; // Units
+					Vtlin = RollingRegression(8, 14, minRangeLengthlin, slopewindowlin, autooffsetlin, offsetlin, 12, "Linear"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+					
+					
+					// Linear extrapolation of the linear fit, to find the intercept with the X axis
+					range rn=(1,14); // Define XYrange
+					col(N)=rn(col(A)); // Extrapolate for new X axis (col(A))
+					
+					
+					// The average mobilities are derived by using the linear fit of the slope of the Id (SQRT(Id)) in the Linear (Saturation) regime, instead of the point derivative.
+					col(O)[L]$ = "Average mobility (Linear)"; // Long name
+					col(O)[U]$ = cm^2/V*s; // Units
+					col(O)[1] = 10000*L*abs(fitLR.b)/(W*Ci*abs(%(Vdlin$))); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+					ulinavg=col(O)[1];
+					
+					col(P)[L]$ = "Threshold voltage (Linear)"; // Long name
+					col(P)[U]$ = V; // Units
+					Col(P)[1]=Vtlin; // Threshold voltage (Linear)
+					
+					
+					col(T) = ""; // Empty the contents of the column
+					
+					col(T)[L]$ = "Linear fit on SQRT(Id (Vd=%(Vdsat$)V))"; // Long name
+					col(T)[U]$ = A^(1/2); // Units
+					Vtsat = RollingRegression(17, 20, minRangeLengthsat, slopewindowsat, autooffsetsat, offsetsat, 18, "Saturation"); // Rolling Regression function that returns Vtsat. Inputs arguments are (Vg column, SQRT(Id) column, minRangelength variable, offset variable, slope window variable).
+					
+					// Linear extrapolation of the linear fit, to find the intercept with the X axis
+					range rt=(1,20); // Define XYrange
+					col(T)=rt(col(A)); // Extrapolate for new X axis (col(A))
+					
+					
+					// The average mobilities are derived by using the linear fit of the slope of the Id (SQRT(Id)) in the Linear (Saturation) regime, instead of the point derivative.
+					col(U)[L]$ = "Average mobility (Saturation)"; // Long name
+					col(U)[U]$ = cm^2/V*s; // Units
+					col(U)[1] = 10000*2*L*fitLR.b^2/(W*Ci); // The multiplication by 10000 is done to get the mobility in cm^2/Vs, instead of m^2/Vs.
+					usatavg=col(U)[1];
+					
+					col(V)[L]$ = "Threshold voltage (Saturation)"; // Long name
+					col(V)[U]$ = V; // Units
+					Col(V)[1] = Vtsat; // Threshold voltage (Saturation)
+					
+					win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
+					
+					
+					// Copy average mobility (Linear and Saturation)
+					if (timeNo$ != "Initial"){ // If timeNo$ is "Initial" then do not attempt to write the cell.
+						col(A)[rowNumber] = %(RecalculatedTimeNo$); // Increase No of rows by 1.
+						col(B)[rowNumber] = ulinavg; // Rows have already increased, so there's no need to add 1.
+						col(C)[rowNumber] = usatavg; // Rows have already increased, so there's no need to add 1.
+						col(D)[rowNumber] = Vtlin; // Rows have already increased, so there's no need to add 1.
+						col(E)[rowNumber] = Vtsat; // Rows have already increased, so there's no need to add 1.
+						rowNumber = rowNumber + 1;
+					};
+					
+					win -a %(activeworkbook$);  // activate the previous window (workbook)
+					window -ch 1; // hide the workbook that was processed
+				};
+				
+				//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+				else // if this is an output curve
+					continue;
+				};
+			};
+	};
+	
+	win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
+	
+	col(F)[L]$ = "mlin(t) - mlin(0)"; // Long name
+	col(F) = col(B)-col(B)[1];
+	
+	col(G)[L]$ = "msat(t) - msat(0)"; // Long name
+	col(G) = col(C)-col(C)[1];
+	
+	col(H)[L]$ = "Vtlin(t) - Vtlin(0)"; // Long name
+	col(H) = col(D)-col(D)[1];
+	
+	col(I)[L]$ = "Vtsat(t) - Vtsat(0)"; // Long name
+	col(I) = col(E)-col(E)[1];
+	
+	window -ch 1; // hide the workbook that was processed (in this case, the UavgTimeWorkbook)
+};
