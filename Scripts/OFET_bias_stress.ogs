@@ -34,7 +34,7 @@
 	
 	string SampleTimeUnits$; // The time units in which the measurements were taken (the time units extracted from the sample file)
 	string DesiredTimeUnits$ = "Seconds"; // The desired time axis units of the bias stress stability plot (Seconds, Minutes, Hours, or Days).
-	string RecalculatedTimeNo$; // The string for the recalculated time.	
+	string RecalculatedTimeNo$; // The string for the recalculated time.
 	
 	string UavgTimeGraph$; // The long name of the Uavg-Time graph
 	string UavgTimeShiftGraph$; // The long name of the normalized Uavg-Time graph
@@ -57,7 +57,7 @@
 		int k = sheetname.Find("Uavg-Time"); // It will yield a value different than 0 if the filename contains "Uavg-Time".
 		int s = sheetname.Find("_S_"); // It will yield a value different than 0 if the filename contains "_S_".
 		
-		if (i!=0 || k!=0 || s!=0) continue; // If the filename contains "script" or "sample" or "Uavg-Time", then just continue to the next workbook.
+		if (i!=0 || k!=0 || s!=0) continue; // If the filename contains "script", "sample" or "Uavg-Time", then just continue to the next workbook.
 		
 		string batch$ = sheetname.GetToken(1,"_")$; // Get the string that shows the batch
 		string architecture$ = sheetname.GetToken(2,"_")$; // Get the string that shows the architecture
@@ -188,7 +188,7 @@
 		string measNo$ = sheetname.GetToken(18,"_")$; // Get the string that shows the measurement number
 		string mode$ = sheetname.GetToken(19,"_")$; // Get the string that shows the measurement mode
 		string intime$ = sheetname.GetToken(20,"_")$; // Get the string that shows the integration time
-		intime$ = intime.GetToken(1,".")$; // Remove ".txt" from the integration time		
+		intime$ = intime.GetToken(1,".")$; // Remove ".txt" from the integration time
 		
 		// Transfer curve parameters
 		double W=1000; // Width [um]
