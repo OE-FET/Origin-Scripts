@@ -136,9 +136,11 @@ To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgm
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%201%20correct%20fit.png" alt="VtlinOffset1CorrectFit" height="400">
 
 ##### Offset 2: When `gm,max` and `Vgmax` do not coincide
-Another case when the Rolling Regression can fail is when `gm,max` and `Vgmax` do not coincide. This is presented in the following image:
+Another case when the Rolling Regression can fail is when `gm,max` and `Vgmax` do not coincide. This is presented in the following images:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%202%20wrong%20fit.png" alt="VtlinOffset2WrongFit" height="400">
+
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtsat%20offset%202%20wrong%20fit.png" alt="VtsatOffset2WrongFit" height="400">
 
 In this case, `gm,max` occurs at a different voltage: `Vg(gm,max)`. The `RollingRegression` function will start at `Vgmax` (60 Volts), perform the first linear fit over a voltage range of `minRangeLength` Volts and then keep iterating until the slope diverges. The divergence happens roughly ~15 Volts away from `Vgmax`, at 45 Volts. However, this linear fit obviously underestimates the threshold voltage `Vt`. This is because beyond the 45 Volts the slope (i.e. the transconductance, `gm`) becomes even larger. The maximum value of the slope (and of the transconductance) occurs at roughly 35 Volts, and this is where the linear fit should have taken place.
 
