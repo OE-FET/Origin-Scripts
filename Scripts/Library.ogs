@@ -6,9 +6,9 @@
 // 3. Run the main script.
 
 // Author: Dimitrios Simatos
-// Version: 1.1
+// Version: 1.2
 // Current status: Works well.
-// Changes: Changed the RecalculateTime function to include seconds.
+// Changes: Added the Volt units in the Rolling Regression function output.
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -702,7 +702,7 @@ function double RollingRegression (int inputcolNo, int outputcolNo, int minRange
 	type "The total offset is $(offset) rows ($(offset/Vstep) V).";
 	
 	// Linear fit
-	type "The left limit of the linear fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
+	type "The left limit of the linear fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]) V)";
 	loop(i,wks.maxrows/2 + minRangeLength + offset,wks.maxrows) // Start at least "minRangeLength" points after the Vgmax point. I want the linear fit to have a sufficient number of points, and not have the range be too small.
 	{
 		fitLR iy:=inputcol[wks.maxrows/2+offset:i] oy:=outputcol; // Linear fit from Vgmax to Vg(i). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
@@ -716,7 +716,7 @@ function double RollingRegression (int inputcolNo, int outputcolNo, int minRange
 		//type "For i=$(i), the slope is $(fitLR.b), the slope difference (firstfit - fitLR.b) is $(firstfit - fitLR.b), and the normalized slope difference abs(firstfit - fitLR.b)/abs(firstfit)*100 is $(abs(firstfit - fitLR.b)/abs(firstfit)*100)";
 		if ((abs(firstfit - fitLR.b)/abs(firstfit))*100 > slopewindow) // Window for extracting the rolling window slope. The window is normalized with respect to the first slope, and then multiplied by 100, to turn it into a percentage.
 			{
-				type "The right limit of the linear fit is row No $(i) (Vg = $(col(A)[i]))";
+				type "The right limit of the linear fit is row No $(i) (Vg = $(col(A)[i]) V)";
 				Vt = -fitLR.a/fitLR.b; // To find the threshold voltage, divide the intercept with the slope.
 				Vt = round(Vt,1); // Round the threshold voltage
 				break;
@@ -745,7 +745,7 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 	type "For a voltage step of $(Vstep)V, the minimum integration range of $(minRangeLengthPLF)V is converted to $(round(minRangeLengthPLF/Vstep)) rows.";
 	minRangeLengthPLF = round(minRangeLengthPLF/Vstep);
 	
-	type "The left limit of the power law fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]))";
+	type "The left limit of the power law fit is row No $(wks.maxrows/2+offset) (Vg = $(col(A)[wks.maxrows/2+offset]) V)";
 	loop(i,wks.maxrows/2 + minRangeLengthPLF + offsetPLF,wks.maxrows) // Start at least "minRangeLengthPLF" points after the Vgmax point. I want the power law fit to have a sufficient number of points, and not have the range be too small.
 	{
 		nlbegin iy:=inputcol[wks.maxrows/2+offsetPLF:i] func:=Power1 nltree:=ParamTree weight:=0; // Fit from u(Vgmax) to u(Vg(i)). The loop moves the rightmost end of the voltage range over which the linear fit is applied.
@@ -756,7 +756,7 @@ function double PowerLawFit (int inputcolNo, int outputcolNo, int minRangeLength
 		//type "For i=$(i), the RMSE is $(ParamTree.rmse)";
 		if (ParamTree.rmse > errorwindowPLF) // Window for extracting the power law fit window error.
 			{
-				type "The right limit of the power law fit is row No $(i) (Vg = $(col(A)[i]))";
+				type "The right limit of the power law fit is row No $(i) (Vg = $(col(A)[i]) V)";
 				
 				// The following two lines will only plot the power law fit over the range that the fitting was performed.
 				//range yy = outputcol[wks.maxrows/2+offset:i];
