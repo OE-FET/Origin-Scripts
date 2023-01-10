@@ -8,9 +8,9 @@
 // NOTE: Usually the more straight the SQRT(Id), the smaller the denominator should be.
 
 // Author: Dimitrios Simatos
-// Version: 0.1
+// Version: 0.2
 // Current status: Works well.
-// Changes: 
+// Changes: Vtsat labels are now updated in the graphs
 
 [Main]
 //uncomment following line to define functions using outside of this scope
@@ -228,8 +228,23 @@
 					
 					col(V)[L]$ = "Threshold voltage (Saturation)"; // Long name
 					col(V)[U]$ = V; // Units
-					Col(V)[1] = Vtsat; // Threshold voltage (Saturation)
+					Col(V)[1] = Vtsat; // Threshold voltage (Saturation)					
 					
+					//-----------------------------------------------------------------------------------------------------------------------------------------------------------
+					// Update graphs
+					
+					
+					// Update joint transfer curve - SQRT(Idsat) graph for a single time point
+					
+					// Check if the measurement is the last measurement at a specific time point
+					string graphname$ = "%(batch$)_%(architecture$)_%(material$)_%(concentration$)_%(solvent$)_%(annealing$)_%(additive$)_%(dielectric$)_%(dielectricconc$)_%(sampleNo$)_%(deviceNo$)_%(length$)_%(condition$)_%(dayslength$)_%(BiasStressType$)_%(timelength$)_Transfer_Vd=%(Vdlin$),%(Vdsat$)V_Vt-sat_Vd=%(Vdsat$)V";
+					if(exist(%(uid2name(range2uid(["%(graphname$)"]))$))!=0){
+						win -a %(uid2name(range2uid(["%(graphname$)"]))$); // activate the workbook
+						page.active = 1; // activate Layer 1
+						if (exist(Text,16)==16) Text.text$ = V\-(t,sat) = $(Vtsat)V; //(NOTE: The "Vt" label of the template is assumed to be on Layer 1.)
+					};					
+					
+					//-----------------------------------------------------------------------------------------------------------------------------------------------------------
 					win -a %(uid2name(range2uid(["%(UavgTimeWorkbook$)"]))$); // activate the workbook
 					
 					
