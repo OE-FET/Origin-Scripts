@@ -13,7 +13,7 @@ To install the scripts, perform the following steps:
 	- The `Script examples - Experiment comparison` project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different experiments (and hence from different subfolders).
 3. Run OriginLab and open the `Script examples` project file.
 	- Each subfolder of the project file contains sample data and a readme file. The readme provides instructions on how to test the corresponding Origin script mentioned in the subfolder name.
-4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script. Make sure to save the script.
+4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script, so that it points to the Templates folder in your PC. Make sure to save the script.
 	- The `Library` is a script that contains functions that other scripts call. It will not meant to be executed.
 5. Select `View` and then `Command Window`. The Command Window will appear. It is similar to the Linux command line and allows one to give commands directly to Origin, and run scripts, among other things.
 6. In the `Command Window`, write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts;` to set the Scripts directory as the working directory (do not forget the semicolon!). Then press `ENTER`.
