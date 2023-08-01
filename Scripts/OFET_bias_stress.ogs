@@ -229,7 +229,7 @@
 		double rsat; // Reliability factor (Saturation)
 		
 		string condgraphlegend$; // This string will depend on "condition" and it will display the type of condition for the graph legend
-		string daysgraphlegend$; // This string will depend on "dayslength" and it will display the type of liquid for the graph legend
+		string daysgraphlegend$; // This string will depend on "dayslength" and it will display the number of days for the graph legend
 		string timegraphlegend$; // This string will depend on "timelength" and it will display the number of minutes for the graph legend
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------------------

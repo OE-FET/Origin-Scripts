@@ -58,13 +58,13 @@
 		// Parameters
 		string TimeUnits$ = "Minutes"; // The time units used in the experiment (in the LabVIEW software).
 		string Vdsat$ = "-1";
-		string Steps$ = "7"; // The number of steps.
-		string Cycles$ = "196"; // The number of cycles (i.e. the total duration of the measurement).
+		string Steps$ = "4"; // The number of steps.
+		string Cycles$ = "112"; // The number of cycles (i.e. the total duration of the measurement).
 		string CycleDuration$ = "10"; // The duration of a single cycle.
 		string Period$ = "7"; // The number of cycles between two liquid pumping cycles, even if the same liquid in injected.
 		string InjStep$ = "4"; // The number of injections per step.
-		int Ladder = 0; // If this variable is equal to 1, the ladder templates will be used.
-		string variant$ = "2"; // Which variant of the template will be used (the same template may have different color schemes and protein concentrations).
+		int Ladder = 1; // If this variable is equal to 1, the ladder templates will be used.
+		string variant$ = "3"; // Which variant of the template will be used (the same template may have different color schemes and protein concentrations).
 		
 		string conunitslegend$; // This string will depend on "concunits" and it will display the concentration for the graph legend
 		string additivegraphlegend$; // This string will depend on "additive" and it will display the type of additive for the graph legend
