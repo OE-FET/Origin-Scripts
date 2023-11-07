@@ -749,7 +749,7 @@
 	else type "The number of data points is too small to perform a linear fit.";
 	
 	
-	// Plot u vs T and Vt-sat vs T (or vs invT)	
+	// Plot u vs T and Vt-sat vs T (or vs invT)
 	
 	TemplateGeneric$ = "%(templatepath$)Generic_Uavg-invT.otpu";
 	graphname$ = UavgInvTGraph$;
