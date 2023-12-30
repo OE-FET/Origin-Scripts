@@ -13,7 +13,7 @@ To install the scripts, perform the following steps:
 	- The `Script examples - Experiment comparison` project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different experiments (and hence from different subfolders).
 3. Run OriginLab and open the `Script examples` project file.
 	- Each subfolder of the project file contains sample data and a readme file. The readme provides instructions on how to test the corresponding Origin script mentioned in the subfolder name.
-4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script, so that it points to the Templates folder in your PC. Make sure to save the script.
+4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script, so that it points to the graph Templates folder in your PC. Make sure to save the script.
 	- The `Library` is a script that contains functions that other scripts call. It will not meant to be executed.
 5. Select `View` and then `Command Window`. The Command Window will appear. It is similar to the Linux command line and allows one to give commands directly to Origin, and run scripts, among other things.
 6. In the `Command Window`, write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts;` to set the Scripts directory as the working directory (do not forget the semicolon!). Then press `ENTER`.
@@ -21,11 +21,11 @@ To install the scripts, perform the following steps:
 8. Test a script by going to a subfolder of the `Script examples` project file and following the instructions on the readme file. Usually all that is needed is to type the name of the corresponding script in the `Command Window` and press `ENTER`.
 
 
-## Analysis of filename templates
+## Filename formats
 
 ### Fields and their Values
-Each filename template consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
-	- Not all filename templates contain all available fields. To determine the format of each type of measurement, see the [Filename templates](#FilenameTemplates) section.
+These scripts expect to see data filenames in a certain format. Each filename consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
+	- Depending on the type of measurement, each filename will contain different fields. To determine each file format, depending on the type of measurement, see the [Filename formats](#FilenameFormats) section. However, the fastest way is to take a look at the `Script examples` project file and save your experimental data accordingly.
 
 The different **fields** are:
 - `batchNo`: The number of the batch (e.g. 235th).
@@ -64,7 +64,7 @@ The different **fields** are:
 
 
 ### The `step` convention<a name="StepConvention"></a>
-Some of the filename templates employ the `step` convention. This is simply a convention to keep filenames short while keeping track of the sequence of liquids that have been injected in an EG-OFET. Suppose, for example, that we inject first ultrapure water (10 minutes), then saline solution (5 hours), and then ultrapure water again (1 day). How would we distinguish the measurement files?
+Some of the filename formats employ the `step` convention. This is simply a convention to keep filenames short while keeping track of the sequence of liquids that have been injected in an EG-OFET. Suppose, for example, that we inject first ultrapure water (10 minutes), then saline solution (5 hours), and then ultrapure water again (1 day). How would we distinguish the measurement files?
 
 Let's suppose that we have finished the 10 minute ultrapure water injection and are 2 minutes in the saline solution experiment: One method is to name the file e.g. `<transistor parameters>_up-H2O_10-min_ss_2-min_<measurement parameters>`. But with such a convention the filenames would get very big, once we injected more and more liquids.
 
@@ -82,7 +82,7 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 
 
 ## Script parameters
-**Parameters** are **variables** inside the scripts that need to be set up manually, using the `CodeBuilder`, before the script is run. These parameters are then used to extract various metrics (e.g. the dielectric thickness parameter is used to extract the mobility), or to select the correct template. If the parameters are set up incorrectly, the script may also not run properly. The parameters for each script are the following:
+**Parameters** are **variables** inside the scripts that need to be set up manually, using the `CodeBuilder`, before the script is run. These parameters are then used to extract various metrics (e.g. the dielectric thickness parameter is used to extract the mobility), or to select the correct graph template. If the parameters are set up incorrectly, the script may also not run properly. The parameters for each script are the following:
 
 
 ### OFET parameters
@@ -170,7 +170,7 @@ The **reliability factor** is calculated as described in the relevant [publicati
 - To be completed.
 
 
-## Filename templates:<a name="FilenameTemplates"></a>
+## Filename formats:<a name="FilenameFormats"></a>
 **OFET (Transfer-Output)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_timelength_MeasurementType(T-O)_MeasNo_MeasurementMode_IntegrationTime`
 
