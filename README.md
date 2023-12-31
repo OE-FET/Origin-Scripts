@@ -16,12 +16,12 @@ To install the scripts, perform the following steps:
 	- These folders contain the graph themes and templates.
 	- In this case, there is no issue with *spaces* being in the filepath.
 3. Copy the project files in the `Examples` folder into a folder of your choice.
-	- The [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file contains separate folders, each of whom tests a particular script. All the scripts are tested in this file, except the `Experiment comparison` scripts.
+	- The [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file contains separate folders, each of whom tests a particular script. Each of these scripts only processes files that exist in the same folder as the script. All the scripts are tested in this file, except the `Experiment comparison` scripts.
 	- The [Script examples - Experiment comparison](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples%20-%20EG-OFET%20Experiment%20comparison.opju) project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different EG-OFET experiments (and hence from different folders).
 3. Run OriginLab and open the [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file.
-	- Each folder of the project file contains sample data and a readme file. The readme provides instructions on how to test the corresponding Origin script mentioned in the folder name.
+	- Each folder contains sample data and a readme file. The readme provides instructions on how to test the corresponding Origin script mentioned in the folder name.
 4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script, so that it points to the Templates folder in your PC. Make sure to save the script.
-	- The `Library` is a script that contains functions that other scripts call. It will not meant to be executed.
+	- The `Library` is a script that contains functions that other scripts call. It will not meant to be executed by itself.
 5. Select `View` and then `Command Window`. The Command Window will appear. It is similar to the Linux command line and allows one to give commands directly to Origin, and run scripts.
 6. In the `Command Window`, write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts;` to set the Scripts directory as the working directory (do not forget the semicolon!). Then press `ENTER`.
 7. Now the scripts should work. To verify this, start typing the name of a script in the `Command Window` (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name with one of the EG-OFET scripts.
@@ -31,7 +31,7 @@ To install the scripts, perform the following steps:
 ## Data filenames
 
 ### Fields and their Values
-The scripts expect to see data filenames in a certain format. Each filename consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
+As mentioned earlier, the scripts expect to see data filenames in a certain format. Each filename consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
 - Depending on the type of measurement, each filename will contain different fields. The [Filename formats](#filename-formats) section presents the different file formats for eacg type of measurement.
 - When a script is executed, the data filename is parsed and the values of the different fields are used to select the appropriate graph template, as well as to calculate different performance metrics.
 
