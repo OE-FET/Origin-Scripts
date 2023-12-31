@@ -1,5 +1,5 @@
 # Origin-Scripts
-This repository contains LabTalk Scripts for automated data analysis of organic field-effect transistor (OFET) and electrolyte-gated organic field-effect transistor (EG-OFET) data. They are compatible with Origin 2018 Pro or newer.
+This repository contains LabTalk Scripts for automated data analysis of organic field-effect transistor (OFET) and electrolyte-gated organic field-effect transistor (EG-OFET) data. The scripts are compatible with `Origin 2018 Pro` or newer.
 
 For these scripts to work:
 - The data files need to have a certain internal structure. See the `Script examples` project file for examples. If the data were acquired using the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs, then the scripts will work.
