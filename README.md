@@ -140,7 +140,7 @@ There is a [publication](https://aip.scitation.org/doi/10.1063/1.4876057) that d
 
 
 #### Rolling Regression (Vt fit) parameters
-The `RollingRegression` function is used to perform a linear fit on part of the `Id` (or <span>&#8730;</span>Id) curve in order to calculate the threshold voltage `Vt`, which is the intercept of the fit with the voltage (horizontal) axis. One option would be to choose two fixed limits on the voltage axis (e.g. a 20 Volt range) and perform the linear fit in those. If the fit was not good, we would manually change the fit limits and try again.
+The `RollingRegression` function is used to perform a linear fit on part of the `Id` (or <span>&#8730;</span>Id) curve in order to calculate the threshold voltage (`Vt`), which is the intercept of the fit with the voltage (horizontal) axis. One option would be to choose two fixed limits on the voltage axis (e.g. a 20 Volt range) and perform the linear fit in those. If the fit was not good, we would manually change the fit limits and try again.
 
 Instead, the `RollingRegression` function tries to find the maximum voltage range it can perform a linear fit on before the slope of the linear fit surpasses a pre-determined **parameter** called `slopewindow`.
 
