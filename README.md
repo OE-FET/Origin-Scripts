@@ -2,7 +2,7 @@
 This repository contains LabTalk Scripts for automated data analysis of organic field-effect transistor (OFET) and electrolyte-gated organic field-effect transistor (EG-OFET) data. The scripts are compatible with `Origin 2018 Pro` or newer.
 
 For these scripts to work:
-- The data files need to have a certain internal structure. See the `Script examples` project file for examples. If the data were acquired using the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs, then the scripts will work.
+- The data files need to have a certain internal structure, otherwise the scripts will not work properly. See the `Script examples` project file for examples. If the data were acquired using the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs, then the scripts will work.
 - The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#Data-filenames) section for details.  Alternatively, look at the `Script examples` project file and save your experimental data accordingly.
 - The graph templates that the scripts use to plot the data have to have filenames in a certain format. If the format is different, or if the template does not exist, a generic template will be used but the scripts will work.
 
