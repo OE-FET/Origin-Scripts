@@ -33,7 +33,7 @@ These scripts expect to see data filenames in a certain format. Each filename co
 	- Depending on the type of measurement, each filename will contain different fields. To determine each file format, depending on the type of measurement, see the [Filename formats](#FilenameFormats) section. However, the fastest way is to take a look at the `Script examples` project file and save your experimental data accordingly.
 
 The different **fields** are:
-- `batchNo`: The number of the batch (e.g. 235th).
+- `batchNo``: The number of the batch (e.g. 235th).
 - `Architecture`: The architecture of the device (e.g. TGBC-OFET, TGBC-EGOFET).
 - `material`: The semiconductor used to make the FET (e.g. IDTBT, C14-PBTTT).
 - `concentration(No-units)`: The concentration of the material/semiconductor (e.g. 10-gl).
@@ -70,33 +70,33 @@ The different **fields** are:
 
 ### Filename formats<a name="FilenameFormats"></a>
 **OFET (Transfer-Output)**:
-`batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_timelength_MeasurementType(T-O)_MeasNo_MeasurementMode_IntegrationTime`
+`batchNo`_`Architecture`_`material`_`concentration(No-units)`_`solvent`_`annealing`_`additive (type-thickness-units)`_`dielectric`_`DielectricConcentration`_`sampleNo`_`deviceNo`_`length(No-units)`_`condition(air/N2_liquid)`_`timelength`_`MeasurementType(T-O)`_`MeasNo`_`MeasurementMode`_`IntegrationTime`
 
 **OFET (shelf-life stability)**:
-`batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_"step"_stepNo_condition(air/N2_liquid)_minutesNo-"min"_MeasurementType(T-O)_MeasNo_MeasurementMode_IntegrationTime`
+`batchNo`_`Architecture`_`material`_`concentration(No-units)`_`solvent`_`annealing`_`additive (type-thickness-units)`_`dielectric`_`DielectricConcentration`_`sampleNo`_`deviceNo`_`length(No-units)`_`"step"`_`stepNo`_`condition(air/N2_liquid)`_`minutesNo-"min"`_`MeasurementType(T-O)`_`MeasNo`_`MeasurementMode`_`IntegrationTime`
 
 **OFET (Cryo)**:
-`batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_timelength_stepNo_air/vac_Temperature_MeasurementType(T-O)_MeasNo_MeasurementMode_IntegrationTime`
+`batchNo`_`Architecture`_`material`_`concentration(No-units)`_`solvent`_`annealing`_`additive (type-thickness-units)`_`dielectric`_`DielectricConcentration`_`sampleNo`_`deviceNo`_`length(No-units)`_`condition(air/N2_liquid)`_`timelength`_`stepNo`_`air/vac`_`Temperature`_`MeasurementType(T-O)`_`MeasNo`_`MeasurementMode`_`IntegrationTime`
 
 **OFET (Bias Stress)**:
-`batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_timelength_BiasStressTypeandNo(PBS1/NBS1)_minutesNo-"min"_MeasurementType(T-O-S)_MeasNo_MeasurementMode_IntegrationTime`
+`batchNo`_`Architecture`_`material`_`concentration(No-units)`_`solvent`_`annealing`_`additive (type-thickness-units)`_`dielectric`_`DielectricConcentration`_`sampleNo`_`deviceNo`_`length(No-units)`_`condition(air/N2_liquid)`_`timelength`_`BiasStressTypeandNo(PBS1/NBS1)`_`minutesNo-"min"`_`MeasurementType(T-O-S)`_`MeasNo`_`MeasurementMode`_`IntegrationTime`
 
 - **NOTE**: For `S` measurement type (`sample`) the suffix is: `S_Vg_Vd`.
 
 **EG-OGET (sensing-cycling)**:
-`batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_sampleNo_condition(air/N2_liquid)_timelength_MeasurementType(I-vs-time_plunger,valve-port)`
+`batchNo`_`Architecture`_`material`_`concentration(No-units)`_`solvent`_`annealing`_`additive (type-thickness-units)`_`sampleNo`_`condition(air/N2_liquid)`_`timelength`_`MeasurementType(I-vs-time_plunger,valve-port)`
 
-`batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_sampleNo_"step"_stepNo_condition(air/N2_liquid)_minutesNo-"min"_MeasurementType(T-O)_MeasNo_MeasurementMode_IntegrationTime`
+`batchNo`_`Architecture`_`material`_`concentration(No-units)`_`solvent`_`annealing`_`additive (type-thickness-units)`_`sampleNo`_`"step"`_`stepNo`_`condition(air/N2_liquid)`_`minutesNo-"min"`_`MeasurementType(T-O)`_`MeasNo`_`MeasurementMode`_`IntegrationTime`
 
 **EG-OGET (operational stability)**:
-`batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_sampleNo_"step"_stepNo_condition(air/N2_liquid)_timelength_MeasurementType(I-vs-time_plunger,valve-port)`
+`batchNo`_`Architecture`_`material`_`concentration(No-units)`_`solvent`_`annealing`_`additive (type-thickness-units)`_`sampleNo`_`"step"`_`stepNo`_`condition(air/N2_liquid)`_`timelength`_`MeasurementType(I-vs-time_plunger,valve-port)`
 
-`batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_sampleNo_"step"_stepNo_condition(air/N2_liquid)_minutesNo-"min"_MeasurementType(T-O)_MeasNo_MeasurementMode_IntegrationTime`
+`batchNo`_`Architecture`_`material`_`concentration(No-units)`_`solvent`_`annealing`_`additive (type-thickness-units)`_`sampleNo`_`"step"`_`stepNo`_`condition(air/N2_liquid)`_`minutesNo-"min"`_`MeasurementType(T-O)`_`MeasNo`_`MeasurementMode`_`IntegrationTime`
 
 **NMR**:
-`batchNo_sampleNo_Method (NMR/SSNMR)_Architecture (film)_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_condition(air/N2_liquid)_timelength_MeasNo_frequencyNo-frequencyUnits`
+`batchNo`_`sampleNo`_`Method (NMR/SSNMR)_Architecture (film)`_`material`_`concentration(No-units)`_`solvent`_`annealing`_`additive (type-thickness-units)`_`condition(air/N2_liquid)`_`timelength`_`MeasNo`_`frequencyNo-frequencyUnits`
 
-`batchNo_sampleNo_Method (NMR/SSNMR)_Architecture (solvent)_solvent_condition(air/N2_liquid)_timelength_MeasNo_frequencyNo-frequencyUnits`
+`batchNo`_`sampleNo`_`Method (NMR/SSNMR)_Architecture (solvent)`_`solvent`_`condition(air/N2_liquid)`_`timelength`_`MeasNo`_`frequencyNo-frequencyUnits`
 
 
 ### EG-OFET filenames only: The `step` convention<a name="StepConvention"></a>
@@ -107,13 +107,13 @@ Let's suppose that we have finished the 10 minute ultrapure water injection and 
 With the step convention, we would simply write `step_2_ss_2-min`. `Step 2` means that this liquid (saline solution in this case) is the **second** liquid to be injected and the rest of the filename (2-min) represents the **exposure time** in that specific liquid.
 
 Since we mentioned that our sequence consists of ultrapure water (10 minutes), then saline solution (5 hours), and then ultrapure water again (1 day). The overall measurements would look like this (if we assume one measurement per minute):
-- `<transistor parameters>_step_1_up-H2O_1-min_<measurement parameters>`
-- `<transistor parameters>_step_1_up-H2O_2-min_<measurement parameters>`
+- `<transistor parameters>_`step`_1_up-H2O_1-min_<measurement parameters>`
+- `<transistor parameters>_`step`_1_up-H2O_2-min_<measurement parameters>`
 - ...
-- `<transistor parameters>_step_2_ss_1-min_<measurement parameters>`
-- `<transistor parameters>_step_2_ss_2-min_<measurement parameters>`
+- `<transistor parameters>_`step`_2_ss_1-min_<measurement parameters>`
+- `<transistor parameters>_`step`_2_ss_2-min_<measurement parameters>`
 - ...
-- `<transistor parameters>_step_3_up-H2O_1-min_<measurement parameters>`
+- `<transistor parameters>_`step`_3_up-H2O_1-min_<measurement parameters>`
 - ...
 
 
