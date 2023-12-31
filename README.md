@@ -32,8 +32,8 @@ To install the scripts, perform the following steps:
 
 ### Fields and their Values
 As mentioned earlier, the scripts expect to see data filenames in a certain format. Each filename consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
-- Depending on the type of measurement, each filename will contain different fields. The [Filename formats](#filename-formats) section presents the different file formats for eacg type of measurement.
-- When a script is executed, the data filename is parsed and the values of the different fields are used to select the appropriate graph template, as well as to calculate different performance metrics.
+- Depending on the type of measurement, each filename will contain different fields. The [Filename formats](#filename-formats) section presents the different file formats for each type of measurement.
+- When a script is executed, the data filename is parsed and the values of the different fields are used to select the appropriate graph template, as well as to calculate different performance metrics (e.g., mobility).
 
 The different **fields** are:
 - `batchNo`: The number of the batch (e.g. 235th).
