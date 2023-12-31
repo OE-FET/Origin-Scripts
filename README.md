@@ -49,7 +49,7 @@ The different **fields** are:
 - `DielectricConcentration`: The format is either in a v/v ratio, or in g/l (e.g. 3-1, 50-gl).
 	- For details, look inside the `Library` script.
 - `sampleNo`: The number of the sample (e.g. 1st).
-- `step`: The step of the measurement (see the [Step Convention](#StepConvention) section). Applies to EG-OFETs only.
+- `step`: The step of the measurement (see the `Step Convention` section). Applies to EG-OFETs only.
 - `stepNo`: The step number (e.g. 1, 2, 3...)
 - `deviceNo`: The number of the device, if there are multiple devices on the same chip.
 - `length`: The length of the device (distance between the source-drain electrodes).
@@ -99,7 +99,7 @@ The different **fields** are:
 `batchNo_sampleNo_Method (NMR/SSNMR)_Architecture (solvent)_solvent_condition(air/N2_liquid)_timelength_MeasNo_frequencyNo-frequencyUnits`
 
 
-### EG-OFET filenames only: The `step` convention<a name="StepConvention"></a>
+### EG-OFET filenames only: The `step` convention
 Some of the filename formats employ the `step` convention. This is simply a convention to keep filenames short while keeping track of the sequence of liquids that have been injected in an EG-OFET. Suppose, for example, that we inject first ultrapure water (10 minutes), then saline solution (5 hours), and then ultrapure water again (1 day). How would we distinguish the measurement files?
 
 Let's suppose that we have finished the 10 minute ultrapure water injection and are 2 minutes in the saline solution experiment: One method is to name the file e.g. `<transistor parameters>_up-H2O_10-min_ss_2-min_<measurement parameters>`. But with such a convention the filenames would get very big, once we injected more and more liquids.
