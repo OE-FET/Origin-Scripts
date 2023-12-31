@@ -3,7 +3,7 @@ This repository contains LabTalk Scripts for automated data analysis of organic 
 
 For these scripts to work:
 - The data files need to have a certain internal structure. See the `Script examples` project file for examples. If the data were acquired using the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs, then the scripts will work.
-- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](Data-filenames) section for details.
+- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#Data-filenames) section for details.
 - The graph templates that the scripts use to plot the data have to have filenames in a certain format. If the format is different, or if the template does not exist, a generic template will be used but the scripts will work.
 
 ## Installation
