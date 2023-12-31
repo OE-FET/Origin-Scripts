@@ -39,36 +39,35 @@ The different **fields** are:
 - `batchNo`: The number of the batch (e.g. 235th).
 - `Architecture`: The architecture of the device (e.g. TGBC-OFET, TGBC-EG-OFET).
 - `material`: The semiconductor used to make the FET (e.g. IDTBT, C14-PBTTT).
-- `concentration(No-units)`: The concentration of the material/semiconductor (e.g. 10-gl).
+- `concentration(No-units)`: The concentration of the material/semiconductor (e.g. `10-gl` means 10 g/L).
 - `material`: The semiconductor used to make the FET (e.g. IDTBT, C14-PBTTT).
 - `solvent`: The solvent(s) used to make the semiconductor solution (e.g. 100pDCB, 75pDCB-25pCF).
 - `annealing`: The annealing conditions of the semiconductor thin films (e.g. 100C-1h).
-- `additive`: The additives or SAMs used to in the FET (e.g. Pristine, TCNQ-40-nm).
+- `additive`: The additives or self-assembled monolayers (SAMs) used in the FET (e.g. Pristine, TCNQ-40-nm).
 	- For *evaporated* additives, the format is `AdditiveType-Thickness-Units` (e.g. TCNQ-20-nm).
-	- For *solution-mixed* additives, the format is `AdditiveType-Concentration-Units` (e.g. F4TCNQ-10-pww, which will be converted to 10% w/w F4TCNQ).
-- `dielectric`: The dielectric used to make the FET (e.g. Cytop-M, PMMA).
+	- For *solution-mixed* additives, the format is `AdditiveType-Concentration-Units` (e.g. `F4TCNQ-10-pww` means 10% w/w F4TCNQ).
+- `dielectric`: The dielectric used to make the FET (e.g. Cytop-M, Cytop-S, PMMA).
 	- For details, look inside the `Library` script.
-	- **NOTE**: The `dielectric` field is used as an input in the `DielectricThicknessCalc` function of the `Library` script. The latter has some preset dielectric thicknesses that can be used to extract the mobility. To set the dielectric thickness manually, open the script to be executed (not the `Library` script itself), comment out `DielectricThicknessCalc` function and set the `dielectricthickness` variable manually.
-- `DielectricConcentration`: The format is either in a v/v ratio, or in g/l (e.g. 3-1, 50-gl).
+	- **NOTE**: The `dielectric` field is used as an input in the `DielectricThicknessCalc` function of the `Library` script. The latter has some preset dielectric thicknesses that can be used to extract the mobility.
+	- To set the dielectric thickness manually, open the script to be executed (not the `Library` script itself), comment out `DielectricThicknessCalc` function and set the `dielectricthickness` variable manually.
+- `DielectricConcentration`: The format is either in a `v/v ratio`, or in `g/L` (e.g. 3-1, 50-gl).
 	- For details, look inside the `Library` script.
 - `sampleNo`: The number of the sample (e.g. 1st).
-- `step`: The step of the measurement (see the [Step Convention](#the-step-convention) section). Applies to EG-OFETs only.
+- `step`: The step of the measurement (see the [Step Convention](#the-step-convention) section). **Applies to EG-OFETs only.**
 - `stepNo`: The step number (e.g. 1, 2, 3...)
-- `deviceNo`: The number of the device, if there are multiple devices on the same chip.
-- `length`: The length of the device (distance between the source-drain electrodes).
+- `deviceNo`: The number of the device, if there are multiple devices on the same sample.
+- `length`: The length of the device (distance between the source-drain electrodes). Usually there are FETs with different channel length but same width on the same sample.
 	- The format is `No-Units` (e.g. 20-um).
+	- The value of the width can be adjusted in the script itself. There is no field in the filename from which to extract this value.
 - `condition(air/N2_liquid)`: The condition in which the sample has been stored (for shelf-life stability), or is being measured (for operational stability).
-	- Example: `up-H2O` is used for ultrapure water, `ss` for saline solution, `1-x-PBS` for 1xPBS, `NaP` for NaP buffer.
-	- For details, look inside the `Library` script.
-- `timelength`: The time that the sample has spent in the respective condition.
-	- The format is `No-Units` (e.g. 20-days, 50-min, 3-h, or just "initial" for the initial day of measurements)
+	- For example, `up-H2O` is used for ultrapure water, `ss` for saline solution, `1-x-PBS` for 1xPBS, `NaP` for NaP buffer. For details, look inside the `Library` script.
+- `timelength`: The time that the sample has been stored or measured in the respective condition.
+	- The format is `No-Units` (e.g. 20-days, 50-min, 3-h, or just "initial" for the initial day of measurements).
 - `MeasurementType`: `T` for a transfer curve, `O` for an output curve, `S` for a sample (bias stress) measurement (for a `sample` measurement type (`S`), the suffix is: `S_Vg_Vd`).
 	- For details, look inside the `Library` script.
-- `MeasNo`: The measurement number (e.g. 1, 2, 3...)
+- `MeasNo`: The measurement number (e.g. 1, 2, 3...). There could be multiple transfer curves taken at a specific time point, so it is necessary to number them.
 - `MeasurementMode`: `C` for continuous mode, `P` for pulsed mode
-	- For details, look inside the `Library` script.
 - `IntegrationTime`: `S` for short, `M` for medium and `L` for large
-	- For details, look inside the `Library` script.
 
 
 ### Filename formats
