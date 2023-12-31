@@ -3,8 +3,8 @@ LabTalk Scripts for automated data analysis of OFET and EG-OFET data, measured w
 
 ## Quick notes
 For these scripts to work:
-	- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#DataFilenames) section for details.
-	- The graph templates that the scripts use to plot the data have to have filenames in a certain format. If the format is different, or if the template does not exist, a generic template will be used but the scripts will work.
+- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#DataFilenames) section for details.
+- The graph templates that the scripts use to plot the data have to have filenames in a certain format. If the format is different, or if the template does not exist, a generic template will be used but the scripts will work.
 
 ## Installation
 To install the scripts, perform the following steps:
