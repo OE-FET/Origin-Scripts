@@ -9,32 +9,34 @@ For these scripts to work:
 ## Installation
 To install the scripts, perform the following steps:
 1. Copy the `Scripts` folder to `C:\Users\<Account Name>\Documents\OriginLab`.
+	- The `<Account Name>` is the name of your user account in your PC.
 	- The filepath should **NOT** contain *spaces*!
 	- The filenames of the scripts should also **NOT** contain *dashes* (`-`), as Origin cannot handle them.
 2. Copy the `Themes` and `Templates` folders to `C:\Users\<Account Name>\Documents\OriginLab\User Files`.
+	- These folders contain the graph themes and templates.
 	- In this case, there is no issue with *spaces* being in the filepath.
 3. Copy the project files in the `Examples` folder into a folder of your choice.
-	- The `Script examples` project file contains subfolders, each of which is designed to test the corresponding Origin script mentioned in the subfolder name. All scripts are tested in this file, except the `Experiment comparison` scripts.
-	- The `Script examples - Experiment comparison` project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different experiments (and hence from different subfolders).
+	- The `Script examples` project file contains separate folders, each of whom tests a particular script. All the scripts are tested in this file, except the `Experiment comparison` scripts.
+	- The `Script examples - Experiment comparison` project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different EG-OFET experiments (and hence from different folders).
 3. Run OriginLab and open the `Script examples` project file.
-	- Each subfolder of the project file contains sample data and a readme file. The readme provides instructions on how to test the corresponding Origin script mentioned in the subfolder name.
-4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script, so that it points to the graph Templates folder in your PC. Make sure to save the script.
+	- Each folder of the project file contains sample data and a readme file. The readme provides instructions on how to test the corresponding Origin script mentioned in the folder name.
+4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script, so that it points to the Templates folder in your PC. Make sure to save the script.
 	- The `Library` is a script that contains functions that other scripts call. It will not meant to be executed.
-5. Select `View` and then `Command Window`. The Command Window will appear. It is similar to the Linux command line and allows one to give commands directly to Origin, and run scripts, among other things.
+5. Select `View` and then `Command Window`. The Command Window will appear. It is similar to the Linux command line and allows one to give commands directly to Origin, and run scripts.
 6. In the `Command Window`, write `cd C:\Users\<Account Name>\Documents\OriginLab\Scripts;` to set the Scripts directory as the working directory (do not forget the semicolon!). Then press `ENTER`.
-7. Now the scripts should be available. To verify this, start typing the name of a script in the `Command Window` (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name with one of the EGOFET scripts.
-8. Test a script by going to a subfolder of the `Script examples` project file and following the instructions on the readme file. Usually all that is needed is to type the name of the corresponding script in the `Command Window` and press `ENTER`.
+7. Now the scripts should work. To verify this, start typing the name of a script in the `Command Window` (e.g. `EG`) and then press `TAB`. If the working directory has been set correctly, Origin will try to autocomplete the partially typed script name with one of the EG-OFET scripts.
+8. Test a script by going to a folder of the `Script examples` project file, and following the instructions in the readme file. To run a script, type the name of the script in the `Command Window` and press `ENTER`.
 
 
 ## Data filenames
 
 ### Fields and their Values
-These scripts expect to see data filenames in a certain format. Each filename consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
+The scripts expect to see data filenames in a certain format. Each filename consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
 - Depending on the type of measurement, each filename will contain different fields. The [Filename formats](#filename-formats) section presents the different file formats for eacg type of measurement.
 
 The different **fields** are:
 - `batchNo`: The number of the batch (e.g. 235th).
-- `Architecture`: The architecture of the device (e.g. TGBC-OFET, TGBC-EGOFET).
+- `Architecture`: The architecture of the device (e.g. TGBC-OFET, TGBC-EG-OFET).
 - `material`: The semiconductor used to make the FET (e.g. IDTBT, C14-PBTTT).
 - `concentration(No-units)`: The concentration of the material/semiconductor (e.g. 10-gl).
 - `material`: The semiconductor used to make the FET (e.g. IDTBT, C14-PBTTT).
@@ -200,7 +202,7 @@ The offset-related **parameters** are:
 The **reliability factor** is calculated as described in the relevant [publication](https://www.nature.com/articles/nmat5035). A point of uncertainty exists with respect to the denominators of formulas (B1) and (B2) of the publication. The denominators are the transconductances, which depend on the gate voltage. The question is, which value of the transconductance should be used for the calculation of the reliability factor. We could use the maximum transconductance (g<sub>m, max</sub>), or the transconductance at the maximum gate voltage (g<sub>m, VGmax</sub>). The scripts have been coded to use the maximum transconductance (g<sub>m, max</sub>) value (which may not be at the maximum gate voltage), thus calculating a worst case scenario for the reliability factor.
 
 
-### EGOFET parameters
+### EG-OFET parameters
 
 #### Steady state time `Tss`
 - To be completed.
