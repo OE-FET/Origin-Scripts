@@ -3,7 +3,7 @@ LabTalk Scripts for automated data analysis of OFET and EG-OFET data, measured w
 
 ## Quick notes
 For these scripts to work:
-- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#DataFilenames) section for details.
+- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the `Data filenames` section for details.
 - The graph templates that the scripts use to plot the data have to have filenames in a certain format. If the format is different, or if the template does not exist, a generic template will be used but the scripts will work.
 
 ## Installation
@@ -26,11 +26,11 @@ To install the scripts, perform the following steps:
 8. Test a script by going to a subfolder of the `Script examples` project file and following the instructions on the readme file. Usually all that is needed is to type the name of the corresponding script in the `Command Window` and press `ENTER`.
 
 
-## Data filenames<a name="DataFilenames"></a>
+## Data filenames
 
 ### Fields and their Values
 These scripts expect to see data filenames in a certain format. Each filename consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
-	- Depending on the type of measurement, each filename will contain different fields. To determine each file format, depending on the type of measurement, see the [Filename formats](#FilenameFormats) section. However, the fastest way is to take a look at the `Script examples` project file and save your experimental data accordingly.
+	- Depending on the type of measurement, each filename will contain different fields. To determine each file format, depending on the type of measurement, see the `Filename formats` section. However, the fastest way is to take a look at the `Script examples` project file and save your experimental data accordingly.
 
 The different **fields** are:
 - `batchNo`: The number of the batch (e.g. 235th).
@@ -68,7 +68,7 @@ The different **fields** are:
 	- For details, look inside the `Library` script.
 
 
-### Filename formats<a name="FilenameFormats"></a>
+### Filename formats
 **OFET (Transfer-Output)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_timelength_MeasurementType(T-O)_MeasNo_MeasurementMode_IntegrationTime`
 
