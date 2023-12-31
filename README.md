@@ -2,8 +2,8 @@
 This repository contains LabTalk Scripts for automated data analysis of organic field-effect transistor (OFET) and electrolyte-gated organic field-effect transistor (EG-OFET) data. The scripts are compatible with `Origin 2018 Pro` or newer.
 
 For these scripts to work:
-- The data files need to have a certain internal structure, otherwise the scripts will not work properly. See the `Script examples` project file for examples. If the data were acquired using the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs, then the scripts will work.
-- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#Data-filenames) section for details.  Alternatively, look at the `Script examples` project file and save your experimental data accordingly.
+- The data files need to have a certain internal structure, otherwise the scripts will not work properly. See the [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file for examples. If the data were acquired using the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs, then the scripts will work.
+- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#Data-filenames) section for details.  Alternatively, look at the [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file and save your experimental data accordingly.
 - The graph templates that the scripts use to plot the data have to have filenames in a certain format. If the format is different, or if the template does not exist, a generic template will be used but the scripts will work.
 
 ## Installation
@@ -16,9 +16,9 @@ To install the scripts, perform the following steps:
 	- These folders contain the graph themes and templates.
 	- In this case, there is no issue with *spaces* being in the filepath.
 3. Copy the project files in the `Examples` folder into a folder of your choice.
-	- The `Script examples` project file contains separate folders, each of whom tests a particular script. All the scripts are tested in this file, except the `Experiment comparison` scripts.
-	- The `Script examples - Experiment comparison` project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different EG-OFET experiments (and hence from different folders).
-3. Run OriginLab and open the `Script examples` project file.
+	- The [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file contains separate folders, each of whom tests a particular script. All the scripts are tested in this file, except the `Experiment comparison` scripts.
+	- The [Script examples - Experiment comparison](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples%20-%20EG-OFET%20Experiment%20comparison.opju) project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different EG-OFET experiments (and hence from different folders).
+3. Run OriginLab and open the [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file.
 	- Each folder of the project file contains sample data and a readme file. The readme provides instructions on how to test the corresponding Origin script mentioned in the folder name.
 4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script, so that it points to the Templates folder in your PC. Make sure to save the script.
 	- The `Library` is a script that contains functions that other scripts call. It will not meant to be executed.
