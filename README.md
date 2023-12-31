@@ -26,7 +26,7 @@ To install the scripts, perform the following steps:
 8. Test a script by going to a subfolder of the `Script examples` project file and following the instructions on the readme file. Usually all that is needed is to type the name of the corresponding script in the `Command Window` and press `ENTER`.
 
 
-## Data filenames:<a name="DataFilenames"></a>
+## Data filenames<a name="DataFilenames"></a>
 
 ### Fields and their Values
 These scripts expect to see data filenames in a certain format. Each filename consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
@@ -68,7 +68,7 @@ The different **fields** are:
 	- For details, look inside the `Library` script.
 
 
-### Filename formats:<a name="FilenameFormats"></a>
+### Filename formats<a name="FilenameFormats"></a>
 **OFET (Transfer-Output)**:
 `batchNo_Architecture_material_concentration(No-units)_solvent_annealing_additive (type-thickness-units)_dielectric_DielectricConcentration_sampleNo_deviceNo_length(No-units)_condition(air/N2_liquid)_timelength_MeasurementType(T-O)_MeasNo_MeasurementMode_IntegrationTime`
 
