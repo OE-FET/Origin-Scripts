@@ -3,7 +3,7 @@ This repository contains LabTalk Scripts for automated data analysis of organic 
 
 For these scripts to work:
 - The data files need to have a certain internal structure. See the `Script examples` project file for examples. If the data were acquired using the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs, then the scripts will work.
-- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#Data-filenames) section for details.
+- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#Data-filenames) section for details.  Alternatively, look at the `Script examples` project file and save your experimental data accordingly.
 - The graph templates that the scripts use to plot the data have to have filenames in a certain format. If the format is different, or if the template does not exist, a generic template will be used but the scripts will work.
 
 ## Installation
@@ -30,7 +30,7 @@ To install the scripts, perform the following steps:
 
 ### Fields and their Values
 These scripts expect to see data filenames in a certain format. Each filename consists of different **fields**, separated by an *underscore* (`_`). The different **values** for each of the different **fields** can be seen in the `Library` file.
-- Depending on the type of measurement, each filename will contain different fields. To determine each file format, depending on the type of measurement, see the [Filename formats](#filename-formats) section. However, the fastest way is to take a look at the `Script examples` project file and save your experimental data accordingly.
+- Depending on the type of measurement, each filename will contain different fields. The [Filename formats](#filename-formats) section presents the different file formats for eacg type of measurement.
 
 The different **fields** are:
 - `batchNo`: The number of the batch (e.g. 235th).
