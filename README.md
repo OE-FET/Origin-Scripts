@@ -197,7 +197,9 @@ To correct for this, the `RollingRegression` function checks if `gm,max` and `Vg
 
 
 #### Reliability factor
-The **reliability factor** is calculated as described in the relevant [publication](https://www.nature.com/articles/nmat5035). A point of uncertainty exists with respect to the denominators of formulas (B1) and (B2) of the publication. The denominators are the transconductances, which depend on the gate voltage. The question is, which value of the transconductance should be used for the calculation of the reliability factor. We could use the maximum transconductance (g<sub>m, max</sub>), or the transconductance at the maximum gate voltage (g<sub>m, VGmax</sub>). The scripts have been coded to use the maximum transconductance (g<sub>m, max</sub>) value (which may not be at the maximum gate voltage), thus calculating a worst case scenario for the reliability factor.
+The **reliability factor** is calculated as described in the relevant [publication](https://www.nature.com/articles/nmat5035).
+- A point of uncertainty exists with respect to the denominators of formulas (B1) and (B2) of the publication. The transconductances (denominators of the formula) do not have a single value - they depend on the gate voltage. Hence, it is unclear which value of the transconductance should be used for the calculation of the reliability factor. We could use the maximum transconductance (g<sub>m, max</sub>), or the transconductance at the maximum gate voltage (g<sub>m, VGmax</sub>).
+- The scripts have been coded to use the maximum transconductance (g<sub>m, max</sub>) value (which may or may not be at the maximum gate voltage), thus calculating a worst case scenario for the reliability factor.
 
 
 ### EG-OFET parameters
