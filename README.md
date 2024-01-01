@@ -58,7 +58,7 @@ The different **fields** are:
 - `deviceNo`: The number of the device, if there are multiple devices on the same sample.
 - `length`: The length of the device (distance between the source-drain electrodes). Usually there are FETs with different channel length but same width on the same sample.
 	- The format is `No-Units` (e.g. 20-um).
-	- The value of the width can be adjusted in the script itself. There is no field in the filename from which to extract this value.
+	- The value of the `width` is a **parameter** that can be adjusted in the script itself. There is no field in the filename from which to extract this value.
 - `condition(air/N2_liquid)`: The condition in which the sample has been stored (for shelf-life stability), or is being measured (for operational stability).
 	- For example, `up-H2O` is used for ultrapure water, `ss` for saline solution, `1-x-PBS` for 1xPBS, `NaP` for NaP buffer. For details, look inside the `Library` script.
 - `timelength`: The time that the sample has been stored or measured in the respective condition.
@@ -102,13 +102,7 @@ The different **fields** are:
 
 
 ### The `step` convention
-This convention only applies to EG-OFET data. Some of the filenames employ the `step` convention. This is simply a convention to keep filenames short while keeping track of the sequence of liquids that have been injected in an EG-OFET. Suppose, for example, that we inject first ultrapure water (10 minutes), then saline solution (5 hours), and then ultrapure water again (1 day). How would we distinguish the measurement files?
-
-Let's suppose that we have finished the 10 minute ultrapure water injection and are 2 minutes in the saline solution experiment: One method is to name the file e.g. `<transistor parameters>_up-H2O_10-min_ss_2-min_<measurement parameters>`. But with such a convention the filenames would get very big, once we injected more and more liquids.
-
-With the step convention, we would simply write `step_2_ss_2-min`. `Step 2` means that this liquid (saline solution in this case) is the **second** liquid to be injected and the rest of the filename (2-min) represents the **exposure time** in that specific liquid.
-
-Since we mentioned that our sequence consists of ultrapure water (10 minutes), then saline solution (5 hours), and then ultrapure water again (1 day). The overall measurements would look like this (if we assume one measurement per minute):
+The `step` data filename convention is only used on EG-OFET data filenames. This convention aims to keep filenames short while keeping track of the sequence of liquids that have been injected in an EG-OFET. Suppose, for example, that we inject ultrapure water for the first 10 minutes, then saline solution for the next 5 hours, and then finally ultrapure water for the next day. Using the step convention, the data filenames would look like this (if we assume one measurement per minute):
 - `<transistor parameters>_step_1_up-H2O_1-min_<measurement parameters>`
 - `<transistor parameters>_step_1_up-H2O_2-min_<measurement parameters>`
 - ...
@@ -120,7 +114,10 @@ Since we mentioned that our sequence consists of ultrapure water (10 minutes), t
 
 
 ## Script parameters
-**Parameters** are **variables** inside the scripts that need to be set up manually, using the `CodeBuilder`, before the script is run. These parameters are then used to extract various metrics (e.g. the dielectric thickness parameter is used to extract the mobility), or to select the correct graph template. If the parameters are set up incorrectly, the script may also not run properly. The parameters for each script are the following:
+**Parameters** are **variables** inside the scripts that need to be set up manually, using the `CodeBuilder`, before the script is run. These parameters are then used to extract various metrics, or to select the correct graph template. We mentioned earlier that the channel `width` and the `dielectricthickness` are parameters.
+- If the parameters are set up incorrectly, the script will not run properly, or may miscalculate the performance metrics.
+
+The parameters for each script are the following:
 
 
 ### OFET parameters
