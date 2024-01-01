@@ -121,6 +121,10 @@ The parameters for each script are the following:
 
 
 ### OFET parameters
+
+The different parameters found in the OFET processing scripts are:
+
+
 - `Width (W)` [um]: The transistor width.
 - `Length (L)` [um]: The transistor length. This is not usually set manually, as a parameter, but is extracted from the `length` field of the filename. Usually a sample will contain FETs with different channel lengths.
 - `Thickness of accumulation layer (d)` [nm]: The thickness of the accumulation layer.
@@ -203,8 +207,4 @@ The **reliability factor** is calculated as described in the relevant [publicati
 
 
 ### EG-OFET parameters
-
-#### Steady state time `Tss`
-
-
-The onset of the steady state `Tss` was defined as the time for which the slope of the ON current (drift) remains below 10<sup>-9</sup> A/min for 200 minutes. 
+To be completed
