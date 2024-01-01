@@ -49,14 +49,14 @@ The different **fields** are:
 - `dielectric`: The dielectric used to make the FET (e.g. Cytop-M, Cytop-S, PMMA).
 	- For details, look inside the `Library` script.
 	- **NOTE**: The `dielectric` field is used as an input in the `DielectricThicknessCalc` function of the `Library` script. The latter has some preset dielectric thicknesses that can be used to extract the mobility.
-	- To set the dielectric thickness manually, open the script to be executed (not the `Library` script itself), comment out `DielectricThicknessCalc` function and set the `dielectricthickness` variable manually.
+	- To set the dielectric thickness manually, open the script to be executed (not the `Library` script itself), comment out `DielectricThicknessCalc` function and set the `dielectricthickness` parameter manually.
 - `DielectricConcentration`: The format is either in a `v/v ratio`, or in `g/L` (e.g. 3-1, 50-gl).
 	- For details, look inside the `Library` script.
 - `sampleNo`: The number of the sample (e.g. 1st).
 - `step`: The step of the measurement (see the [Step Convention](#the-step-convention) section). **Applies to EG-OFETs only.**
 - `stepNo`: The step number (e.g. 1, 2, 3...)
 - `deviceNo`: The number of the device, if there are multiple devices on the same sample.
-- `length`: The length of the device (distance between the source-drain electrodes). Usually there are FETs with different channel length but same width on the same sample.
+- `length`: The length of the device (distance between the source-drain electrodes). Usually a sample will contain FETs with different channel lengths.
 	- The format is `No-Units` (e.g. 20-um).
 	- The value of the `width` is a **parameter** that can be adjusted in the script itself. There is no field in the filename from which to extract this value.
 - `condition(air/N2_liquid)`: The condition in which the sample has been stored (for shelf-life stability), or is being measured (for operational stability).
@@ -122,7 +122,7 @@ The parameters for each script are the following:
 
 ### OFET parameters
 - `Width (W)` [um]: The transistor width.
-- `Length (L)` [um]: The transistor length. This is not usually set manually, as a parameter, but is extracted from the `length` field of the filename. This is because a sample can contain devices of different lengths.
+- `Length (L)` [um]: The transistor length. This is not usually set manually, as a parameter, but is extracted from the `length` field of the filename. Usually a sample will contain FETs with different channel lengths.
 - `Thickness of accumulation layer (d)` [nm]: The thickness of the accumulation layer.
 - `Dielectric constant (er)`: The dielectric constant. Common values include `2.1` for `CYTOP`, `3.6` for `PMMA` and `3.9` for `SiO2`.
 - `Vacuum permittivity (e0)` [F/m]: The dielectric permittivity of vacuum is a constant with a value of `8.854E-12`.
