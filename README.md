@@ -160,6 +160,16 @@ So far two **parameters** have been introduced:
 
 #### The `offset` parameters
 
+We mentioned earlier that sometimes an offet is used, in which case the left and right voltage limits become `Vgmax+offset` and `Vgmax+minRangeLength+offset` respectively. This is because there are cases cases when the Rolling Regression function can fail. One such case is when `Idmax` and `Vgmax` do not coincide and another is when `gm,max` (the slope of the `Id/SQRT(Id)` curve) and `Vgmax` do not coincide. Two separate offsets, `offset1` and `offset2` are used to shift the window to lower voltages (i.e., to the right along the x-axis) in each of these two cases.
+
+The `RollingRegression` function checks and applies both offsets, first `offset1` and then `offset2`. The offsets are summed into a new variable (`offset = offset1 + offset2`) and the voltage limits for the linear fit are shifted.
+
+The offset-related **parameters** are:
+
+- `autooffset`: Setting it to `1` will enable the automatic offset calculation. Setting it to `0` will disable it.
+- `offset`: Manual setting of the offset value, in case `autooffset` is set to `0`. Common offset values include `20` for `IDTBT` and `0` for `N2200` OFETs. The default value is `10`. If `autooffset` is set to `1` this parameter is meaningless, as the offset will be automatically determined.
+
+
 ##### Offset 1: When `Idmax` and `Vgmax` do not coincide
 There are cases cases when taking the left integration limit to be `Vgmax` will cause the Rolling Regression to fail. One such case is when `Idmax` and `Vgmax` do not coincide. This is presented in the following image:
 
@@ -167,11 +177,10 @@ There are cases cases when taking the left integration limit to be `Vgmax` will 
 
 In this case, `Idmax` occurs at a different voltage: `Vg(Idmax)`. After `Vg(Idmax)`, the slope of the `dId/dV` curve turns positive and the resulting linear fit rises to infinity.
 
-To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left the left voltage limit will then start from `Vg(Idmax)`.
-
-`offset1` ensures that the linear fit is applied at the voltage range around `Idmax`. This is presented in the following image:
+To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left voltage limit will then start from `Vg(Idmax)`. Hence, `offset1` ensures that the linear fit is applied at the voltage range around `Idmax`. This is presented in the following image:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%201%20correct%20fit.png" alt="VtlinOffset1CorrectFit" height="400">
+
 
 ##### Offset 2: When `gm,max` and `Vgmax` do not coincide
 Another case when the Rolling Regression can fail is when `gm,max` and `Vgmax` do not coincide. This is presented in the following images:
@@ -182,20 +191,9 @@ Another case when the Rolling Regression can fail is when `gm,max` and `Vgmax` d
 
 In this case, `gm,max` occurs at a different voltage: `Vg(gm,max)`. The `RollingRegression` function will start at `Vgmax` (60 Volts), perform the first linear fit over a voltage range of `minRangeLength` Volts and then keep iterating until the slope diverges. The divergence happens roughly ~15 Volts away from `Vgmax`, at 45 Volts. However, this linear fit obviously underestimates the threshold voltage `Vt`. This is because beyond the 45 Volts the slope (i.e. the transconductance, `gm`) becomes even larger. The maximum value of the slope (and of the transconductance) occurs at roughly 35 Volts, and this is where the linear fit should have taken place.
 
-To correct for this, the `RollingRegression` function checks if `gm,max` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset2`, where `offset2` is the voltage difference between `Vgmax` and `Vg(gm,max)`. The left the left voltage limit will then start from `Vg(gm,max)`.
-
-`offset2` ensures that the linear fit is applied at the voltage range around `gm,max`. This is presented in the following image:
+To correct for this, the `RollingRegression` function checks if `gm,max` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset2`, where `offset2` is the voltage difference between `Vgmax` and `Vg(gm,max)`. The left voltage limit will then start from `Vg(gm,max)`. Hence, `offset2` ensures that the linear fit is applied at the voltage range around `gm,max`. This is presented in the following image:
 
 <img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%202%20correct%20fit.png" alt="VtlinOffset2CorrectFit" height="400">
-
-
-##### Summary
-The `RollingRegression` function checks and applies both offsets, first `offset1` and then `offset2`. If `offset1` is not accounted for, then there is a chance that `Vg(gm,max)` is occuring before `Idmax`. The offsets are summed into a new variable (`offset = offset1 + offset2`) and the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset`.
-
-The offset-related **parameters** are:
-
-- `autooffset`: Setting it to `1` will enable the automatic offset calculation. Setting it to `0` will disable it.
-- `offset`: Manual setting of the offset value, in case `autooffset` is set to `0`. Common offset values include `20` for `IDTBT` and `0` for `N2200`. The default value is `10`. If `autooffset` is set to `1` this parameter is meaningless, as the offset will be automatically determined.
 
 
 #### Reliability factor
