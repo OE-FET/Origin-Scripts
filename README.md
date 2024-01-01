@@ -212,26 +212,26 @@ The **reliability factor** is calculated as described in the relevant [publicati
 
 Regime I (left) and regime II (right) are shown in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%20Two%20regimes.png" alt="TwoRegimes" height="400">
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%20Two%20regimes.png" alt="TwoRegimes" height="300">
 
 
 We need to calculate the onset of the steady state in the ON current curves, and the calculation has to make sense in both regimes. The first method is to calculate the three point derivative of the curves, and restrict it from remaining below a certain limit. That limit is the `Tsswindow` parameter. The results are shown in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%201%20-%20Three%20point%20derivative.png" alt="ThreePointDerivative" height="400">
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%201%20-%20Three%20point%20derivative.png" alt="ThreePointDerivative" height="300">
 
 The steady state calculation is accurate for regime II but not for regime I. The three point derivative does not work properly in regime I, as it may have some flat regions.
 
 
 The second method is to perform a linear fit across the entire time curve, and restrict the slope from remaining below the `Tsswindow` limit. The results are shown in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%202%20-Linear%20fit%20over%20the%20entire%20range.png" alt="LinearFitEntireRange" height="400">
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%202%20-Linear%20fit%20over%20the%20entire%20range.png" alt="LinearFitEntireRange" height="300">
 
 The steady state calculation is accurate for regime I but not for regime II. This method does not work properly in the case of a very flat curve, as the large, flat sections will dominate, and allow for the linear fit to ignore the transient region.
 
 
 The third method is to perform a linear fit in a limited range, and restrict the slope from remaining below the `Tsswindow` limit. A range of for a range of 200 minutes was chosen. It is like having a 200-min long rod and trying to fit it along the ON current curve until it is flat enough (i.e., until the slopw is below the `Tsswindow` limit). The fit does not start from t=0 but after the first liquid injection, which takes about 8 minutes. The results are shown in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%203%20-Linear%20fit%20over%20a%20limited%20range.png" alt="LinearFitLimitedRange" height="400">
+<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%203%20-Linear%20fit%20over%20a%20limited%20range.png" alt="LinearFitLimitedRange" height="300">
 
 The steady state calculation is accurate for regime I and regime II. This method is a reasonable compromise. Hence, the onset of the steady state `Tss` was defined as the time for which the slope of the ON current (drift) remains below a 10<sup>-9</sup> A/min for 200 minutes. The different parameters found in the EG-OFET processing scripts are:
 
