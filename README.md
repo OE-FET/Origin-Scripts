@@ -205,4 +205,6 @@ The **reliability factor** is calculated as described in the relevant [publicati
 ### EG-OFET parameters
 
 #### Steady state time `Tss`
-- To be completed.
+
+
+The onset of the steady state `T<sub>ss,200</sub>` was defined as the time for which the slope of the ON current (drift) remains below 10<sup>-9</sup> A/min for 200 minutes. 
