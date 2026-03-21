@@ -2,8 +2,8 @@
 This repository contains LabTalk Scripts for automated data analysis of organic field-effect transistor (OFET) and electrolyte-gated organic field-effect transistor (EG-OFET) data. The scripts are compatible with `Origin 2018 Pro` or newer.
 
 For these scripts to work:
-- The data files need to have a certain internal structure, otherwise the scripts will not work properly. See the [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file for examples. If the data were acquired using the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs, then the scripts will work.
-- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#Data-filenames) section for details.  Alternatively, look at the [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file and save your experimental data accordingly.
+- The data files need to have a certain internal structure, otherwise the scripts will not work properly. See the [Script examples](./Examples/Script%20examples.opju) project file for examples. If the data were acquired using the [Agilent-415X](https://github.com/OE-FET/Agilent-415X) LabVIEW programs, then the scripts will work.
+- The data filenames have to be in a certain format. If the format is different the scripts will not work. See the [Data filenames](#Data-filenames) section for details.  Alternatively, look at the [Script examples](./Examples/Script%20examples.opju) project file and save your experimental data accordingly.
 - The graph templates that the scripts use to plot the data have to have filenames in a certain format. If the format is different, or if the template does not exist, a generic template will be used but the scripts will work.
 
 ## Installation
@@ -16,9 +16,9 @@ To install the scripts, perform the following steps:
 	- These folders contain the graph themes and templates.
 	- In this case, there is no issue with *spaces* being in the filepath.
 3. Copy the project files in the `Examples` folder into a folder of your choice.
-	- The [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file contains separate folders, each of whom tests a particular script. Each of these scripts only processes files that exist in the same folder as the script. All the scripts are tested in this file, except the `Experiment comparison` scripts.
-	- The [Script examples - Experiment comparison](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples%20-%20EG-OFET%20Experiment%20comparison.opju) project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different EG-OFET experiments (and hence from different folders).
-3. Run OriginLab and open the [Script examples](https://github.com/OE-FET/Origin-Scripts/blob/master/Examples/Script%20examples.opju) project file.
+	- The [Script examples](./Examples/Script%20examples.opju) project file contains separate folders, each of whom tests a particular script. Each of these scripts only processes files that exist in the same folder as the script. All the scripts are tested in this file, except the `Experiment comparison` scripts.
+	- The [Script examples - Experiment comparison](./Examples/Script%20examples%20-%20EG-OFET%20Experiment%20comparison.opju) project file is only designed to test the `Experiment comparison` scripts, which compare experimental data between different EG-OFET experiments (and hence from different folders).
+3. Run OriginLab and open the [Script examples](./Examples/Script%20examples.opju) project file.
 	- Each folder contains sample data and a readme file. The readme provides instructions on how to test the corresponding Origin script mentioned in the folder name.
 4. Open the `Library` script with `CodeBuilder` and modify the `templatepath$` string variable at the top of the script, so that it points to the Templates folder in your PC. Make sure to save the script.
 	- The `Library` is a script that contains functions that other scripts call. It will not meant to be executed by itself.
@@ -177,27 +177,27 @@ The offset-related **parameters** are:
 ##### Offset 1: When `Idmax` and `Vgmax` do not coincide
 There are cases cases when taking the left integration limit to be `Vgmax` will cause the Rolling Regression to fail. One such case is when `Idmax` and `Vgmax` do not coincide. This is presented in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%201%20wrong%20fit.png" alt="VtlinOffset1WrongFit" height="400">
+<img src="./Images/Vtlin%20offset%201%20wrong%20fit.png" alt="VtlinOffset1WrongFit" height="400">
 
 In this case, `Idmax` occurs at a different voltage: `Vg(Idmax)`. After `Vg(Idmax)`, the slope of the `dId/dV` curve turns positive and the resulting linear fit rises to infinity.
 
 To correct for this, the `RollingRegression` function checks if `Idmax` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset1`, where `offset1` is the voltage difference between `Vgmax` and `Vg(Idmax)`. The left voltage limit will then start from `Vg(Idmax)`. Hence, `offset1` ensures that the linear fit is applied at the voltage range around `Idmax`. This is presented in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%201%20correct%20fit.png" alt="VtlinOffset1CorrectFit" height="400">
+<img src="./Images/Vtlin%20offset%201%20correct%20fit.png" alt="VtlinOffset1CorrectFit" height="400">
 
 
 ##### Offset 2: When `gm,max` and `Vgmax` do not coincide
 Another case when the Rolling Regression can fail is when `gm,max` and `Vgmax` do not coincide. This is presented in the following Figures:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%202%20wrong%20fit.png" alt="VtlinOffset2WrongFit" height="400">
+<img src="./Images/Vtlin%20offset%202%20wrong%20fit.png" alt="VtlinOffset2WrongFit" height="400">
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtsat%20offset%202%20wrong%20fit.png" alt="VtsatOffset2WrongFit" height="400">
+<img src="./Images/Vtsat%20offset%202%20wrong%20fit.png" alt="VtsatOffset2WrongFit" height="400">
 
 In this case, `gm,max` occurs at a different voltage: `Vg(gm,max)`. The `RollingRegression` function will start at `Vgmax` (60 Volts), perform the first linear fit over a voltage range of `minRangeLength` Volts and then keep iterating until the slope diverges. The divergence happens roughly ~15 Volts away from `Vgmax`, at 45 Volts. However, this linear fit obviously underestimates the threshold voltage `Vt`. This is because beyond the 45 Volts the slope (i.e. the transconductance, `gm`) becomes even larger. The maximum value of the slope (and of the transconductance) occurs at roughly 35 Volts, and this is where the linear fit should have taken place.
 
 To correct for this, the `RollingRegression` function checks if `gm,max` and `Vgmax` coincide. If not, the left voltage limit for the linear fit is shifted from `Vgmax` to `Vgmax+offset2`, where `offset2` is the voltage difference between `Vgmax` and `Vg(gm,max)`. The left voltage limit will then start from `Vg(gm,max)`. Hence, `offset2` ensures that the linear fit is applied at the voltage range around `gm,max`. This is presented in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/Vtlin%20offset%202%20correct%20fit.png" alt="VtlinOffset2CorrectFit" height="400">
+<img src="./Images/Vtlin%20offset%202%20correct%20fit.png" alt="VtlinOffset2CorrectFit" height="400">
 
 
 #### Reliability factor
@@ -212,26 +212,26 @@ The **reliability factor** is calculated as described in the relevant [publicati
 
 Regime I (left) and regime II (right) are shown in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%20Two%20regimes.png" alt="TwoRegimes" height="300">
+<img src="./Images/EGOFET%20Tss%20fit%20-%20Two%20regimes.png" alt="TwoRegimes" height="300">
 
 
 We need to calculate the onset of the steady state in the ON current curves, and the calculation has to make sense in both regimes. The first method is to calculate the three point derivative of the curves, and restrict it from remaining below a certain limit. That limit is the `Tsswindow` parameter. The results are shown in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%201%20-%20Three%20point%20derivative.png" alt="ThreePointDerivative" height="300">
+<img src="./Images/EGOFET%20Tss%20fit%20-%201%20-%20Three%20point%20derivative.png" alt="ThreePointDerivative" height="300">
 
 The steady state calculation is accurate for regime II but not for regime I. The three point derivative does not work properly in regime I, as it may have some flat regions.
 
 
 The second method is to perform a linear fit across the entire time curve, and restrict the slope from remaining below the `Tsswindow` limit. The results are shown in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%202%20-Linear%20fit%20over%20the%20entire%20range.png" alt="LinearFitEntireRange" height="300">
+<img src="./Images/EGOFET%20Tss%20fit%20-%202%20-Linear%20fit%20over%20the%20entire%20range.png" alt="LinearFitEntireRange" height="300">
 
 The steady state calculation is accurate for regime I but not for regime II. This method does not work properly in the case of a very flat curve, as the large, flat sections will dominate, and allow for the linear fit to ignore the transient region.
 
 
 The third method is to perform a linear fit in a limited range, and restrict the slope from remaining below the `Tsswindow` limit. A range of for a range of 200 minutes was chosen. It is like having a 200-min long rod and trying to fit it along the ON current curve until it is flat enough (i.e., until the slopw is below the `Tsswindow` limit). The fit does not start from t=0 but after the first liquid injection, which takes about 8 minutes. The results are shown in the following Figure:
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%203%20-Linear%20fit%20over%20a%20limited%20range.png" alt="LinearFitLimitedRange" height="300">
+<img src="./Images/EGOFET%20Tss%20fit%20-%203%20-Linear%20fit%20over%20a%20limited%20range.png" alt="LinearFitLimitedRange" height="300">
 
 The steady state calculation is accurate for regime I and regime II. This method is a reasonable compromise. Hence, the onset of the steady state `Tss` was defined as the time for which the slope of the ON current (drift) remains below a 10<sup>-9</sup> A/min for 200 minutes. The different parameters found in the EG-OFET processing scripts are:
 
@@ -245,4 +245,4 @@ Once the onset of the steady state (`Tss`) is extracted, the following metrics a
 - Idon,SS,Range: ON current range (Max Idon)-(Min Idon) at the steady state
 - dIdon/dt: Derivative of the ON current at the steady state
 
-<img src="https://github.com/OE-FET/Origin-Scripts/blob/master/Images/EGOFET%20Tss%20fit%20-%204%20-Linear%20fit%20over%20a%20limited%20range%20-%20Metrics.png" alt="Metrics" height="400">
+<img src="./Images/EGOFET%20Tss%20fit%20-%204%20-Linear%20fit%20over%20a%20limited%20range%20-%20Metrics.png" alt="Metrics" height="400">
